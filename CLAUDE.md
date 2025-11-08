@@ -187,6 +187,7 @@ Project setup verification (`/speckit.implement` step 4) auto-detects technology
 - TypeScript 5.9 (strict mode, ES2020+ target) + React 18.3.1, @nivo/treemap 0.99.0, Zustand 5.0.8, Tailwind CSS 3.4.18 (003-xray-ux-improvements)
 - TypeScript 5.9 (strict mode), targeting ES2020+ + React 18.3.1, @nivo/treemap 0.99.0, Zustand 5.0.8, Tailwind CSS 3.4.18, color2k 2.0.3 (003-xray-ux-improvements)
 - Client-side only - in-memory state management with Zustand (no backend/database) (003-xray-ux-improvements)
+- TypeScript 5.9 (strict mode), targeting ES2020+ + React 18.3.1, Zustand 5.0.8, Tailwind CSS 3.4.18, @tanstack/react-virtual 3.13.12 (004-insights-improvements)
 
 ## Recent Changes
 - 001-app-size-analyzer: Added TypeScript 5.x (strict mode), targeting ES2020+

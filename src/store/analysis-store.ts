@@ -58,6 +58,7 @@ export interface AnalysisStore {
   insights: InsightResult[];
   insightsSeverityFilter: Set<InsightSeverity>;
   insightsCategoryFilter: Set<InsightCategory>;
+  insightsGroupBySeverity: boolean;
 
   // Actions
   setCurrentAnalysis: (analysis: AnalysisContext | null) => void;
@@ -98,6 +99,7 @@ export interface AnalysisStore {
   setInsights: (insights: InsightResult[]) => void;
   setInsightsSeverityFilter: (severities: Set<InsightSeverity>) => void;
   setInsightsCategoryFilter: (categories: Set<InsightCategory>) => void;
+  setInsightsGroupBySeverity: (groupBySeverity: boolean) => void;
 
   // Reset
   reset: () => void;
@@ -128,6 +130,7 @@ const initialState = {
   insights: [],
   insightsSeverityFilter: new Set<InsightSeverity>(['critical', 'high', 'medium', 'low']),
   insightsCategoryFilter: new Set<InsightCategory>(),
+  insightsGroupBySeverity: true,
 };
 
 export const useAnalysisStore = create<AnalysisStore>((set) => ({
@@ -277,6 +280,8 @@ export const useAnalysisStore = create<AnalysisStore>((set) => ({
   setInsightsSeverityFilter: (severities) => set({ insightsSeverityFilter: severities }),
 
   setInsightsCategoryFilter: (categories) => set({ insightsCategoryFilter: categories }),
+
+  setInsightsGroupBySeverity: (groupBySeverity) => set({ insightsGroupBySeverity: groupBySeverity }),
 
   // Reset
   reset: () => set(initialState),
