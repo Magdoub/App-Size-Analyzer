@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/Users/magdoub/Documents/projects/sizeanalyzer/.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Read(//Users/magdoub/Desktop/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
