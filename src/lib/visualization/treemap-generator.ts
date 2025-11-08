@@ -17,6 +17,21 @@ export interface TreemapNode {
   children?: TreemapNode[];
   color?: string;
   compressedSize: number | undefined;
+
+  // Visual rendering metadata (filled by Nivo during render)
+  dimensions?: {
+    width: number;                 // Computed box width in pixels
+    height: number;                // Computed box height in pixels
+    x: number;                     // X coordinate
+    y: number;                     // Y coordinate
+  };
+
+  // Label rendering decision
+  shouldShowLabel?: boolean;       // True if box >= 50x20px
+
+  // Search/highlight state
+  isSearchMatch?: boolean;         // True if matches current search
+  isCurrentSearchMatch?: boolean;  // True if current focused search result
 }
 
 export interface TreemapGeneratorOptions {

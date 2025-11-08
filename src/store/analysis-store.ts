@@ -39,6 +39,21 @@ export interface AnalysisStore {
   xrayCategories: Set<ContentType>;  // Visible categories
   xraySearchQuery: string;
 
+  // X-Ray UX improvements - Details Panel
+  detailsPanelNodePath: string | null;  // Path of node shown in details panel
+  isDetailsPanelOpen: boolean;          // Panel visibility
+
+  // X-Ray UX improvements - Search Navigation
+  searchMatches: string[];              // Array of matching paths
+  currentSearchMatchIndex: number;      // Current match index
+
+  // X-Ray UX improvements - Keyboard Navigation
+  keyboardFocusedNodePath: string | null; // Keyboard-focused node
+  navigationHistory: string[];            // Zoom history stack
+
+  // X-Ray UX improvements - Hover state
+  hoveredNodePath: string | null;         // Currently hovered node
+
   // Insights view state
   insights: InsightResult[];
   insightsSeverityFilter: Set<InsightSeverity>;
@@ -61,6 +76,23 @@ export interface AnalysisStore {
   setXRayZoom: (path: string | null) => void;
   toggleXRayCategory: (category: ContentType) => void;
   setXRaySearch: (query: string) => void;
+
+  // X-Ray UX improvements - Details Panel actions
+  setDetailsPanel: (path: string | null) => void;
+  closeDetailsPanel: () => void;
+
+  // X-Ray UX improvements - Search Navigation actions
+  setSearchMatches: (matches: string[]) => void;
+  navigateToNextMatch: () => void;
+  navigateToPreviousMatch: () => void;
+
+  // X-Ray UX improvements - Keyboard Navigation actions
+  setKeyboardFocus: (path: string | null) => void;
+  pushNavigationHistory: (path: string) => void;
+  popNavigationHistory: () => string | null;
+
+  // X-Ray UX improvements - Hover state actions
+  setHoveredNode: (path: string | null) => void;
 
   // Insights actions
   setInsights: (insights: InsightResult[]) => void;
@@ -86,6 +118,13 @@ const initialState = {
   xrayZoomPath: null,
   xrayCategories: new Set<ContentType>(),
   xraySearchQuery: '',
+  detailsPanelNodePath: null,
+  isDetailsPanelOpen: false,
+  searchMatches: [],
+  currentSearchMatchIndex: 0,
+  keyboardFocusedNodePath: null,
+  navigationHistory: [],
+  hoveredNodePath: null,
   insights: [],
   insightsSeverityFilter: new Set<InsightSeverity>(['critical', 'high', 'medium', 'low']),
   insightsCategoryFilter: new Set<InsightCategory>(),
@@ -145,6 +184,92 @@ export const useAnalysisStore = create<AnalysisStore>((set) => ({
     }),
 
   setXRaySearch: (query) => set({ xraySearchQuery: query }),
+
+  // X-Ray UX improvements - Details Panel actions
+  setDetailsPanel: (path) =>
+    set({
+      detailsPanelNodePath: path,
+      isDetailsPanelOpen: path !== null,
+    }),
+
+  closeDetailsPanel: () =>
+    set({
+      detailsPanelNodePath: null,
+      isDetailsPanelOpen: false,
+    }),
+
+  // X-Ray UX improvements - Search Navigation actions
+  setSearchMatches: (matches) =>
+    set({
+      searchMatches: matches,
+      currentSearchMatchIndex: matches.length > 0 ? 0 : -1,
+    }),
+
+  navigateToNextMatch: () =>
+    set((state) => {
+      if (state.searchMatches.length === 0) return {};
+
+      const nextIndex = (state.currentSearchMatchIndex + 1) % state.searchMatches.length;
+      const nextPath = state.searchMatches[nextIndex];
+      if (!nextPath) return {};
+
+      // Extract parent path for zooming
+      const parentPath = nextPath.includes('/')
+        ? nextPath.substring(0, nextPath.lastIndexOf('/'))
+        : null;
+
+      return {
+        currentSearchMatchIndex: nextIndex,
+        xrayZoomPath: parentPath,
+      };
+    }),
+
+  navigateToPreviousMatch: () =>
+    set((state) => {
+      if (state.searchMatches.length === 0) return {};
+
+      const prevIndex =
+        state.currentSearchMatchIndex === 0
+          ? state.searchMatches.length - 1
+          : state.currentSearchMatchIndex - 1;
+      const prevPath = state.searchMatches[prevIndex];
+      if (!prevPath) return {};
+
+      // Extract parent path for zooming
+      const parentPath = prevPath.includes('/')
+        ? prevPath.substring(0, prevPath.lastIndexOf('/'))
+        : null;
+
+      return {
+        currentSearchMatchIndex: prevIndex,
+        xrayZoomPath: parentPath,
+      };
+    }),
+
+  // X-Ray UX improvements - Keyboard Navigation actions
+  setKeyboardFocus: (path) => set({ keyboardFocusedNodePath: path }),
+
+  pushNavigationHistory: (path) =>
+    set((state) => ({
+      navigationHistory: [...state.navigationHistory, path],
+    })),
+
+  popNavigationHistory: () => {
+    let poppedPath: string | null = null;
+    set((state) => {
+      if (state.navigationHistory.length === 0) return {};
+
+      const newHistory = [...state.navigationHistory];
+      const popped = newHistory.pop();
+      poppedPath = popped || null;
+
+      return { navigationHistory: newHistory };
+    });
+    return poppedPath;
+  },
+
+  // X-Ray UX improvements - Hover state actions
+  setHoveredNode: (path) => set({ hoveredNodePath: path }),
 
   // Insights actions
   setInsights: (insights) => set({ insights }),

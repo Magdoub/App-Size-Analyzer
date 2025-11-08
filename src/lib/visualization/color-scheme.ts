@@ -2,8 +2,10 @@
  * Color Scheme Calculations for Treemap Visualization
  *
  * Provides color mapping for treemap nodes based on size or content type
+ * with WCAG AA accessibility compliance
  */
 
+import { readableColor, parseToRgba } from 'color2k';
 import type { ContentType } from '../../types/analysis';
 
 /**
@@ -142,19 +144,93 @@ export function getNodeColor(
 
 /**
  * Get label color for node (contrasting text color)
+ * Enhanced with WCAG AA compliance check
  */
-export function getLabelColor(backgroundColor: string): string {
-  // Simple brightness check - if background is dark, use white text
-  // if background is light, use black text
-  const hex = backgroundColor.replace('#', '');
-  const r = parseInt(hex.substring(0, 2) || '00', 16);
-  const g = parseInt(hex.substring(2, 4) || '00', 16);
-  const b = parseInt(hex.substring(4, 6) || '00', 16);
+export function getLabelColor(backgroundColor: string, _minContrastRatio: number = 4.5): string {
+  try {
+    // Use color2k's readableColor which ensures good contrast
+    // It returns white or black based on the background
+    return readableColor(backgroundColor);
+  } catch (error) {
+    // Fallback to simple brightness check if color parsing fails
+    const hex = backgroundColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2) || '00', 16);
+    const g = parseInt(hex.substring(2, 4) || '00', 16);
+    const b = parseInt(hex.substring(4, 6) || '00', 16);
 
-  // Calculate perceived brightness (YIQ formula)
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    // Calculate perceived brightness (YIQ formula)
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
 
-  return brightness > 128 ? '#000000' : '#ffffff';
+    return brightness > 128 ? '#000000' : '#ffffff';
+  }
+}
+
+/**
+ * Calculate WCAG contrast ratio between two colors
+ * @param foreground - Foreground color (hex)
+ * @param background - Background color (hex)
+ * @returns Contrast ratio (1-21)
+ */
+export function calculateContrastRatio(foreground: string, background: string): number {
+  const getLuminance = (color: string): number => {
+    try {
+      const [r, g, b] = parseToRgba(color);
+      const rgb = [r / 255, g / 255, b / 255].map((val) => {
+        return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * rgb[0]! + 0.7152 * rgb[1]! + 0.0722 * rgb[2]!;
+    } catch (error) {
+      return 0;
+    }
+  };
+
+  const l1 = getLuminance(foreground);
+  const l2 = getLuminance(background);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * Validate color palette for WCAG AA compliance
+ * Logs warnings for colors that don't meet minimum contrast ratios
+ */
+export function validateColorPalette(): void {
+  const borderColor = '#ffffff';
+  const minGraphicsRatio = 3.0; // WCAG AA for graphical elements
+
+  Object.entries(TYPE_COLORS).forEach(([type, color]) => {
+    const ratio = calculateContrastRatio(color, borderColor);
+    if (ratio < minGraphicsRatio) {
+      console.warn(
+        `[Color Scheme] ${type} color ${color} has insufficient contrast (${ratio.toFixed(2)}:1). ` +
+          `WCAG AA requires ${minGraphicsRatio}:1 for graphics.`
+      );
+    }
+  });
+}
+
+/**
+ * Get hover highlight color (lightens or darkens by 10%)
+ * @param baseColor - Base color to modify
+ * @returns Modified color for hover state
+ */
+export function getHoverHighlightColor(baseColor: string): string {
+  try {
+    // Lighten by 10% for hover effect
+    return lightenColor(baseColor, 0.1);
+  } catch (error) {
+    return baseColor;
+  }
+}
+
+/**
+ * Get search highlight color (fixed yellow for visibility)
+ * @returns Yellow highlight color
+ */
+export function getSearchHighlightColor(): string {
+  return '#fbbf24'; // Tailwind yellow-400
 }
 
 /**

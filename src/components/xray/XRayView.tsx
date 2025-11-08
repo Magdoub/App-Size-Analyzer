@@ -8,6 +8,7 @@ import { useState, useMemo } from 'react';
 import { useAnalysisStore } from '../../store/analysis-store';
 import { Treemap } from './Treemap';
 import { CategoryFilter } from './CategoryFilter';
+import { Breadcrumb, generateBreadcrumbSegments } from '../shared/Breadcrumb';
 import { generateSubtreeData, filterByCategories, searchTree } from '../../lib/visualization/treemap-generator';
 
 export function XRayView() {
@@ -18,6 +19,7 @@ export function XRayView() {
     xraySearchQuery,
     setXRayZoom,
     setXRaySearch,
+    pushNavigationHistory,
   } = useAnalysisStore();
 
   const [colorScheme, setColorScheme] = useState<'size' | 'type'>('size');
@@ -37,31 +39,13 @@ export function XRayView() {
     console.log('[XRayView] Root size:', filtered.size);
 
     // Generate treemap data (with optional zoom)
-    let result = generateSubtreeData(filtered, xrayZoomPath, {
+    const result = generateSubtreeData(filtered, xrayZoomPath, {
       maxDepth: 3,
       minSize: 100, // 100 bytes minimum (reduced from 1KB to show more detail)
     });
 
-    console.log('[XRayView] Original treemap data:', result);
-    console.log('[XRayView] Original data children:', result?.children?.length);
-
-    // Skip root node if no zoom path (show direct children as top level)
-    if (result && !xrayZoomPath && result.name === 'Root' && result.children && result.children.length > 0) {
-      // Create new root from children
-      result = {
-        name: 'App Contents',
-        value: result.value,
-        path: '',
-        type: 'bundle' as const,
-        compressedSize: result.compressedSize,
-        children: result.children,
-      };
-      console.log('[XRayView] Skipped root, showing direct children');
-    }
-
-    console.log('[XRayView] Final treemap data:', result);
-    console.log('[XRayView] Final data children:', result?.children?.length);
-    console.log('[XRayView] Children details:', result?.children?.map(c => ({ name: c.name, value: c.value, childrenCount: c.children?.length })));
+    console.log('[XRayView] Treemap data:', result);
+    console.log('[XRayView] Children count:', result?.children?.length);
 
     return result;
   }, [currentAnalysis, xrayCategories, xrayZoomPath]);
@@ -72,14 +56,20 @@ export function XRayView() {
     return searchTree(currentAnalysis.breakdownRoot, xraySearchQuery);
   }, [currentAnalysis, xraySearchQuery]);
 
+  // Generate breadcrumb segments from current zoom path
+  const breadcrumbSegments = useMemo(() => {
+    return generateBreadcrumbSegments(xrayZoomPath, 'All');
+  }, [xrayZoomPath]);
+
   // Handle drill-down (zoom into node)
   const handleNodeClick = (path: string) => {
-    // Toggle zoom: if already zoomed to this path, zoom out
-    if (xrayZoomPath === path) {
-      setXRayZoom(null);
-    } else {
-      setXRayZoom(path);
+    // Push current path to history before zooming
+    if (xrayZoomPath) {
+      pushNavigationHistory(xrayZoomPath);
     }
+
+    // Zoom to new path
+    setXRayZoom(path);
   };
 
   // Handle zoom out (breadcrumb navigation)
@@ -141,36 +131,16 @@ export function XRayView() {
 
         {/* Breadcrumb navigation */}
         {xrayZoomPath && (
-          <div className="flex items-center gap-2 text-sm">
-            <button
-              onClick={() => setXRayZoom(null)}
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Root
-            </button>
-            {xrayZoomPath.split('/').map((segment, index, arr) => {
-              const path = arr.slice(0, index + 1).join('/');
-              const isLast = index === arr.length - 1;
-
-              return (
-                <div key={path} className="flex items-center gap-2">
-                  <span className="text-gray-400">/</span>
-                  {isLast ? (
-                    <span className="text-gray-900 font-medium">{segment}</span>
-                  ) : (
-                    <button
-                      onClick={() => setXRayZoom(path)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      {segment}
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+          <div className="flex items-center gap-4">
+            <Breadcrumb
+              segments={breadcrumbSegments}
+              onSegmentClick={setXRayZoom}
+              currentPath={xrayZoomPath}
+              className="flex-1"
+            />
             <button
               onClick={handleZoomOut}
-              className="ml-4 text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
             >
               ← Back
             </button>
@@ -200,7 +170,7 @@ export function XRayView() {
       </div>
 
       {/* Treemap */}
-      <div className="p-4" style={{ height: '700px' }}>
+      <div className="p-4 w-full" style={{ height: '700px' }}>
         {treemapData ? (
           <Treemap
             data={treemapData}
