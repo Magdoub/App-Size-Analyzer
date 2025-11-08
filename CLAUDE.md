@@ -1,0 +1,189 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Overview
+
+This repository uses **SpecKit**, a specification-first development workflow system that enforces a structured approach to feature development. The workflow progresses through clearly defined phases: specification → planning → task breakdown → implementation, with validation gates at each step.
+
+## SpecKit Workflow Commands
+
+The development workflow is driven by slash commands that guide feature development from concept to implementation:
+
+### Core Commands (in sequence)
+
+1. **`/speckit.specify [description]`** - Create feature specification
+   - Generates user stories with priorities (P1, P2, P3)
+   - Creates functional requirements and success criteria
+   - Outputs: `specs/NNN-feature-name/spec.md`
+   - Auto-creates feature branch: `NNN-feature-name`
+
+2. **`/speckit.clarify`** - Resolve specification ambiguities
+   - Interactive Q&A for unclear requirements
+   - Maximum 3 critical clarifications per spec
+   - Updates spec with user-provided answers
+
+3. **`/speckit.plan`** - Generate implementation plan
+   - Phase 0: Research and resolve technical unknowns
+   - Phase 1: Design data models, contracts, quickstart guide
+   - Outputs: `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`
+   - Validates against project constitution
+
+4. **`/speckit.tasks`** - Generate task breakdown
+   - Organizes tasks by user story priority
+   - Creates dependency graph and parallel execution plan
+   - Outputs: `tasks.md` with executable task list
+   - Format: `- [ ] [TID] [P?] [Story?] Description with file path`
+
+5. **`/speckit.implement`** - Execute implementation
+   - Processes tasks.md in dependency order
+   - Follows TDD if tests defined in tasks
+   - Respects parallel execution markers `[P]`
+   - Validates checklist completion before starting
+
+### Supporting Commands
+
+- **`/speckit.constitution`** - Create/update project constitution
+- **`/speckit.analyze`** - Analyze codebase architecture
+- **`/speckit.checklist`** - Generate phase-specific checklists
+
+## Project Structure
+
+```
+specs/
+  NNN-feature-name/           # Feature directory (NNN = sequential number)
+    spec.md                   # What and why (user-facing)
+    plan.md                   # Technical architecture
+    research.md               # Technical decisions
+    data-model.md             # Entities and relationships
+    quickstart.md             # Integration scenarios
+    tasks.md                  # Executable task breakdown
+    contracts/                # API specifications
+    checklists/               # Validation checklists
+
+.specify/
+  memory/
+    constitution.md           # Project governance rules
+  templates/                  # Document templates
+  scripts/bash/               # Workflow automation scripts
+
+.claude/
+  commands/                   # Slash command definitions
+```
+
+## Key Scripts
+
+All scripts are located in `.specify/scripts/bash/`:
+
+- **`create-new-feature.sh --json --number N --short-name "name" "description"`**
+  - Creates feature branch and directory structure
+  - Returns JSON with BRANCH_NAME and SPEC_FILE paths
+
+- **`setup-plan.sh --json`**
+  - Initializes planning phase
+  - Returns paths: FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH
+
+- **`check-prerequisites.sh --json [--require-tasks] [--include-tasks]`**
+  - Validates workflow prerequisites
+  - Returns FEATURE_DIR and AVAILABLE_DOCS list
+
+- **`update-agent-context.sh claude`**
+  - Updates agent-specific context files
+  - Preserves manual additions between markers
+
+## Task Format Requirements
+
+Every task in `tasks.md` MUST follow this exact format:
+
+```
+- [ ] [TID] [P?] [Story?] Description with file path
+```
+
+Components:
+- Checkbox: `- [ ]` (markdown)
+- Task ID: Sequential (T001, T002...)
+- `[P]`: Parallel execution allowed (optional)
+- `[Story]`: User story label `[US1]`, `[US2]` (for story phases only)
+- Description: Clear action with exact file path
+
+Examples:
+- `- [ ] T001 Create project structure per implementation plan`
+- `- [ ] T012 [P] [US1] Create User model in src/models/user.py`
+- `- [ ] T014 [US1] Implement UserService in src/services/user_service.py`
+
+## Development Principles
+
+### Specification-First Approach
+- **What before How**: Specs describe user value, not implementation
+- **Technology-agnostic**: No frameworks, libraries, or code details in specs
+- **Measurable outcomes**: Success criteria must be verifiable without implementation knowledge
+
+### User Story Organization
+- Stories are **prioritized** (P1, P2, P3) by importance
+- Each story is **independently testable** - can be implemented alone as MVP
+- Tasks are organized by story to enable incremental delivery
+
+### Constitution Enforcement
+- All features validated against `.specify/memory/constitution.md`
+- Constitution defines non-negotiable principles (e.g., library-first, TDD, observability)
+- Violations must be explicitly justified in plan.md
+
+### Implementation Strategy
+- **Phase-by-phase execution**: Setup → Foundational → User Stories (by priority) → Polish
+- **TDD when specified**: Test tasks precede implementation tasks
+- **Dependency respect**: Sequential tasks in order, parallel tasks `[P]` concurrently
+- **Checklist validation**: All checklists must pass before `/speckit.implement`
+
+## Common Workflow Patterns
+
+### Starting a new feature
+```bash
+/speckit.specify Add user authentication with OAuth2
+# → Creates branch 001-user-auth, generates spec.md
+# → Reviews for clarifications
+
+/speckit.clarify
+# → Resolves any ambiguities interactively
+
+/speckit.plan
+# → Generates technical plan, research, contracts
+
+/speckit.tasks
+# → Breaks down into executable tasks
+
+/speckit.implement
+# → Executes implementation
+```
+
+### Working with existing features
+```bash
+# Find current feature branch
+git branch --list '[0-9]*-*'
+
+# Check available documentation
+.specify/scripts/bash/check-prerequisites.sh --json
+
+# Analyze existing implementation
+/speckit.analyze
+```
+
+## Important Notes
+
+- **All paths must be absolute** when calling bash scripts
+- **Single quotes in args**: Use escape syntax `'I'\''m Groot'` or double-quotes `"I'm Groot"`
+- **Scripts return JSON**: Parse output for file paths and metadata
+- **Checklist gating**: `/speckit.implement` blocks on incomplete checklists unless user explicitly approves
+- **Spec quality limits**: Maximum 3 `[NEEDS CLARIFICATION]` markers - make informed guesses for the rest
+- **Git integration**: Feature branches auto-created with format `NNN-feature-name`
+
+## File Ignore Patterns
+
+Project setup verification (`/speckit.implement` step 4) auto-detects technology stack and creates/verifies appropriate ignore files (.gitignore, .dockerignore, etc.) based on detected tools and languages in `plan.md`.
+
+## Active Technologies
+- TypeScript 5.x (strict mode), targeting ES2020+ (001-app-size-analyzer)
+- TypeScript 5.9 (strict mode, ES2020+ target) + React 18.3.1, Zustand 5.0.8, @tanstack/react-virtual 3.13.12 (002-sort-by-size)
+- N/A (client-side only, in-memory state with Zustand) (002-sort-by-size)
+
+## Recent Changes
+- 001-app-size-analyzer: Added TypeScript 5.x (strict mode), targeting ES2020+
