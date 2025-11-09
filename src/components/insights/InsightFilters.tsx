@@ -11,6 +11,8 @@ interface InsightFiltersProps {
   selectedCategories: Set<InsightCategory>;
   onSeverityToggle: (severity: InsightSeverity) => void;
   onCategoryToggle: (category: InsightCategory) => void;
+  groupBySeverity?: boolean;
+  onGroupBySeverityToggle?: () => void;
 }
 
 export function InsightFilters({
@@ -18,6 +20,8 @@ export function InsightFilters({
   selectedCategories,
   onSeverityToggle,
   onCategoryToggle,
+  groupBySeverity = true,
+  onGroupBySeverityToggle,
 }: InsightFiltersProps) {
   const severities: InsightSeverity[] = ['critical', 'high', 'medium', 'low'];
   const categories: InsightCategory[] = [
@@ -61,6 +65,24 @@ export function InsightFilters({
 
   return (
     <div className="space-y-4">
+      {/* View Options */}
+      {onGroupBySeverityToggle && (
+        <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+          <h3 className="text-sm font-medium text-gray-900">View Options</h3>
+          <button
+            onClick={onGroupBySeverityToggle}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border-2 transition-all ${
+              groupBySeverity
+                ? 'bg-purple-100 text-purple-800 border-purple-300'
+                : 'bg-gray-100 text-gray-600 border-transparent'
+            }`}
+          >
+            <span>{groupBySeverity ? '✓' : '○'}</span>
+            <span>Group by Severity</span>
+          </button>
+        </div>
+      )}
+
       {/* Severity Filters */}
       <div>
         <h3 className="text-sm font-medium text-gray-900 mb-2">Filter by Severity</h3>

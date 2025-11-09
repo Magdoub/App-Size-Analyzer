@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(/Users/magdoub/Documents/projects/sizeanalyzer/.specify/scripts/bash/check-prerequisites.sh:*)",
-      "Read(//Users/magdoub/Desktop/**)"
+      "Read(//Users/magdoub/Desktop/**)",
+      "Bash(.specify/scripts/bash/setup-plan.sh:*)"
     ],
     "deny": [],
     "ask": []

@@ -8,9 +8,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAnalysisStore } from '../../store/analysis-store';
 import { InsightCard } from './InsightCard';
 import { InsightFilters } from './InsightFilters';
+import { SeveritySection } from './SeveritySection';
 import { getDefaultInsightEngine } from '../../lib/analysis';
 import { formatBytes } from '../../utils/formatters';
-import type { InsightCategory, InsightSeverity } from '../../types/insights';
+import type { InsightCategory, InsightSeverity, InsightResult } from '../../types/insights';
 
 export function InsightsView() {
   const {
@@ -18,9 +19,11 @@ export function InsightsView() {
     insights,
     insightsSeverityFilter,
     insightsCategoryFilter,
+    insightsGroupBySeverity,
     setInsights,
     setInsightsSeverityFilter,
     setInsightsCategoryFilter,
+    setInsightsGroupBySeverity,
   } = useAnalysisStore();
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -79,6 +82,31 @@ export function InsightsView() {
 
     return filtered;
   }, [insights, insightsSeverityFilter, insightsCategoryFilter]);
+
+  // Group insights by severity when enabled
+  const groupedInsights = useMemo(() => {
+    if (!insightsGroupBySeverity) {
+      return null; // Flat list mode
+    }
+
+    const groups: Record<InsightSeverity, InsightResult[]> = {
+      critical: [],
+      high: [],
+      medium: [],
+      low: [],
+    };
+
+    filteredInsights.forEach((insight) => {
+      groups[insight.severity].push(insight);
+    });
+
+    // Sort within each group by potentialSavings (descending)
+    Object.values(groups).forEach((group) => {
+      group.sort((a, b) => b.potentialSavings - a.potentialSavings);
+    });
+
+    return groups;
+  }, [filteredInsights, insightsGroupBySeverity]);
 
   // Calculate total potential savings
   const totalSavings = useMemo(() => {
@@ -141,7 +169,7 @@ export function InsightsView() {
   }
 
   return (
-    <div className="flex flex-col bg-white">
+    <div className="flex flex-col min-h-screen bg-white">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
@@ -170,11 +198,13 @@ export function InsightsView() {
           selectedCategories={insightsCategoryFilter}
           onSeverityToggle={handleSeverityToggle}
           onCategoryToggle={handleCategoryToggle}
+          groupBySeverity={insightsGroupBySeverity}
+          onGroupBySeverityToggle={() => setInsightsGroupBySeverity(!insightsGroupBySeverity)}
         />
       </div>
 
-      {/* Insights List */}
-      <div className="p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 350px)' }}>
+      {/* Insights List - With max-width for readability and responsive padding */}
+      <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-4">
         {filteredInsights.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             {insights.length === 0 ? (
@@ -199,7 +229,24 @@ export function InsightsView() {
               </>
             )}
           </div>
+        ) : groupedInsights ? (
+          // Grouped view
+          <div>
+            {groupedInsights.critical.length > 0 && (
+              <SeveritySection severity="critical" insights={groupedInsights.critical} />
+            )}
+            {groupedInsights.high.length > 0 && (
+              <SeveritySection severity="high" insights={groupedInsights.high} />
+            )}
+            {groupedInsights.medium.length > 0 && (
+              <SeveritySection severity="medium" insights={groupedInsights.medium} />
+            )}
+            {groupedInsights.low.length > 0 && (
+              <SeveritySection severity="low" insights={groupedInsights.low} />
+            )}
+          </div>
         ) : (
+          // Flat list view
           <div className="space-y-4">
             {filteredInsights.map((insight, index) => (
               <InsightCard key={`${insight.ruleId}-${index}`} insight={insight} />
