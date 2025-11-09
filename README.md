@@ -1,51 +1,73 @@
 # App Size Analyzer
 
-A client-side binary analysis platform for iOS and Android app size optimization. Analyze `.ipa`, `.apk`, and `.xapk` files entirely in your browser with zero backend requirements.
+A client-side binary analysis platform for iOS and Android app size optimization.
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)
+![React](https://img.shields.io/badge/React-18.3-blue?logo=react)
+![Privacy](https://img.shields.io/badge/privacy-100%25%20client--side-green)
+
+## Overview
+
+App Size Analyzer helps developers understand and optimize mobile app binary sizes by providing detailed breakdowns, visual treemaps, and actionable insights. All analysis happens entirely in your browser—your binaries never leave your machine, ensuring complete privacy. No backend, no data transmission, no compromises.
+
+## Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd sizeanalyzer
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open the app** at http://localhost:5173
+
+5. **Drag and drop a sample file** to analyze:
+
+**Try with sample files** (see [sample-files/README.md](sample-files/README.md) for details):
+- **Quick test** (5MB): `sample-files/A Night Battle HD 1.2.ipa` - Fast verification (~5 seconds)
+- **Medium test** (47MB): `sample-files/Tools-for-Procreate-IPAOMTK.COM.ipa` - Realistic app size (~20 seconds)
+- **Large test** (79MB): `sample-files/com.grasshopper.dialer APK` - Comprehensive analysis (~30 seconds)
+
+6. **Explore the analysis**:
+   - **Breakdown** tab: File hierarchy, size breakdown, drill-down
+   - **X-Ray** tab: Interactive treemap visualization
+   - **Insights** tab: Optimization recommendations
 
 ## Features
 
 ### 📊 Breakdown View
-- Hierarchical file system tree with sortable columns (name, size, percentage)
-- Drill-down navigation through directories and file structures
-- Compressed vs uncompressed size analysis
-- Identify large files and optimization opportunities
+Hierarchical file system tree with sortable columns (name, size, percentage). Drill down through directories and file structures to identify large files and optimization opportunities. Analyze both compressed and uncompressed sizes.
 
 ### 🔍 X-Ray Treemap
-- Interactive treemap visualization of app contents
-- Color-coded by file category (executables, frameworks, assets, resources, etc.)
-- Drill-down capability to explore nested directories
-- Quick identification of space-consuming components
+Interactive treemap visualization of your app's contents, color-coded by file category (executables, frameworks, assets, resources). Drill down into nested directories and quickly identify space-consuming components.
 
 ### 💡 Insights & Recommendations
-- Automated analysis engine with severity-based insights (critical, warning, info)
-- Smart detection of:
-  - Uncompressed assets that should be optimized
-  - Duplicate files and redundant resources
-  - Large frameworks and native libraries
-  - Multiple DEX files (Android multidex overhead)
-  - Localization bloat
-  - Asset catalog inefficiencies
-- Filterable by severity, category, and keyword search
-- Actionable recommendations with affected files and potential savings
+Automated analysis engine with severity-based insights (critical, warning, info). Smart detection of uncompressed assets, duplicate files, large frameworks, DEX overhead, localization bloat, and more. Filter by severity, category, or keyword to prioritize optimizations.
 
 ## How It Works
 
-### Architecture
-
-This is a **100% client-side application** with no backend infrastructure:
+**100% Client-Side** - Your data never leaves your machine:
 
 1. **File Upload**: Drag & drop or select `.ipa`, `.apk`, or `.xapk` files
 2. **Validation**: Client-side file type and size validation (up to 2GB)
-3. **Web Worker Parsing**:
-   - Binary parsing runs off the main thread for smooth UI
+3. **Web Worker Parsing**: Binary parsing runs off the main thread for smooth UI
    - ZIP extraction using `fflate` library
    - iOS: Parses Mach-O executables, Info.plist, asset catalogs
    - Android: Parses DEX files, AndroidManifest.xml, ARSC resources
 4. **Analysis Engine**: Generates breakdown trees, treemap data, and insights
 5. **Visualization**: React-based UI with interactive charts and tables
 
-### Privacy & Performance
-
+**Privacy & Performance**:
 - **Zero network requests**: All analysis happens in your browser
 - **Your data stays local**: Files never leave your machine
 - **Fast parsing**: Web Workers prevent UI blocking
@@ -61,50 +83,28 @@ This is a **100% client-side application** with no backend infrastructure:
 - **Workers**: Comlink for typed Web Worker communication
 - **Styling**: Tailwind CSS 3.4.18
 
-## Installation
+## Installation & Development
 
 ### Prerequisites
 
-- **Node.js**: 16+ recommended (for development)
+- **Node.js**: 16+ recommended
 - **npm**: Comes with Node.js
 
-### Setup
+### Running the Application
 
-```bash
-# Clone the repository
-git clone <repository-url>
-cd sizeanalyzer
-
-# Install dependencies
-npm install
-```
-
-## Running the Application
-
-### Development Mode
-
-Start the Vite development server with hot module replacement:
-
+**Development Mode**:
 ```bash
 npm run dev
 ```
-
 The app will be available at **http://localhost:5173**
 
-### Production Build
-
-Build the optimized production bundle:
-
+**Production Build**:
 ```bash
 npm run build
 ```
-
 Output will be in the `dist/` directory.
 
-### Preview Production Build
-
-Test the production build locally:
-
+**Preview Production Build**:
 ```bash
 npm run preview
 ```
@@ -112,26 +112,16 @@ npm run preview
 ### Other Commands
 
 ```bash
-# Run tests
-npm test
+# Testing
+npm test                 # Run tests
+npm run test:watch       # Run tests in watch mode
+npm run test:coverage    # Generate coverage report
 
-# Run tests in watch mode
-npm run test:watch
-
-# Generate coverage report
-npm run test:coverage
-
-# Lint code
-npm run lint
-
-# Auto-fix linting issues
-npm run lint:fix
-
-# Format code
-npm run format
-
-# Type check without emitting
-npm run type-check
+# Code Quality
+npm run lint             # Lint code
+npm run lint:fix         # Auto-fix linting issues
+npm run format           # Format code
+npm run type-check       # Type check without emitting
 ```
 
 ## Usage
@@ -142,17 +132,11 @@ Run `npm run dev` and open http://localhost:5173 in your browser.
 
 ### 2. Upload a Binary
 
-Drag and drop an `.ipa`, `.apk`, or `.xapk` file, or click to browse.
-
-**Try these sample files** (located in `sample-files/`):
-- `Tools-for-Procreate-IPAOMTK.COM.ipa` - 47MB iOS app
-- `com.grasshopper.dialer_6.8.0-2958_minAPI29(arm64-v8a,armeabi,armeabi-v7a,x86,x86_64)(nodpi)_apkmirror.com.apk` - 79MB Android app
-- `A Night Battle HD 1.2.ipa` - 5.1MB iOS app (smaller, faster to test)
+Drag and drop an `.ipa`, `.apk`, or `.xapk` file, or click to browse. See [sample-files/README.md](sample-files/README.md) for ready-to-use test files.
 
 ### 3. Explore the Analysis
 
 Once parsing completes, navigate between views:
-
 - **Breakdown**: Explore the file hierarchy and identify large files
 - **X-Ray**: Visualize the app structure with an interactive treemap
 - **Insights**: Review automated recommendations for size optimization
@@ -172,6 +156,13 @@ Once parsing completes, navigate between views:
 | `.apk` | Android | Android application packages |
 | `.xapk` | Android | XAPK containers (splits extraction) |
 | `.aab` | Android | Android App Bundles (UI accepts, limited parsing) |
+
+## Documentation
+
+- [Contributing Guide](docs/CONTRIBUTING.md) - SpecKit workflow, code standards, PR checklist
+- [Codebase Exploration](docs/CODEBASE_EXPLORATION.md) - Technical deep dive into architecture
+- [Feature Specs](specs/) - Completed and active features, implementation plans
+- [Sample Files](sample-files/README.md) - Test file metadata, usage guide
 
 ## Project Structure
 
@@ -215,23 +206,6 @@ Tested on:
 - **Memory**: Large apps (500MB+) may require sufficient RAM
 - **Recommended**: Use Chrome or Edge for best performance
 
-## Development
-
-### Architecture Patterns
-
-- **Web Workers**: CPU-intensive parsing runs off the main thread
-- **Lazy rendering**: Virtual scrolling for large file lists
-- **Memoization**: React hooks prevent unnecessary re-renders
-- **Code splitting**: Vendor chunks for optimal caching
-
-### Key Libraries
-
-- **fflate**: Fast ZIP decompression with streaming support
-- **@plist/plist**: iOS property list parsing
-- **app-info-parser**: Metadata extraction helper
-- **Comlink**: Type-safe Web Worker communication
-- **color2k**: Color manipulation for treemap gradients
-
 ## Troubleshooting
 
 ### Analysis Timeout
@@ -260,14 +234,6 @@ Tested on:
 - Close other tabs to free up RAM
 - Try a smaller file
 - Use a desktop browser (more memory available)
-
-## Contributing
-
-This project follows a specification-first development workflow using SpecKit:
-
-1. Features are documented in `specs/NNN-feature-name/`
-2. Implementation follows `spec.md` → `plan.md` → `tasks.md`
-3. See `CLAUDE.md` for development workflow details
 
 ## License
 

@@ -26,6 +26,16 @@
   ],
   "author": "",
   "license": "MIT",
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "arrowParens": "always",
+    "endOfLine": "lf"
+  },
   "dependencies": {
     "@nivo/treemap": "^0.99.0",
     "@plist/plist": "^1.0.0",

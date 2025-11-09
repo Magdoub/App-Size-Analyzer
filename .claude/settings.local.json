@@ -3,7 +3,11 @@
     "allow": [
       "Bash(/Users/magdoub/Documents/projects/sizeanalyzer/.specify/scripts/bash/check-prerequisites.sh:*)",
       "Read(//Users/magdoub/Desktop/**)",
-      "Bash(.specify/scripts/bash/setup-plan.sh:*)"
+      "Bash(.specify/scripts/bash/setup-plan.sh:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd sample files to repository for testing\n\nThis commit adds three sample binary files to the repository to help users test the app size analyzer without needing to find their own files.\n\n## What was implemented\n\n1. **Updated .gitignore**:\n   - Removed global *.ipa, *.apk, *.aab, *.xcarchive patterns\n   - Scoped binary exclusions to fixtures/ directory only\n   - Removed sample-files/ exclusion to allow tracking\n\n2. **Added sample files** (131MB total):\n   - A Night Battle HD 1.2.ipa (5.1MB) - Small iOS app for quick testing\n   - Tools-for-Procreate-IPAOMTK.COM.ipa (47MB) - Medium iOS app\n   - com.grasshopper.dialer APK (79MB) - Large Android app\n\n## Why it was implemented\n\n- Users can immediately test the analyzer without searching for IPA/APK files\n- Provides variety of file sizes (small, medium, large) for different test scenarios\n- Demonstrates both iOS and Android platform support\n\n## Technical details\n\n- Sample files are now tracked in git (not ignored)\n- Files are in sample-files/ directory as documented in README.md\n- Binary files will be stored using Git LFS if configured, otherwise as regular blobs\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git ls-tree:*)"
     ],
     "deny": [],
     "ask": []
