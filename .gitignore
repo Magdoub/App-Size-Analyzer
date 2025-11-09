@@ -51,6 +51,9 @@ fixtures/
 *.aab
 *.xcarchive
 
+# Sample files for testing (large binaries, not tracked)
+sample-files/
+
 # Build artifacts
 .turbo
 *.tsbuildinfo
