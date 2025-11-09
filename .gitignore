@@ -44,15 +44,12 @@ lerna-debug.log*
 # OS
 Thumbs.db
 
-# Test fixtures (large binaries)
+# Test fixtures (large binaries) - exclude only fixtures directory
 fixtures/
-*.ipa
-*.apk
-*.aab
-*.xcarchive
-
-# Sample files for testing (large binaries, not tracked)
-sample-files/
+fixtures/**/*.ipa
+fixtures/**/*.apk
+fixtures/**/*.aab
+fixtures/**/*.xcarchive
 
 # Build artifacts
 .turbo
