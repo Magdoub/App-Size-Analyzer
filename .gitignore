@@ -41,6 +41,11 @@ lerna-debug.log*
 .cache/
 .temp/
 
+# Backup files (prevent future backup file commits)
+*.bak
+*.old
+*.backup
+
 # OS
 Thumbs.db
 
