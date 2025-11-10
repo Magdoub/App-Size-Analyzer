@@ -27,25 +27,25 @@ See [CLAUDE.md](../CLAUDE.md) for detailed SpecKit command usage.
 
 This project enforces strict quality standards per the [Project Constitution](.specify/memory/constitution.md):
 
-### TypeScript
+### JavaScript & Vue
 
-- **Strict mode**: `tsconfig.json` has `"strict": true`
-- **Explicit types**: All functions must have parameter and return type annotations
-- **No `any`**: Use `unknown` and narrow with type guards
-- **Target**: ES2020+ (modern browser features, no polyfills)
+- **Modern JavaScript**: ES2020+ target (modern browser features, no polyfills)
+- **JSDoc annotations**: Complex functions should include JSDoc for parameters and return types
+- **Vue conventions**: Composition API with `<script setup>`, single-file components (SFC)
+- **No Options API**: Use Composition API for all new code
 
 ### Testing
 
 - **TDD for parsers**: Write unit tests before implementing binary format parsing logic
 - **Fixtures**: Real binary files (IPA/APK) in `tests/fixtures/` (when test directory created)
 - **Coverage**: 80% for parsers, 70% for UI components (target)
-- **Framework**: Vitest for unit/integration tests, React Testing Library for components
+- **Framework**: Vitest for unit/integration tests, Vue Test Utils for components
 
 ### Code Quality
 
-- **Linting**: ESLint with TypeScript plugin (`npm run lint`)
+- **Linting**: ESLint with Vue plugin (`npm run lint`)
 - **Formatting**: Prettier (`npm run format`)
-- **Pre-commit hooks**: Type check, lint, format (when hooks configured)
+- **Pre-commit hooks**: Lint, format (when hooks configured)
 
 ### Performance
 
