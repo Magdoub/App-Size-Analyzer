@@ -157,13 +157,16 @@ export default {
     const workerRef = ref(null);
     const validationErrors = ref([]);
 
-    // Initialize Web Worker
+    // Initialize Web Worker and restore UI state
     onMounted(() => {
       const worker = new Worker(
         new URL('./workers/parser-worker.js', import.meta.url),
         { type: 'module' }
       );
       workerRef.value = wrap(worker);
+
+      // Restore saved color mode from sessionStorage
+      uiStore.initializeColorMode();
     });
 
     // Cleanup worker

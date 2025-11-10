@@ -21,10 +21,10 @@
         <!-- Color scheme toggle -->
         <div class="flex gap-2">
           <button
-            @click="colorScheme = 'size'"
+            @click="setColorMode('size')"
             :class="[
               'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-              colorScheme === 'size'
+              colorMode === 'size'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             ]"
@@ -32,10 +32,10 @@
             Color by Size
           </button>
           <button
-            @click="colorScheme = 'type'"
+            @click="setColorMode('type')"
             :class="[
               'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-              colorScheme === 'type'
+              colorMode === 'type'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             ]"
@@ -85,7 +85,8 @@
         v-if="treemapData"
         :data="treemapData"
         :total-size="currentAnalysis.totalInstallSize"
-        :color-scheme="colorScheme"
+        :color-mode="colorMode"
+        :size-percentiles="sizePercentiles"
         :search-matches="searchMatches"
         @node-click="handleNodeClick"
       />
@@ -97,7 +98,7 @@
 </template>
 
 <script>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAnalysisStore } from '../../stores/analysisStore';
 import { useUiStore } from '../../stores/uiStore';
@@ -105,6 +106,7 @@ import Treemap from './Treemap.vue';
 import CategoryFilter from './CategoryFilter.vue';
 import Breadcrumb from '../shared/Breadcrumb.vue';
 import { generateSubtreeData, filterByCategories, searchTree } from '../../lib/visualization/treemap-generator';
+import { calculateSizePercentiles } from '../../lib/visualization/color-scheme';
 
 export default {
   name: 'XRayView',
@@ -121,8 +123,11 @@ export default {
     const { currentAnalysis } = storeToRefs(analysisStore);
     const { xray } = storeToRefs(uiStore);
 
-    const colorScheme = ref('size');
     const searchQuery = ref('');
+
+    // Computed properties from store
+    const colorMode = computed(() => xray.value.colorMode);
+    const sizePercentiles = computed(() => xray.value.sizePercentiles);
 
     // Generate treemap data based on current filters
     const treemapData = computed(() => {
@@ -181,17 +186,43 @@ export default {
       }
     };
 
+    // Handle color mode change
+    const setColorMode = (mode) => {
+      uiStore.setXRayColorMode(mode);
+    };
+
+    // Calculate and update size percentiles when analysis changes
+    onMounted(() => {
+      if (currentAnalysis.value?.breakdownRoot) {
+        const percentiles = calculateSizePercentiles(currentAnalysis.value.breakdownRoot);
+        uiStore.updateSizePercentiles(percentiles);
+      }
+    });
+
+    // Watch for analysis changes and recalculate percentiles
+    watch(
+      () => currentAnalysis.value,
+      (newAnalysis) => {
+        if (newAnalysis?.breakdownRoot) {
+          const percentiles = calculateSizePercentiles(newAnalysis.breakdownRoot);
+          uiStore.updateSizePercentiles(percentiles);
+        }
+      }
+    );
+
     return {
       currentAnalysis,
       xray,
-      colorScheme,
+      colorMode,
+      sizePercentiles,
       searchQuery,
       treemapData,
       searchMatches,
       breadcrumbSegments,
       handleNodeClick,
       handleZoomOut,
-      handleBreadcrumbNavigate
+      handleBreadcrumbNavigate,
+      setColorMode
     };
   }
 };

@@ -137,18 +137,30 @@ export function getColorByCompression(size, compressedSize) {
  * @param {ContentType} type - Content type
  * @param {number} totalSize - Total size
  * @param {number} [compressedSize] - Compressed size
- * @param {'size' | 'type' | 'compression'} [scheme='size'] - Color scheme
- * @returns {string} Color hex code
+ * @param {import('../../types/analysis.js').ColorMode} [mode='type'] - Color mode
+ * @param {number[]} [percentiles=[]] - Size percentiles for gradient mode
+ * @returns {string} Color hex code or HSL string
  */
-export function getNodeColor(size, type, totalSize, compressedSize, scheme = 'size') {
-  switch (scheme) {
-    case 'type':
-      return getColorByType(type);
+export function getNodeColor(
+  size,
+  type,
+  totalSize,
+  compressedSize,
+  mode = 'type',
+  percentiles = []
+) {
+  switch (mode) {
+    case 'size':
+      // Use gradient if percentiles are available, otherwise fall back to old heat map
+      if (percentiles && percentiles.length > 0) {
+        return getColorBySizeGradient(size, totalSize, percentiles);
+      }
+      return getColorBySize(size, totalSize);
     case 'compression':
       return getColorByCompression(size, compressedSize);
-    case 'size':
+    case 'type':
     default:
-      return getColorBySize(size, totalSize);
+      return getColorByType(type);
   }
 }
 
@@ -329,4 +341,87 @@ export function getSizeLegend() {
     { label: '50-70%', color: HEATMAP_COLORS[8] || '#dc2626' },
     { label: '> 70%', color: HEATMAP_COLORS[9] || '#991b1b' },
   ];
+}
+
+/**
+ * Calculate size percentiles from breakdown tree for gradient coloring
+ * @param {import('../../types/analysis.js').BreakdownNode} root - Tree root
+ * @returns {number[]} [p10, p25, p50, p75, p90] percentile values
+ */
+export function calculateSizePercentiles(root) {
+  /**
+   * Flatten tree to leaf nodes
+   * @param {import('../../types/analysis.js').BreakdownNode} node
+   * @returns {import('../../types/analysis.js').BreakdownNode[]}
+   */
+  const flattenToLeaves = (node) => {
+    if (!node.children || node.children.length === 0) {
+      return [node];
+    }
+    return node.children.flatMap(flattenToLeaves);
+  };
+
+  const leaves = flattenToLeaves(root);
+  const sizes = leaves.map((n) => n.size).sort((a, b) => a - b);
+
+  if (sizes.length === 0) {
+    return [0, 0, 0, 0, 0];
+  }
+
+  return [
+    sizes[Math.floor(sizes.length * 0.1)] || 0, // p10
+    sizes[Math.floor(sizes.length * 0.25)] || 0, // p25
+    sizes[Math.floor(sizes.length * 0.5)] || 0, // p50 (median)
+    sizes[Math.floor(sizes.length * 0.75)] || 0, // p75
+    sizes[Math.floor(sizes.length * 0.9)] || 0, // p90
+  ];
+}
+
+/**
+ * Calculate size-based gradient color (blue scale) for treemap nodes
+ * @param {number} size - File size in bytes
+ * @param {number} totalSize - Total app size in bytes
+ * @param {number[]} percentiles - [p10, p25, p50, p75, p90] percentile values
+ * @param {import('../../types/analysis.js').ColorGradientConfig} [config] - Optional gradient configuration
+ * @returns {string} HSL color string
+ */
+export function getColorBySizeGradient(size, totalSize, percentiles, config = {}) {
+  const {
+    hue = 210, // Blue
+    minSaturation = 70,
+    maxSaturation = 90,
+    minLightness = 20, // Darkest (large files)
+    maxLightness = 90, // Lightest (small files)
+  } = config;
+
+  // Edge case: no percentiles or empty
+  if (!percentiles || percentiles.length === 0) {
+    return `hsl(${hue}, 80%, 55%)`; // Mid-tone blue
+  }
+
+  // Calculate percentage of total
+  const percentage = (size / totalSize) * 100;
+
+  // Map to percentile bucket and assign lightness
+  let lightness;
+  if (percentage < (percentiles[0] / totalSize) * 100) {
+    lightness = maxLightness; // < p10: lightest (90%)
+  } else if (percentage < (percentiles[1] / totalSize) * 100) {
+    lightness = 75; // p10-p25
+  } else if (percentage < (percentiles[2] / totalSize) * 100) {
+    lightness = 60; // p25-p50
+  } else if (percentage < (percentiles[3] / totalSize) * 100) {
+    lightness = 45; // p50-p75
+  } else if (percentage < (percentiles[4] / totalSize) * 100) {
+    lightness = 30; // p75-p90
+  } else {
+    lightness = minLightness; // > p90: darkest (20%)
+  }
+
+  // Calculate saturation (more vibrant for larger files)
+  const saturationRange = maxSaturation - minSaturation;
+  const lightnessNormalized = (maxLightness - lightness) / (maxLightness - minLightness);
+  const saturation = minSaturation + saturationRange * lightnessNormalized;
+
+  return `hsl(${hue}, ${Math.round(saturation)}%, ${lightness}%)`;
 }

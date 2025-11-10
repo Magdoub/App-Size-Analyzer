@@ -62,6 +62,10 @@ export const useUiStore = defineStore('ui', {
       navigationHistory: [],
       /** @type {string|null} */
       hoveredNodePath: null,
+      /** @type {import('../types/analysis.js').ColorMode} */
+      colorMode: 'type',
+      /** @type {number[]} */
+      sizePercentiles: [],
     },
 
     // Insights view state
@@ -345,6 +349,38 @@ export const useUiStore = defineStore('ui', {
       this.xray.scrollPosition = position;
     },
 
+    /**
+     * Set X-Ray color mode
+     * @param {import('../types/analysis.js').ColorMode} mode - Color mode ('size' | 'type' | 'compression')
+     */
+    setXRayColorMode(mode) {
+      const validModes = ['size', 'type', 'compression'];
+      if (!validModes.includes(mode)) {
+        console.warn(`Invalid color mode: ${mode}, defaulting to 'type'`);
+        mode = 'type';
+      }
+      this.xray.colorMode = mode;
+      sessionStorage.setItem('xray-color-mode', mode);
+    },
+
+    /**
+     * Update size percentiles (called when analysis changes)
+     * @param {number[]} percentiles - Pre-calculated percentiles [p10, p25, p50, p75, p90]
+     */
+    updateSizePercentiles(percentiles) {
+      this.xray.sizePercentiles = percentiles;
+    },
+
+    /**
+     * Initialize color mode from session storage (call on app mount)
+     */
+    initializeColorMode() {
+      const saved = sessionStorage.getItem('xray-color-mode');
+      if (saved && ['size', 'type', 'compression'].includes(saved)) {
+        this.xray.colorMode = saved;
+      }
+    },
+
     // ========== Insights Actions ==========
 
     /**
@@ -473,6 +509,8 @@ export const useUiStore = defineStore('ui', {
         keyboardFocusedNodePath: null,
         navigationHistory: [],
         hoveredNodePath: null,
+        colorMode: 'type',
+        sizePercentiles: [],
       };
       this.insights = {
         severityFilter: new Set(['critical', 'high', 'medium', 'low']),

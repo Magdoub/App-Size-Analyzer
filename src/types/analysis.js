@@ -100,5 +100,75 @@
  * @property {string[]} errors - List of validation errors
  */
 
+/**
+ * ColorMode - Treemap color visualization mode
+ *
+ * @typedef {'size'|'type'|'compression'} ColorMode
+ *
+ * Modes:
+ * - 'size': Blue gradient from light (small) to dark (large)
+ * - 'type': Categorical colors by ContentType (existing behavior)
+ * - 'compression': Green (well-compressed) to red (uncompressed) - FUTURE
+ */
+
+/**
+ * ColorGradientConfig - Configuration for size-based gradient color calculation
+ *
+ * @typedef {Object} ColorGradientConfig
+ * @property {number} hue - HSL hue value (0-360), default 210 (blue)
+ * @property {number} minSaturation - Minimum saturation % for small files, default 70
+ * @property {number} maxSaturation - Maximum saturation % for large files, default 90
+ * @property {number} minLightness - Lightness % for largest files (darkest), default 20
+ * @property {number} maxLightness - Lightness % for smallest files (lightest), default 90
+ * @property {number[]} percentiles - Pre-calculated size percentiles [p10, p25, p50, p75, p90]
+ */
+
+/**
+ * LabelRenderConfig - Configuration for intelligent label rendering
+ *
+ * @typedef {Object} LabelRenderConfig
+ * @property {number} minWidth - Minimum box width (px) to show label, default 50
+ * @property {number} minHeight - Minimum box height (px) to show label, default 20
+ * @property {number} fontSize - Font size in pixels, default 12
+ * @property {number} padding - Internal padding (px) to account for, default 4
+ * @property {boolean} truncateWithEllipsis - Add '...' if text exceeds width, default true
+ */
+
+/**
+ * AffectedFile - File affected by an insight with contextual details
+ *
+ * @typedef {Object} AffectedFile
+ * @property {string} path - Full file path in archive
+ * @property {number} size - File size in bytes
+ * @property {ContentType} type - File content type
+ * @property {number} [compressedSize] - Compressed size if applicable
+ * @property {number} [compressionRatio] - Ratio (compressedSize/size) if applicable
+ * @property {string} [context] - Additional context (e.g., "3x duplicate")
+ */
+
+/**
+ * InsightMetadata - Metadata for enhanced insights
+ *
+ * @typedef {Object} InsightMetadata
+ * @property {number} totalAffectedSize - Sum of all affected files sizes
+ * @property {number} percentageOfApp - % of total app size affected
+ * @property {string} [benchmark] - Comparison benchmark if applicable
+ */
+
+/**
+ * EnhancedInsightResult - Extended insight result with file-level details
+ *
+ * @typedef {Object} EnhancedInsightResult
+ * @property {string} ruleId - Unique rule identifier
+ * @property {'critical'|'high'|'medium'|'low'} severity - Impact severity
+ * @property {string} category - Insight category (e.g., 'size-optimization', 'compression')
+ * @property {string} title - Short title for display
+ * @property {string} description - Detailed explanation
+ * @property {AffectedFile[]} affectedFiles - Files with details (replaces string[])
+ * @property {string} recommendation - Actionable advice
+ * @property {number} potentialSavings - Estimated bytes saved if recommendation applied
+ * @property {InsightMetadata} metadata - Additional context
+ */
+
 // Export empty object to make this a module
 export {};

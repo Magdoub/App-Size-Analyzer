@@ -5,7 +5,7 @@
  */
 
 /**
- * @typedef {'framework' | 'bundle' | 'localization' | 'dex' | 'native_lib' | 'resource' | 'executable' | 'image' | 'video' | 'font' | 'data' | 'config' | 'unknown'} ContentType
+ * @typedef {'framework' | 'bundle' | 'localization' | 'dex' | 'native_lib' | 'resource' | 'asset' | 'executable' | 'image' | 'video' | 'audio' | 'font' | 'data' | 'config' | 'other' | 'unknown'} ContentType
  */
 
 /**
@@ -17,37 +17,9 @@ export function detectContentType(path) {
   const ext = path.split('.').pop()?.toLowerCase() || '';
   const pathLower = path.toLowerCase();
 
-  // iOS-specific
-  if (pathLower.includes('.framework/')) {
-    return 'framework';
-  }
-  if (pathLower.includes('.bundle/')) {
-    return 'bundle';
-  }
-  if (pathLower.includes('.lproj/')) {
-    return 'localization';
-  }
+  // Check file extension first (more specific than folder paths)
 
-  // Android-specific
-  if (ext === 'dex' || pathLower.includes('classes.dex')) {
-    return 'dex';
-  }
-  if (ext === 'so') {
-    return 'native_lib';
-  }
-  if (pathLower.startsWith('res/')) {
-    return 'resource';
-  }
-
-  // Executables
-  if (ext === 'dylib' || ext === 'a' || ext === 'o') {
-    return 'executable';
-  }
-  if (pathLower.includes('/mach')) {
-    return 'executable';
-  }
-
-  // Images
+  // Images - check before folder paths
   const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'heif', 'heic', 'svg', 'bmp', 'ico'];
   if (imageExts.includes(ext)) {
     return 'image';
@@ -57,6 +29,12 @@ export function detectContentType(path) {
   const videoExts = ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm', '3gp'];
   if (videoExts.includes(ext)) {
     return 'video';
+  }
+
+  // Audio
+  const audioExts = ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac', 'wma'];
+  if (audioExts.includes(ext)) {
+    return 'audio';
   }
 
   // Fonts
@@ -75,6 +53,47 @@ export function detectContentType(path) {
   const configExts = ['config', 'conf', 'ini', 'properties', 'toml'];
   if (configExts.includes(ext)) {
     return 'config';
+  }
+
+  // Android DEX files
+  if (ext === 'dex' || pathLower.includes('classes.dex')) {
+    return 'dex';
+  }
+
+  // Native libraries
+  if (ext === 'so') {
+    return 'native_lib';
+  }
+
+  // Executables
+  if (ext === 'dylib' || ext === 'a' || ext === 'o') {
+    return 'executable';
+  }
+  if (pathLower.includes('/mach')) {
+    return 'executable';
+  }
+
+  // Now check folder-based classifications (less specific)
+
+  // iOS-specific folders
+  if (pathLower.includes('.framework/')) {
+    return 'framework';
+  }
+  if (pathLower.includes('.bundle/')) {
+    return 'bundle';
+  }
+  if (pathLower.includes('.lproj/')) {
+    return 'localization';
+  }
+
+  // Android res/ folder - only for non-extension files or unknown extensions
+  if (pathLower.startsWith('res/')) {
+    return 'resource';
+  }
+
+  // Android assets/ folder
+  if (pathLower.startsWith('assets/')) {
+    return 'asset';
   }
 
   return 'unknown';

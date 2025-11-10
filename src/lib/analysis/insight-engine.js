@@ -329,6 +329,518 @@ export function createInsightEngine(config) {
 }
 
 /**
+ * Rule: Identify top 10 largest files
+ * @param {AnalysisContext} context - Analysis context
+ * @returns {Promise<import('../../types/analysis.js').EnhancedInsightResult>} Enhanced insight result
+ */
+export async function ruleLargeFilesTop10(context) {
+  // Flatten tree to leaf nodes only
+  const flattenToLeaves = (node) => {
+    if (!node.children || node.children.length === 0) {
+      return [node];
+    }
+    return node.children.flatMap(flattenToLeaves);
+  };
+
+  const leaves = flattenToLeaves(context.breakdownRoot);
+  const sorted = leaves.sort((a, b) => b.size - a.size).slice(0, 10);
+
+  const totalAffectedSize = sorted.reduce((sum, f) => sum + f.size, 0);
+  const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
+
+  return {
+    ruleId: 'large-files-top-10',
+    severity: 'medium',
+    category: 'size-optimization',
+    title: 'Top 10 Largest Files',
+    description: `These ${sorted.length} files account for ${percentageOfApp.toFixed(1)}% of your app size. Optimizing these high-impact files will significantly reduce your app's footprint.`,
+    affectedFiles: sorted.map((file, index) => ({
+      path: file.path,
+      size: file.size,
+      type: file.type,
+      context: `#${index + 1} - ${((file.size / context.totalInstallSize) * 100).toFixed(1)}% of app`,
+    })),
+    recommendation:
+      `Optimization strategies by file type:\n
+• Images/Assets: Convert to WebP or HEIF format, use appropriate resolutions for different screen sizes, remove EXIF metadata\n
+• Code/JavaScript: Enable tree-shaking, remove unused exports, split into smaller chunks with dynamic imports\n
+• Native Libraries: Strip debug symbols, remove unused architectures (keep only arm64 for modern devices)\n
+• Frameworks: Review included modules, enable ProGuard/R8 (Android) or strip unused Swift modules (iOS)\n
+• Media (audio/video): Use streaming instead of bundling, compress with appropriate codecs (H.265/VP9, AAC)\n\n
+Focus on the top 3-5 files first for maximum impact with minimal effort.`,
+    potentialSavings: Math.round(totalAffectedSize * 0.3), // Assume 30% reduction possible
+    metadata: {
+      totalAffectedSize,
+      percentageOfApp,
+    },
+  };
+}
+
+/**
+ * Rule: Identify uncompressed images
+ * @param {AnalysisContext} context - Analysis context
+ * @returns {Promise<import('../../types/analysis.js').EnhancedInsightResult>} Enhanced insight result
+ */
+export async function ruleUncompressedImages(context) {
+  const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp'];
+
+  const uncompressedImages = context.allFiles
+    .filter((file) => {
+      const ext = file.path.toLowerCase().split('.').pop();
+      return imageExtensions.includes(`.${ext}`) && file.compressedSize;
+    })
+    .filter((file) => {
+      const compressionRatio = file.compressedSize / file.size;
+      return compressionRatio > 0.9; // Poorly compressed (> 90%)
+    })
+    .sort((a, b) => b.size - a.size)
+    .slice(0, 20); // Top 20 uncompressed images
+
+  if (uncompressedImages.length === 0) {
+    return null;
+  }
+
+  const totalAffectedSize = uncompressedImages.reduce((sum, f) => sum + f.size, 0);
+  const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
+  const potentialSavings = Math.round(totalAffectedSize * 0.7); // Assume 70% reduction
+
+  return {
+    ruleId: 'uncompressed-images',
+    severity: 'high',
+    category: 'compression',
+    title: 'Uncompressed Images Detected',
+    description: `Found ${uncompressedImages.length} poorly compressed images (${percentageOfApp.toFixed(1)}% of app size). These images have compression ratios above 90%, indicating significant optimization potential.`,
+    affectedFiles: uncompressedImages.map((file) => ({
+      path: file.path,
+      size: file.size,
+      type: file.type,
+      compressedSize: file.compressedSize,
+      compressionRatio: file.compressedSize / file.size,
+      context: `${((file.compressedSize / file.size) * 100).toFixed(0)}% compressed - ${(100 - ((file.compressedSize / file.size) * 100)).toFixed(0)}% potential reduction`,
+    })),
+    recommendation:
+      `Image optimization action plan:\n
+1. **Quick wins (automated tools)**:\n
+   • Run ImageOptim (Mac), TinyPNG, or Squoosh on all images\n
+   • Expected reduction: 40-70% with no visible quality loss\n
+   • Time investment: 5-10 minutes\n\n
+2. **Format modernization**:\n
+   • Convert PNG to WebP (70-90% smaller, lossless)\n
+   • Convert JPG to WebP or HEIF (25-35% smaller)\n
+   • iOS: Use HEIC format (native support iOS 11+)\n
+   • Android: Use WebP (native support Android 4.0+)\n\n
+3. **Resolution optimization**:\n
+   • Audit @3x images - many devices only need @2x\n
+   • Use vector formats (SVG, PDF) for icons and simple graphics\n
+   • Remove unused image variants (landscape-only, tablet-specific)\n\n
+4. **Advanced techniques**:\n
+   • Enable asset catalog compression in Xcode (iOS)\n
+   • Use Android App Bundle with density splits\n
+   • Consider on-demand resources for rarely-used images\n\n
+**Estimated time savings**: Up to ${(potentialSavings / 1024 / 1024).toFixed(1)}MB (~${((potentialSavings / context.totalInstallSize) * 100).toFixed(0)}% of total app size)`,
+    potentialSavings,
+    metadata: {
+      totalAffectedSize,
+      percentageOfApp,
+    },
+  };
+}
+
+/**
+ * Rule: Detect duplicate file names (potential accidental includes)
+ * @param {AnalysisContext} context - Analysis context
+ * @returns {Promise<import('../../types/analysis.js').EnhancedInsightResult | null>} Enhanced insight result or null
+ */
+export async function ruleDuplicateFileNames(context) {
+  // Group files by name
+  const nameToFiles = new Map();
+
+  context.allFiles.forEach((file) => {
+    const fileName = file.path.split('/').pop();
+    if (!nameToFiles.has(fileName)) {
+      nameToFiles.set(fileName, []);
+    }
+    nameToFiles.get(fileName).push(file);
+  });
+
+  // Find duplicates (files with same name but different paths)
+  const duplicates = [];
+  nameToFiles.forEach((files, fileName) => {
+    if (files.length > 1) {
+      duplicates.push({ fileName, files });
+    }
+  });
+
+  if (duplicates.length === 0) {
+    return null;
+  }
+
+  // Calculate total duplicate size
+  const totalDuplicateSize = duplicates.reduce((sum, dup) => {
+    const duplicateSizes = dup.files.reduce((s, f) => s + f.size, 0);
+    return sum + duplicateSizes - dup.files[0].size; // Keep one copy
+  }, 0);
+
+  const percentageOfApp = (totalDuplicateSize / context.totalInstallSize) * 100;
+
+  // Flatten to affected files list
+  const affectedFiles = [];
+  duplicates.forEach((dup) => {
+    dup.files.forEach((file, index) => {
+      affectedFiles.push({
+        path: file.path,
+        size: file.size,
+        type: file.type,
+        context: `${dup.files.length}x duplicate - instance ${index + 1}`,
+      });
+    });
+  });
+
+  return {
+    ruleId: 'duplicate-file-names',
+    severity: 'medium',
+    category: 'size-optimization',
+    title: 'Duplicate File Names Detected',
+    description: `Found ${duplicates.length} file names appearing multiple times across different directories. This may indicate accidental includes or copy-paste errors, potentially wasting ${percentageOfApp.toFixed(1)}% of your app size.`,
+    affectedFiles: affectedFiles.slice(0, 30), // Limit to 30 files
+    recommendation:
+      `Investigation and resolution steps:\n
+1. **Identify true duplicates**:\n
+   • Use file comparison tools (diff, Beyond Compare)\n
+   • Check if files are binary-identical or just share names\n
+   • Look for version numbers or platform suffixes (e.g., image@2x.png)\n\n
+2. **Common duplicate scenarios**:\n
+   • **Vendor libraries**: Same dependency included multiple times (check node_modules, CocoaPods)\n
+   • **Localized resources**: Images/strings duplicated across language folders (can often be unified)\n
+   • **Platform variants**: Separate iOS/Android assets that could be shared\n
+   • **Build artifacts**: Temporary files accidentally included in bundle\n\n
+3. **Resolution strategies**:\n
+   • **If truly identical**: Keep one copy, create symlinks or references\n
+   • **If localized**: Extract common assets to base.lproj (iOS) or values/ (Android)\n
+   • **If versioned**: Update build scripts to exclude outdated versions\n
+   • **If platform-specific**: Verify if platform differences are necessary (many assets can be shared)\n\n
+4. **Prevention**:\n
+   • Add build validation to detect duplicate file names\n
+   • Use asset catalogs (iOS) or resource management systems\n
+   • Implement naming conventions with clear ownership (e.g., module_feature_asset.png)\n\n
+**Quick tip**: Start by investigating the largest duplicates (shown at the top of the list) for maximum impact.`,
+    potentialSavings: Math.round(totalDuplicateSize * 0.8), // Assume 80% can be eliminated
+    metadata: {
+      totalAffectedSize: totalDuplicateSize,
+      percentageOfApp,
+    },
+  };
+}
+
+/**
+ * Rule: Analyze framework sizes against typical benchmarks
+ * @param {AnalysisContext} context - Analysis context
+ * @returns {Promise<import('../../types/analysis.js').EnhancedInsightResult | null>} Enhanced insight result or null
+ */
+export async function ruleFrameworkSizeAnalysis(context) {
+  // Framework size benchmarks (in bytes) - typical sizes
+  const frameworkBenchmarks = {
+    react: 50 * 1024 * 1024, // 50MB typical for React Native
+    firebase: 30 * 1024 * 1024, // 30MB
+    flutter: 40 * 1024 * 1024, // 40MB
+  };
+
+  const largeFrameworks = [];
+
+  // Find framework nodes
+  context.frameworks.forEach((frameworkPath) => {
+    const node = findNodeByPath(context.breakdownRoot, frameworkPath);
+    if (!node) return;
+
+    // Check against benchmarks
+    const frameworkName = node.name.toLowerCase();
+    let benchmark = null;
+    let benchmarkName = null;
+
+    Object.entries(frameworkBenchmarks).forEach(([name, size]) => {
+      if (frameworkName.includes(name)) {
+        benchmark = size;
+        benchmarkName = name;
+      }
+    });
+
+    if (benchmark && node.size > benchmark * 1.5) {
+      // 50% larger than typical
+      largeFrameworks.push({
+        node,
+        benchmark,
+        benchmarkName,
+        ratio: node.size / benchmark,
+      });
+    }
+  });
+
+  if (largeFrameworks.length === 0) {
+    return null;
+  }
+
+  const totalAffectedSize = largeFrameworks.reduce((sum, fw) => sum + fw.node.size, 0);
+  const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
+  const potentialSavings = largeFrameworks.reduce(
+    (sum, fw) => sum + (fw.node.size - fw.benchmark),
+    0
+  );
+
+  return {
+    ruleId: 'framework-size-analysis',
+    severity: 'high',
+    category: 'size-optimization',
+    title: 'Large Frameworks Detected',
+    description: `Found ${largeFrameworks.length} frameworks that are ${largeFrameworks[0]?.ratio.toFixed(1)}x larger than typical implementations (${percentageOfApp.toFixed(1)}% of app). This often indicates included debug symbols, unused modules, or missing optimizations.`,
+    affectedFiles: largeFrameworks.map((fw) => ({
+      path: fw.node.path,
+      size: fw.node.size,
+      type: fw.node.type,
+      context: `${fw.ratio.toFixed(1)}x typical ${fw.benchmarkName} size (expected: ${(fw.benchmark / 1024 / 1024).toFixed(1)}MB, actual: ${(fw.node.size / 1024 / 1024).toFixed(1)}MB)`,
+    })),
+    recommendation:
+      `Framework optimization checklist:\n
+1. **React Native specific**:\n
+   • Enable Hermes engine (50% smaller, faster startup)\n
+   • Remove unused native modules from Podfile/build.gradle\n
+   • Use react-native-bundle-visualizer to find bloat\n
+   • Strip development warnings in production builds\n\n
+2. **Firebase specific**:\n
+   • Only include needed services (e.g., Analytics + Crashlytics, not full suite)\n
+   • Disable automatic screen tracking if unused\n
+   • Use dynamic links carefully (adds 2-3MB)\n
+   • Consider Firebase Lite SDKs for basic features\n\n
+3. **Flutter specific**:\n
+   • Build with --split-debug-info and --obfuscate\n
+   • Remove unused widgets and plugins\n
+   • Use deferred loading for large packages\n
+   • Enable --tree-shake-icons flag\n\n
+4. **General framework optimization**:\n
+   • Verify you're using release builds, not debug\n
+   • Enable ProGuard/R8 (Android) with aggressive rules\n
+   • Strip debug symbols: arm64 apps should have minimal symbols\n
+   • Check for duplicate dependencies (use dependency analyzer)\n\n
+5. **Alternative approaches**:\n
+   • Evaluate if full framework is needed (e.g., Firebase → Supabase for lighter weight)\n
+   • Consider feature flags to lazy-load framework features\n
+   • Use platform-specific implementations for critical features\n\n
+**Expected savings**: ${(potentialSavings / 1024 / 1024).toFixed(1)}MB by applying these optimizations. Start with debug symbol stripping and unused module removal for quick wins.`,
+    potentialSavings: Math.round(potentialSavings * 0.5), // Conservative 50% reduction estimate
+    metadata: {
+      totalAffectedSize,
+      percentageOfApp,
+    },
+  };
+}
+
+/**
+ * Rule: Detect large media files that could be streamed
+ * @param {AnalysisContext} context - Analysis context
+ * @returns {Promise<import('../../types/analysis.js').EnhancedInsightResult | null>} Enhanced insight result or null
+ */
+export async function ruleLargeMediaFiles(context) {
+  const mediaExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.mp3', '.wav', '.m4a', '.aac', '.flac'];
+  const largeSizeThreshold = 5 * 1024 * 1024; // 5MB
+
+  const largeMediaFiles = context.allFiles
+    .filter((file) => {
+      const ext = file.path.toLowerCase().split('.').pop();
+      return mediaExtensions.includes(`.${ext}`) && file.size > largeSizeThreshold;
+    })
+    .sort((a, b) => b.size - a.size);
+
+  if (largeMediaFiles.length === 0) {
+    return null;
+  }
+
+  const totalAffectedSize = largeMediaFiles.reduce((sum, f) => sum + f.size, 0);
+  const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
+  const potentialSavings = Math.round(totalAffectedSize * 0.95); // Nearly all can be removed via streaming
+
+  return {
+    ruleId: 'large-media-files',
+    severity: 'critical',
+    category: 'size-optimization',
+    title: 'Large Media Files Bundled in App',
+    description: `Found ${largeMediaFiles.length} large audio/video files (${percentageOfApp.toFixed(1)}% of app). Bundling media reduces available storage on users' devices and increases download time. Consider streaming or on-demand download instead.`,
+    affectedFiles: largeMediaFiles.map((file) => ({
+      path: file.path,
+      size: file.size,
+      type: file.type,
+      context: `${(file.size / 1024 / 1024).toFixed(1)}MB - ${((file.size / context.totalInstallSize) * 100).toFixed(1)}% of app`,
+    })),
+    recommendation:
+      `Media delivery best practices:\n
+1. **Streaming approach** (recommended):\n
+   • Host media on CDN (AWS CloudFront, Cloudflare, Akamai)\n
+   • Implement progressive download with caching\n
+   • Use adaptive bitrate streaming (HLS for video, multiple quality levels for audio)\n
+   • Expected app size reduction: ~${(totalAffectedSize / 1024 / 1024).toFixed(0)}MB\n\n
+2. **On-demand resources** (iOS specific):\n
+   • Tag media as on-demand in Xcode\n
+   • Download only when feature is accessed\n
+   • iOS automatically manages storage and cleanup\n
+   • Reduces initial download by ${percentageOfApp.toFixed(0)}%\n\n
+3. **App Bundle with dynamic delivery** (Android):\n
+   • Move media to dynamic feature modules\n
+   • Download on-demand via Play Core Library\n
+   • User controls when to download (wifi-only option)\n\n
+4. **Hybrid approach** (best user experience):\n
+   • Bundle small preview/thumbnail clips (< 500KB)\n
+   • Stream full-quality on user interaction\n
+   • Cache streamed content locally for offline access\n
+   • Implement background download for anticipated needs\n\n
+5. **If bundling is required**:\n
+   • Compress video with H.265/HEVC (50% smaller than H.264)\n
+   • Reduce resolution/bitrate - most mobile screens don't need 4K\n
+   • Convert audio to AAC with appropriate bitrate (128kbps often sufficient)\n
+   • Remove audio tracks from video if not needed\n\n
+**Impact**: Implementing streaming can reduce your app size by ${(potentialSavings / 1024 / 1024).toFixed(1)}MB, making it ${((potentialSavings / context.totalInstallSize) * 100).toFixed(0)}% smaller and significantly improving download conversion rates.`,
+    potentialSavings,
+    metadata: {
+      totalAffectedSize,
+      percentageOfApp,
+      fileCount: largeMediaFiles.length,
+    },
+  };
+}
+
+/**
+ * Rule: Detect unused resources (common patterns)
+ * @param {AnalysisContext} context - Analysis context
+ * @returns {Promise<import('../../types/analysis.js').EnhancedInsightResult | null>} Enhanced insight result or null
+ */
+export async function ruleUnusedResources(context) {
+  // Look for common patterns of unused resources
+  const suspiciousPatterns = [
+    { pattern: /test[_-]?data/i, category: 'Test Data' },
+    { pattern: /sample|example|demo/i, category: 'Demo/Sample Files' },
+    { pattern: /\.DS_Store|Thumbs\.db|desktop\.ini/i, category: 'System Files' },
+    { pattern: /_old|_backup|_copy|_unused/i, category: 'Backup/Old Files' },
+    { pattern: /\.orig|\.bak|\.tmp/i, category: 'Temporary Files' },
+  ];
+
+  const suspiciousFiles = [];
+
+  suspiciousPatterns.forEach(({ pattern, category }) => {
+    const matches = context.allFiles.filter((file) => pattern.test(file.path));
+    matches.forEach((file) => {
+      suspiciousFiles.push({
+        ...file,
+        suspiciousCategory: category,
+      });
+    });
+  });
+
+  if (suspiciousFiles.length === 0) {
+    return null;
+  }
+
+  const totalAffectedSize = suspiciousFiles.reduce((sum, f) => sum + f.size, 0);
+  const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
+
+  // Only return insight if significant (> 0.5% of app)
+  if (percentageOfApp < 0.5) {
+    return null;
+  }
+
+  return {
+    ruleId: 'unused-resources',
+    severity: 'medium',
+    category: 'size-optimization',
+    title: 'Potentially Unused Resources Detected',
+    description: `Found ${suspiciousFiles.length} files with naming patterns suggesting they may be unused (${percentageOfApp.toFixed(1)}% of app). These include test data, samples, backups, or system files that shouldn't be in production builds.`,
+    affectedFiles: suspiciousFiles.slice(0, 30).map((file) => ({
+      path: file.path,
+      size: file.size,
+      type: file.type,
+      context: `${file.suspiciousCategory}`,
+    })),
+    recommendation:
+      `Resource cleanup strategy:\n
+1. **Audit and verify**:\n
+   • Check if files are actually referenced in code (use "Find Usages" in IDE)\n
+   • Review build configuration to ensure test/demo files are excluded\n
+   • Verify .gitignore and build ignore patterns are working\n\n
+2. **Common culprits**:\n
+   • **Test data**: Move to separate test target/build variant\n
+   • **Sample files**: Remove from production, keep in development only\n
+   • **System files** (.DS_Store, Thumbs.db): Add to .gitignore and clean repo\n
+   • **Backup files**: Delete from source control (history is in git)\n\n
+3. **Build system fixes**:\n
+   • Xcode: Verify "Copy Bundle Resources" only includes needed files\n
+   • Android: Update build.gradle to exclude patterns (e.g., 'assets/test/**')\n
+   • React Native: Configure Metro bundler to exclude test files\n\n
+4. **Automated detection**:\n
+   • Add pre-build validation script to detect suspicious patterns\n
+   • Use tools like unused-webpack-plugin (React Native) or swift-outdated (iOS)\n
+   • Enable warnings for unreferenced resources in IDE\n\n
+**Expected savings**: ${(totalAffectedSize / 1024 / 1024).toFixed(1)}MB by removing genuinely unused resources. Start with obvious candidates like backup files and system cruft.`,
+    potentialSavings: Math.round(totalAffectedSize * 0.9), // Assume 90% are truly unused
+    metadata: {
+      totalAffectedSize,
+      percentageOfApp,
+      fileCount: suspiciousFiles.length,
+    },
+  };
+}
+
+/**
+ * Register enhanced insight rules
+ * @param {InsightEngine} engine - Insight engine
+ * @returns {void}
+ */
+export function registerEnhancedInsightRules(engine) {
+  engine.registerRule({
+    id: 'large-files-top-10',
+    name: 'Large Files Detection',
+    category: 'size-optimization',
+    severity: 'medium',
+    execute: ruleLargeFilesTop10,
+  });
+
+  engine.registerRule({
+    id: 'uncompressed-images',
+    name: 'Uncompressed Images',
+    category: 'compression',
+    severity: 'high',
+    execute: ruleUncompressedImages,
+  });
+
+  engine.registerRule({
+    id: 'duplicate-file-names',
+    name: 'Duplicate File Names',
+    category: 'size-optimization',
+    severity: 'medium',
+    execute: ruleDuplicateFileNames,
+  });
+
+  engine.registerRule({
+    id: 'framework-size-analysis',
+    name: 'Framework Size Analysis',
+    category: 'size-optimization',
+    severity: 'high',
+    execute: ruleFrameworkSizeAnalysis,
+  });
+
+  engine.registerRule({
+    id: 'large-media-files',
+    name: 'Large Media Files',
+    category: 'size-optimization',
+    severity: 'critical',
+    execute: ruleLargeMediaFiles,
+  });
+
+  engine.registerRule({
+    id: 'unused-resources',
+    name: 'Unused Resources',
+    category: 'size-optimization',
+    severity: 'medium',
+    execute: ruleUnusedResources,
+  });
+}
+
+/**
  * Create fully configured insight engine with all rules registered
  * This is the recommended way to create an insight engine for production use
  * @returns {InsightEngine} Insight engine
@@ -336,9 +848,8 @@ export function createInsightEngine(config) {
 export function createDefaultInsightEngine() {
   const engine = new InsightEngine(true); // Enable caching
 
-  // Import and register all rules
-  // Note: Rules will be imported from insight-rules.ts when needed
-  // This function serves as a factory for the configured engine
+  // Register enhanced insight rules
+  registerEnhancedInsightRules(engine);
 
   return engine;
 }

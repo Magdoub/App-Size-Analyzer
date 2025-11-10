@@ -63,13 +63,35 @@
         <span class="text-sm font-bold">{{ formatBytes(insight.potentialSavings) }}</span>
       </div>
 
-      <!-- Affected Items -->
-      <div v-if="insight.affectedItems && insight.affectedItems.length > 0">
+      <!-- Affected Files (Enhanced) -->
+      <div v-if="insight.affectedFiles && insight.affectedFiles.length > 0">
+        <span class="text-sm font-medium block mb-2">📍 Affected Files ({{ insight.affectedFiles.length }}):</span>
+        <div class="max-h-48 overflow-y-auto bg-black bg-opacity-5 rounded p-2">
+          <div class="text-xs space-y-2 font-mono">
+            <div v-for="(file, idx) in insight.affectedFiles" :key="idx" class="flex flex-col gap-1 p-2 bg-white bg-opacity-50 rounded">
+              <div class="flex items-center justify-between gap-2">
+                <span class="truncate font-semibold">{{ file.path }}</span>
+                <span class="whitespace-nowrap text-blue-700 font-bold">{{ formatBytes(file.size) }}</span>
+              </div>
+              <div class="flex items-center gap-4 text-xs opacity-75">
+                <span v-if="file.type" class="px-1.5 py-0.5 bg-gray-200 rounded">{{ file.type }}</span>
+                <span v-if="file.context" class="italic">{{ file.context }}</span>
+                <span v-if="file.compressedSize" class="text-green-700">
+                  Compressed: {{ formatBytes(file.compressedSize) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legacy Affected Items (fallback) -->
+      <div v-else-if="insight.affectedItems && insight.affectedItems.length > 0">
         <span class="text-sm font-medium block mb-2">📍 Affected Items ({{ insight.affectedItems.length }}):</span>
         <div class="max-h-32 overflow-y-auto bg-black bg-opacity-5 rounded p-2">
           <ul class="text-xs space-y-1 font-mono">
             <li v-for="(item, idx) in insight.affectedItems" :key="idx" class="truncate">
-              {{ item.path }} ({{ formatBytes(item.size) }})
+              {{ item.path || item }} <span v-if="item.size">({{ formatBytes(item.size) }})</span>
             </li>
           </ul>
         </div>
@@ -142,6 +164,7 @@ export default {
         case 'duplicates':
           return '📋';
         case 'optimization':
+        case 'size-optimization':
           return '⚡';
         case 'unused':
           return '🗑️';

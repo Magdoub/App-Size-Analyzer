@@ -69,13 +69,22 @@ export default {
     },
 
     /**
-     * Color scheme mode
+     * Color mode ('size' | 'type' | 'compression')
      * @type {String}
      */
-    colorScheme: {
+    colorMode: {
       type: String,
-      default: 'size',
-      validator: (val) => ['size', 'type'].includes(val)
+      default: 'type',
+      validator: (val) => ['size', 'type', 'compression'].includes(val)
+    },
+
+    /**
+     * Size percentiles for gradient coloring [p10, p25, p50, p75, p90]
+     * @type {Array}
+     */
+    sizePercentiles: {
+      type: Array,
+      default: () => []
     },
 
     /**
@@ -97,7 +106,7 @@ export default {
     /**
      * Get color for a treemap node
      * @param {Object} params - ECharts params object
-     * @returns {string} - Hex color
+     * @returns {string} - Hex color or HSL string
      */
     const getNodeColorForChart = (params) => {
       if (!params.data) return '#94a3b8';
@@ -112,7 +121,8 @@ export default {
         params.data.type,
         props.totalSize,
         params.data.compressedSize,
-        props.colorScheme
+        props.colorMode,
+        props.sizePercentiles
       );
 
       // Highlight hovered node
@@ -124,7 +134,7 @@ export default {
     };
 
     /**
-     * Get label text for a node
+     * Get label text for a node (always visible for boxes >= 50px)
      * @param {Object} params - ECharts params object
      * @returns {string} - Label text or empty string
      */
@@ -150,6 +160,33 @@ export default {
     };
 
     /**
+     * Get label text for hover state (always show, regardless of size)
+     * @param {Object} params - ECharts params object
+     * @returns {string} - Label text
+     */
+    const getNodeLabelOnHover = (params) => {
+      if (!params.data) return '';
+
+      // Skip root wrapper
+      const isRootWrapper =
+        params.treePathInfo &&
+        params.treePathInfo.length === 1 &&
+        (!params.data.path || params.data.path === '' || params.data.path === '/');
+
+      if (isRootWrapper) return '';
+
+      // Always show label on hover, but respect truncation if needed
+      const metadata = calculateNodeLabel({
+        ...params.data,
+        width: params.width || 0,
+        height: params.height || 0
+      });
+
+      // Return label text even if box is small
+      return metadata.labelText || params.data.name;
+    };
+
+    /**
      * Get label text color for contrast
      * @param {Object} params - ECharts params object
      * @returns {string} - Hex color
@@ -162,7 +199,8 @@ export default {
         params.data.type,
         props.totalSize,
         params.data.compressedSize,
-        props.colorScheme
+        props.colorMode,
+        props.sizePercentiles
       );
 
       return getLabelColor(bgColor, 4.5);
@@ -324,8 +362,13 @@ export default {
               shadowColor: 'rgba(0, 0, 0, 0.3)'
             },
             label: {
+              show: true,
+              formatter: getNodeLabelOnHover,
+              color: getLabelTextColor,
               fontSize: 12,
-              fontWeight: 600
+              fontWeight: 600,
+              overflow: 'truncate',
+              ellipsis: '...'
             }
           },
           levels: [
