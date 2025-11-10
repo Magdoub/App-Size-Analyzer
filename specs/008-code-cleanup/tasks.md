@@ -29,10 +29,10 @@ Single project structure (Vue 3 web app):
 
 **Purpose**: Verify project is ready for cleanup operations
 
-- [ ] T001 Verify git working directory is clean (no uncommitted changes)
-- [ ] T002 [P] Verify current branch is `008-code-cleanup`
-- [ ] T003 [P] Run baseline validation: `npm run build` and `npm run test` must pass
-- [ ] T004 Document baseline repository size: `du -sh src/` for comparison
+- [X] T001 Verify git working directory is clean (no uncommitted changes)
+- [X] T002 [P] Verify current branch is `008-code-cleanup`
+- [X] T003 [P] Run baseline validation: `npm run build` and `npm run test` must pass
+- [X] T004 Document baseline repository size: `du -sh src/` for comparison
 
 **Checkpoint**: All prerequisites validated - cleanup can proceed safely
 
@@ -46,23 +46,23 @@ Single project structure (Vue 3 web app):
 
 ### Investigation for User Story 1
 
-- [ ] T005 [US1] Find all backup files: `find src -name "*.bak" -type f` and document paths
-- [ ] T006 [US1] Verify no imports of backup files: `grep -r "\.bak" src/ --include="*.js" --include="*.vue"`
+- [X] T005 [US1] Find all backup files: `find src -name "*.bak" -type f` and document paths
+- [X] T006 [US1] Verify no imports of backup files: `grep -r "\.bak" src/ --include="*.js" --include="*.vue"`
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Remove `src/App.tsx.bak` (8,455 bytes)
-- [ ] T008 [P] [US1] Remove `src/lib/parsers/android/apk-parser.ts.bak` (4,938 bytes)
+- [X] T007 [P] [US1] Remove `src/App.tsx.bak` (8,455 bytes)
+- [X] T008 [P] [US1] Remove `src/lib/parsers/android/apk-parser.ts.bak` (4,938 bytes)
 
 ### Validation for User Story 1
 
-- [ ] T009 [US1] Run build validation: `npm run build` must succeed
-- [ ] T010 [US1] Run test validation: `npm run test` must pass
-- [ ] T011 [US1] Verify backup files removed: `find src -name "*.bak" -type f` returns zero results
+- [X] T009 [US1] Run build validation: `npm run build` must succeed
+- [X] T010 [US1] Run test validation: `npm run test` must pass
+- [X] T011 [US1] Verify backup files removed: `find src -name "*.bak" -type f` returns zero results
 
 ### Commit for User Story 1
 
-- [ ] T012 [US1] Commit changes with message: "Remove backup files from Vue migration (US1)" per quickstart.md template
+- [X] T012 [US1] Commit changes with message: "Remove backup files from Vue migration (US1)" per quickstart.md template
 
 **Checkpoint**: Backup files removed, build and tests pass. ~13 KB saved.
 
