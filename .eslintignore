@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Coverage
+coverage/
+
+# Config files
+*.config.js
+*.config.cjs
+.eslintrc.cjs
+
+# Minified files
+*.min.js
+
+# Test fixtures
+fixtures/
+
+# Cache
+.cache/

@@ -190,6 +190,8 @@ Project setup verification (`/speckit.implement` step 4) auto-detects technology
 - TypeScript 5.9 (strict mode), targeting ES2020+ + React 18.3.1, Zustand 5.0.8, Tailwind CSS 3.4.18, @tanstack/react-virtual 3.13.12 (004-insights-improvements)
 - N/A (Documentation/Organization only - no code changes) + N/A (Markdown files and directory structure only) (005-project-organization)
 - N/A (File system organization) (005-project-organization)
+- JavaScript (ES2020+) with Vue 3.5+ (no TypeScript per user requirement) + Vue 3.5+, Pinia 2.3+ (state management), @nivo/treemap 0.99+, fflate 0.8+ (ZIP parsing), app-info-parser 1.1+ (binary metadata) (006-vue-migration)
+- N/A (100% client-side, no persistence, in-memory state only) (006-vue-migration)
 
 ## Recent Changes
 - 001-app-size-analyzer: Added TypeScript 5.x (strict mode), targeting ES2020+

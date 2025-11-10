@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -20,10 +20,10 @@ export default defineConfig({
       output: {
         manualChunks: {
           // Separate vendor chunks for better caching
-          react: ['react', 'react-dom'],
+          vendor: ['vue', 'pinia'],
           parsers: ['fflate', '@plist/plist', 'app-info-parser'],
           viz: ['@nivo/treemap'],
-          tables: ['@tanstack/react-table', '@tanstack/react-virtual'],
+          virtual: ['@tanstack/virtual-core'],
         },
       },
     },
