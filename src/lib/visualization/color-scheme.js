@@ -380,8 +380,8 @@ export function calculateSizePercentiles(root) {
 /**
  * Calculate size-based gradient color (blue scale) for treemap nodes
  * @param {number} size - File size in bytes
- * @param {number} totalSize - Total app size in bytes
- * @param {number[]} percentiles - [p10, p25, p50, p75, p90] percentile values
+ * @param {number} totalSize - Total app size in bytes (unused, kept for API compatibility)
+ * @param {number[]} percentiles - [p10, p25, p50, p75, p90] percentile values in bytes
  * @param {import('../../types/analysis.js').ColorGradientConfig} [config] - Optional gradient configuration
  * @returns {string} HSL color string
  */
@@ -399,23 +399,22 @@ export function getColorBySizeGradient(size, totalSize, percentiles, config = {}
     return `hsl(${hue}, 80%, 55%)`; // Mid-tone blue
   }
 
-  // Calculate percentage of total
-  const percentage = (size / totalSize) * 100;
-
-  // Map to percentile bucket and assign lightness
+  // Map size to percentile bucket and assign lightness
+  // Percentiles represent absolute sizes (bytes), not percentages of total
+  // e.g., if p10 = 1KB, it means "10% of files are smaller than 1KB"
   let lightness;
-  if (percentage < (percentiles[0] / totalSize) * 100) {
-    lightness = maxLightness; // < p10: lightest (90%)
-  } else if (percentage < (percentiles[1] / totalSize) * 100) {
-    lightness = 75; // p10-p25
-  } else if (percentage < (percentiles[2] / totalSize) * 100) {
-    lightness = 60; // p25-p50
-  } else if (percentage < (percentiles[3] / totalSize) * 100) {
-    lightness = 45; // p50-p75
-  } else if (percentage < (percentiles[4] / totalSize) * 100) {
-    lightness = 30; // p75-p90
+  if (size < percentiles[0]) {
+    lightness = maxLightness; // Bottom 10%: lightest (90%)
+  } else if (size < percentiles[1]) {
+    lightness = 75; // 10th-25th percentile
+  } else if (size < percentiles[2]) {
+    lightness = 60; // 25th-50th percentile (median)
+  } else if (size < percentiles[3]) {
+    lightness = 45; // 50th-75th percentile
+  } else if (size < percentiles[4]) {
+    lightness = 30; // 75th-90th percentile
   } else {
-    lightness = minLightness; // > p90: darkest (20%)
+    lightness = minLightness; // Top 10%: darkest (20%)
   }
 
   // Calculate saturation (more vibrant for larger files)

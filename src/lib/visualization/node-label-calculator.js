@@ -93,8 +93,10 @@ export function calculateNodeLabel(node, fontSize = DEFAULT_FONT_SIZE) {
     ? truncateLabel(node.name, availableWidth, fontSize)
     : node.name;
 
+  // Show label if width is sufficient (>= 50px), regardless of height
+  // Height is tracked for metadata but not required for label display
   const shouldShowLabel =
-    meetsWidthThreshold && meetsHeightThreshold && availableWidth > 0;
+    meetsWidthThreshold && availableWidth > 0;
 
   return {
     nodePath: node.path,
