@@ -345,8 +345,9 @@ export function getSizeLegend() {
 
 /**
  * Calculate size percentiles from breakdown tree for gradient coloring
+ * Filters out tiny files (< 1KB) to focus on meaningful content
  * @param {import('../../types/analysis.js').BreakdownNode} root - Tree root
- * @returns {number[]} [p10, p25, p50, p75, p90] percentile values
+ * @returns {number[]} [p10, p25, p50, p75, p90] percentile values in bytes
  */
 export function calculateSizePercentiles(root) {
   /**
@@ -361,7 +362,9 @@ export function calculateSizePercentiles(root) {
     return node.children.flatMap(flattenToLeaves);
   };
 
-  const leaves = flattenToLeaves(root);
+  // Filter out tiny files (< 1KB) that are typically config/metadata
+  // This prevents tiny files from skewing the color gradient
+  const leaves = flattenToLeaves(root).filter(node => node.size >= 1024);
   const sizes = leaves.map((n) => n.size).sort((a, b) => a - b);
 
   if (sizes.length === 0) {

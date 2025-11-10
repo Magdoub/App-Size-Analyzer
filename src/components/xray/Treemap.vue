@@ -16,6 +16,7 @@
     style="height: 650px; background-color: #f9fafb"
   >
     <v-chart
+      :key="`treemap-${colorMode}`"
       class="w-full h-full"
       :option="chartOption"
       :autoresize="true"
