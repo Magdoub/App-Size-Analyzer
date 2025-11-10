@@ -22,7 +22,7 @@ export default defineConfig({
           // Separate vendor chunks for better caching
           vendor: ['vue', 'pinia'],
           parsers: ['fflate', '@plist/plist', 'app-info-parser'],
-          viz: ['@nivo/treemap'],
+          viz: ['echarts', 'vue-echarts'],
           virtual: ['@tanstack/virtual-core'],
         },
       },
