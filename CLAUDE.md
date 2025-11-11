@@ -196,6 +196,7 @@ Project setup verification (`/speckit.implement` step 4) auto-detects technology
 - N/A (100% client-side, in-memory state with Pinia) (007-xray-insights-enhancements)
 - JavaScript ES2020+ with Vue 3.5.24 + Vue 3.5.24 + Pinia 2.3+ (no TypeScript per project constitution) (008-code-cleanup)
 - N/A (client-side only, in-memory state with Pinia) (008-code-cleanup)
+- JavaScript ES2020+ with Vue 3.5.24 (no TypeScript per constitution requirement) + Vue 3.5.24, Pinia 2.3.1, Comlink 4.4.2, ECharts 5.5.0, fflate 0.8.2, app-info-parser 1.1.6, @tanstack/vue-virtual 3.13.12 (009-vue-migration-completion)
 
 ## Recent Changes
 - 001-app-size-analyzer: Added TypeScript 5.x (strict mode), targeting ES2020+

@@ -109,7 +109,7 @@
       <!-- Footer -->
       <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 mt-8">
         <p class="text-center text-sm text-gray-500">
-          Vue.js Migration - 35/96 tasks complete (36%) | All core components ready ✓ | Ready for testing
+          Client-side binary analysis tool for iOS & Android apps
         </p>
       </footer>
     </div>
@@ -117,12 +117,13 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { wrap } from 'comlink';
+import { ref, watch } from 'vue';
 import { useAppStore } from './stores/appStore';
 import { useAnalysisStore } from './stores/analysisStore';
 import { useUiStore } from './stores/uiStore';
+import { useParserWorker } from './composables/useParserWorker';
 import { buildBreakdownTree, validateTreeSize } from './lib/analysis/breakdown-generator';
+import { getDefaultInsightEngine } from './lib/analysis';
 
 // Import real components
 import ErrorBoundary from './components/shared/ErrorBoundary.vue';
@@ -152,27 +153,35 @@ export default {
     const analysisStore = useAnalysisStore();
     const uiStore = useUiStore();
 
+    // Parser worker composable
+    const { progress, status, state, error, parseFile } = useParserWorker();
+
     // Local state
     const selectedFile = ref(null);
-    const workerRef = ref(null);
     const validationErrors = ref([]);
 
-    // Initialize Web Worker and restore UI state
-    onMounted(() => {
-      const worker = new Worker(
-        new URL('./workers/parser-worker.js', import.meta.url),
-        { type: 'module' }
-      );
-      workerRef.value = wrap(worker);
-
-      // Restore saved color mode from sessionStorage
-      uiStore.initializeColorMode();
+    // Watch parser progress and update app store
+    watch(progress, (value) => {
+      appStore.updateParsingStatus({
+        state: state.value,
+        progress: value,
+        message: status.value,
+      });
     });
 
-    // Cleanup worker
-    onUnmounted(() => {
-      if (workerRef.value) {
-        workerRef.value[Symbol.for('comlink.releaseProxy')]();
+    // Watch parser state for loading indicator
+    watch(state, (value) => {
+      if (value === 'parsing') {
+        appStore.setLoading(true, progress.value, status.value);
+      } else if (value === 'success' || value === 'error') {
+        appStore.setLoading(false);
+      }
+    });
+
+    // Watch parser errors
+    watch(error, (err) => {
+      if (err) {
+        appStore.setParsingError(err.message);
       }
     });
 
@@ -204,116 +213,98 @@ export default {
       validationErrors.value = errors;
     };
 
-    // Analyze file
+    // Analyze file using composable
     const analyzeFile = async (file, platform) => {
-      const fileSizeMB = file.size / (1024 * 1024);
-      const timeoutMs = Math.max(30000, 30000 + fileSizeMB * 5000);
-
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          reject(
-            new Error(
-              `Analysis timeout: File took too long to process (${Math.round(
-                timeoutMs / 1000
-              )}s limit). Try a smaller file.`
-            )
-          );
-        }, timeoutMs);
-      });
-
       try {
         appStore.setLoading(true, 10, 'Starting analysis...');
         appStore.setError(null);
 
-        if (!workerRef.value) {
-          throw new Error('Parser worker not initialized');
+        // Parse file using useParserWorker composable
+        const { parseResult, fileEntries } = await parseFile(file);
+
+        appStore.setLoading(true, 60, 'Building breakdown tree...');
+
+        const breakdownRoot = buildBreakdownTree(fileEntries);
+        const isValid = validateTreeSize(breakdownRoot, parseResult.totalSize);
+
+        if (!isValid) {
+          console.warn('Tree size validation failed');
         }
 
-        if (platform === 'iOS') {
-          appStore.setLoading(true, 20, 'Parsing iOS binary...');
+        // Determine metadata based on platform
+        const analysisData =
+          platform === 'iOS'
+            ? {
+                fileId: `${file.name}-${Date.now()}`,
+                timestamp: new Date(),
+                platform,
+                metadata: {
+                  platform: 'iOS',
+                  bundleId: parseResult.metadata.bundleId,
+                  version: parseResult.metadata.version,
+                },
+                appName: parseResult.metadata.displayName,
+                bundleId: parseResult.metadata.bundleId,
+                version: parseResult.metadata.version,
+                totalInstallSize: parseResult.installSize,
+                totalDownloadSize: parseResult.downloadSize,
+                breakdownRoot,
+                allFiles: fileEntries,
+                frameworks: parseResult.frameworks.map((fw) => fw.path),
+                assets: parseResult.assets.map((asset) => asset.path),
+                localizations: parseResult.localizations,
+                executables: parseResult.mainExecutable ? [parseResult.metadata.displayName] : [],
+                nativeLibraries: [],
+                dexFiles: [],
+                modules: [],
+              }
+            : {
+                fileId: `${file.name}-${Date.now()}`,
+                timestamp: new Date(),
+                platform,
+                metadata: {
+                  platform: 'Android',
+                  bundleId: parseResult.metadata.packageName,
+                  version: parseResult.metadata.versionName,
+                },
+                appName: parseResult.metadata.applicationLabel || parseResult.metadata.packageName,
+                bundleId: parseResult.metadata.packageName,
+                version: parseResult.metadata.versionName,
+                versionCode: parseResult.metadata.versionCode,
+                totalInstallSize: parseResult.installSize,
+                totalDownloadSize: parseResult.downloadSize,
+                breakdownRoot,
+                allFiles: fileEntries,
+                frameworks: [],
+                assets: parseResult.assets.map((asset) => asset.path),
+                localizations: [],
+                executables: [],
+                nativeLibraries: parseResult.nativeLibs.map((lib) => lib.path),
+                dexFiles: parseResult.dexFiles.map((_, idx) => `classes${idx > 0 ? idx + 1 : ''}.dex`),
+                modules: [],
+              };
 
-          const { parseResult, fileEntries } = await Promise.race([
-            workerRef.value.parseIOS(file),
-            timeoutPromise,
-          ]);
+        // Set analysis result in store
+        analysisStore.setAnalysisResult(analysisData);
+        analysisStore.calculateSummary();
 
-          appStore.setLoading(true, 60, 'Building breakdown tree...');
+        appStore.setLoading(true, 80, 'Generating insights...');
 
-          const breakdownRoot = buildBreakdownTree(fileEntries);
-          const isValid = validateTreeSize(breakdownRoot, parseResult.totalSize);
+        // Generate insights
+        const insightEngine = getDefaultInsightEngine();
+        const insights = await insightEngine.executeAll(analysisData);
+        analysisStore.setInsights(insights);
 
-          if (!isValid) {
-            console.warn('Tree size validation failed');
-          }
-
-          analysisStore.setAnalysisResult({
-            fileId: `${file.name}-${Date.now()}`,
-            timestamp: new Date(),
-            platform,
-            appName: parseResult.metadata.displayName,
-            bundleId: parseResult.metadata.bundleId,
-            version: parseResult.metadata.version,
-            totalInstallSize: parseResult.installSize,
-            totalDownloadSize: parseResult.downloadSize,
-            breakdownRoot,
-            allFiles: fileEntries,
-            frameworks: parseResult.frameworks.map((fw) => fw.path),
-            assets: parseResult.assets.map((asset) => asset.path),
-            localizations: parseResult.localizations,
-            executables: parseResult.mainExecutable ? [parseResult.metadata.displayName] : [],
-            nativeLibraries: [],
-            dexFiles: [],
-            modules: [],
-          });
-        } else {
-          appStore.setLoading(true, 20, 'Parsing Android binary...');
-
-          const { parseResult, fileEntries } = await Promise.race([
-            workerRef.value.parseAndroid(file),
-            timeoutPromise,
-          ]);
-
-          appStore.setLoading(true, 60, 'Building breakdown tree...');
-
-          const breakdownRoot = buildBreakdownTree(fileEntries);
-          const isValid = validateTreeSize(breakdownRoot, parseResult.totalSize);
-
-          if (!isValid) {
-            console.warn('Tree size validation failed');
-          }
-
-          analysisStore.setAnalysisResult({
-            fileId: `${file.name}-${Date.now()}`,
-            timestamp: new Date(),
-            platform,
-            appName: parseResult.metadata.applicationLabel || parseResult.metadata.packageName,
-            bundleId: parseResult.metadata.packageName,
-            version: parseResult.metadata.versionName,
-            versionCode: parseResult.metadata.versionCode,
-            totalInstallSize: parseResult.installSize,
-            totalDownloadSize: parseResult.downloadSize,
-            breakdownRoot,
-            allFiles: fileEntries,
-            frameworks: [],
-            assets: parseResult.assets.map((asset) => asset.path),
-            localizations: [],
-            executables: [],
-            nativeLibraries: parseResult.nativeLibs.map((lib) => lib.path),
-            dexFiles: parseResult.dexFiles.map((_, idx) => `classes${idx > 0 ? idx + 1 : ''}.dex`),
-            modules: [],
-          });
-        }
-
-        appStore.setLoading(true, 90, 'Finalizing analysis...');
+        appStore.setLoading(true, 100, 'Complete');
         uiStore.setActiveView('breakdown');
-        appStore.setLoading(false, 100, 'Complete');
+        appStore.setLoading(false);
       } catch (err) {
         let errorMessage = 'An unexpected error occurred during analysis';
 
         if (err instanceof Error) {
           errorMessage = err.message;
 
-          if (errorMessage.includes('timeout')) {
+          if (errorMessage.includes('timeout') || errorMessage.includes('took too long')) {
             errorMessage += '\n\nTip: Large files may take longer to process.';
           } else if (errorMessage.includes('AndroidManifest.xml not found')) {
             errorMessage = 'Invalid APK file: Missing AndroidManifest.xml.';

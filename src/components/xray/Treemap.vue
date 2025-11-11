@@ -16,7 +16,7 @@
     style="height: 650px; background-color: #f9fafb"
   >
     <v-chart
-      :key="`treemap-${colorMode}`"
+      :key="`treemap-${colorMode}-v2`"
       class="w-full h-full"
       :option="chartOption"
       :autoresize="true"
@@ -36,9 +36,8 @@ import { TooltipComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
 import { storeToRefs } from 'pinia';
 import { useUiStore } from '../../stores/uiStore';
-import { getNodeColor, getLabelColor, getHoverHighlightColor } from '../../lib/visualization/color-scheme';
+import { getNodeColor, getHoverHighlightColor } from '../../lib/visualization/color-scheme';
 import { formatBytes } from '../../utils/formatters';
-import { calculateNodeLabel } from '../../lib/visualization/node-label-calculator';
 
 // Register ECharts components
 use([TreemapChart, CanvasRenderer, TooltipComponent]);
@@ -105,6 +104,46 @@ export default {
     const { xray } = storeToRefs(uiStore);
 
     /**
+     * Calculate dominant content type from node's children
+     * @param {Object} node - Node with children array
+     * @returns {string} - Most common content type among children
+     */
+    const getDominantChildType = (node) => {
+      if (!node.children || node.children.length === 0) {
+        return node.type || 'unknown';
+      }
+
+      // Count types among all children (recursively for leaf nodes)
+      const typeCounts = {};
+      const countTypes = (children) => {
+        children.forEach(child => {
+          if (child.children && child.children.length > 0) {
+            // Recursively count from nested children
+            countTypes(child.children);
+          } else {
+            // Leaf node - count its type
+            const type = child.type || 'unknown';
+            typeCounts[type] = (typeCounts[type] || 0) + child.value; // Weight by size
+          }
+        });
+      };
+
+      countTypes(node.children);
+
+      // Find type with highest total size
+      let dominantType = 'unknown';
+      let maxSize = 0;
+      for (const [type, size] of Object.entries(typeCounts)) {
+        if (size > maxSize) {
+          maxSize = size;
+          dominantType = type;
+        }
+      }
+
+      return dominantType;
+    };
+
+    /**
      * Get color for a treemap node
      * @param {Object} params - ECharts params object
      * @returns {string} - Hex color or HSL string
@@ -117,9 +156,20 @@ export default {
         return '#fbbf24'; // Yellow for search matches
       }
 
+      // For parent nodes in "Color by Type" mode, use dominant child type
+      let nodeType = params.data.type;
+      if (props.colorMode === 'type' && params.data.children && params.data.children.length > 0) {
+        nodeType = getDominantChildType(params.data);
+
+        // Debug logging (TODO: remove after testing)
+        if (nodeType !== params.data.type) {
+          console.log(`[Treemap] Parent node "${params.data.name}" type: ${params.data.type} → dominant: ${nodeType}`);
+        }
+      }
+
       const baseColor = getNodeColor(
         params.value,
-        params.data.type,
+        nodeType, // Use calculated type instead of params.data.type
         props.totalSize,
         params.data.compressedSize,
         props.colorMode,
@@ -132,79 +182,6 @@ export default {
       }
 
       return baseColor;
-    };
-
-    /**
-     * Get label text for a node (always visible for boxes >= 50px)
-     * @param {Object} params - ECharts params object
-     * @returns {string} - Label text or empty string
-     */
-    const getNodeLabel = (params) => {
-      if (!params.data) return '';
-
-      // Skip root wrapper
-      const isRootWrapper =
-        params.treePathInfo &&
-        params.treePathInfo.length === 1 &&
-        (!params.data.path || params.data.path === '' || params.data.path === '/');
-
-      if (isRootWrapper) return '';
-
-      // Calculate if label should be shown based on box dimensions
-      const metadata = calculateNodeLabel({
-        ...params.data,
-        width: params.width || 0,
-        height: params.height || 0
-      });
-
-      return metadata.shouldShowLabel ? metadata.labelText : '';
-    };
-
-    /**
-     * Get label text for hover state (always show, regardless of size)
-     * @param {Object} params - ECharts params object
-     * @returns {string} - Label text
-     */
-    const getNodeLabelOnHover = (params) => {
-      if (!params.data) return '';
-
-      // Skip root wrapper
-      const isRootWrapper =
-        params.treePathInfo &&
-        params.treePathInfo.length === 1 &&
-        (!params.data.path || params.data.path === '' || params.data.path === '/');
-
-      if (isRootWrapper) return '';
-
-      // Always show label on hover, but respect truncation if needed
-      const metadata = calculateNodeLabel({
-        ...params.data,
-        width: params.width || 0,
-        height: params.height || 0
-      });
-
-      // Return label text even if box is small
-      return metadata.labelText || params.data.name;
-    };
-
-    /**
-     * Get label text color for contrast
-     * @param {Object} params - ECharts params object
-     * @returns {string} - Hex color
-     */
-    const getLabelTextColor = (params) => {
-      if (!params.data) return '#000000';
-
-      const bgColor = getNodeColor(
-        params.value,
-        params.data.type,
-        props.totalSize,
-        params.data.compressedSize,
-        props.colorMode,
-        props.sizePercentiles
-      );
-
-      return getLabelColor(bgColor, 4.5);
     };
 
     /**
@@ -331,23 +308,23 @@ export default {
         {
           type: 'treemap',
           data: [props.data],
+          visibleMin: 100, // Show nodes with value >= 100 bytes
           breadcrumb: {
             show: false // We handle breadcrumbs in XRayView
           },
-          roam: false,
-          nodeClick: false, // We handle clicks manually
+          roam: 'scale', // Enable zoom with mouse wheel / trackpad pinch
+          scaleLimit: {
+            min: 0.5,  // Can zoom out to 50%
+            max: 4     // Can zoom in to 400%
+          },
+          // nodeClick property removed - allowing manual click handling via v-chart @click
           squareRatio: 0.5 * (1 + Math.sqrt(5)), // Golden ratio for squarify algorithm
           label: {
             show: true,
-            formatter: getNodeLabel,
-            color: getLabelTextColor,
-            fontSize: 12,
-            fontWeight: 600,
-            overflow: 'truncate',
-            ellipsis: '...'
+            formatter: '{b}'
           },
           upperLabel: {
-            show: false
+            show: true
           },
           itemStyle: {
             borderColor: '#ffffff',
@@ -364,24 +341,23 @@ export default {
             },
             label: {
               show: true,
-              formatter: getNodeLabelOnHover,
-              color: getLabelTextColor,
-              fontSize: 12,
-              fontWeight: 600,
-              overflow: 'truncate',
-              ellipsis: '...'
+              formatter: '{b}'
             }
           },
           levels: [
             {
               itemStyle: {
                 borderWidth: 0,
+                gapWidth: 5
+              }
+            },
+            {
+              itemStyle: {
                 gapWidth: 1
               }
             },
             {
               itemStyle: {
-                borderWidth: 1,
                 gapWidth: 1
               }
             }

@@ -347,7 +347,7 @@ export function getSizeLegend() {
  * Calculate size percentiles from breakdown tree for gradient coloring
  * Filters out tiny files (< 1KB) to focus on meaningful content
  * @param {import('../../types/analysis.js').BreakdownNode} root - Tree root
- * @returns {number[]} [p10, p25, p50, p75, p90] percentile values in bytes
+ * @returns {number[]} [p10, p25, p50, p75, p90, p95] percentile values in bytes
  */
 export function calculateSizePercentiles(root) {
   /**
@@ -368,7 +368,7 @@ export function calculateSizePercentiles(root) {
   const sizes = leaves.map((n) => n.size).sort((a, b) => a - b);
 
   if (sizes.length === 0) {
-    return [0, 0, 0, 0, 0];
+    return [0, 0, 0, 0, 0, 0];
   }
 
   return [
@@ -377,53 +377,66 @@ export function calculateSizePercentiles(root) {
     sizes[Math.floor(sizes.length * 0.5)] || 0, // p50 (median)
     sizes[Math.floor(sizes.length * 0.75)] || 0, // p75
     sizes[Math.floor(sizes.length * 0.9)] || 0, // p90
+    sizes[Math.floor(sizes.length * 0.95)] || 0, // p95
   ];
 }
 
 /**
- * Calculate size-based gradient color (blue scale) for treemap nodes
+ * Calculate size-based gradient color (heat map: blue → cyan → green → yellow → orange → red) for treemap nodes
  * @param {number} size - File size in bytes
  * @param {number} totalSize - Total app size in bytes (unused, kept for API compatibility)
- * @param {number[]} percentiles - [p10, p25, p50, p75, p90] percentile values in bytes
+ * @param {number[]} percentiles - [p10, p25, p50, p75, p90, p95] percentile values in bytes
  * @param {import('../../types/analysis.js').ColorGradientConfig} [config] - Optional gradient configuration
  * @returns {string} HSL color string
  */
 export function getColorBySizeGradient(size, totalSize, percentiles, config = {}) {
-  const {
-    hue = 210, // Blue
-    minSaturation = 70,
-    maxSaturation = 90,
-    minLightness = 20, // Darkest (large files)
-    maxLightness = 90, // Lightest (small files)
-  } = config;
-
   // Edge case: no percentiles or empty
   if (!percentiles || percentiles.length === 0) {
-    return `hsl(${hue}, 80%, 55%)`; // Mid-tone blue
+    return `hsl(210, 80%, 55%)`; // Mid-tone blue
   }
 
-  // Map size to percentile bucket and assign lightness
+  // Map size to percentile bucket and assign hue, saturation, lightness
   // Percentiles represent absolute sizes (bytes), not percentages of total
-  // e.g., if p10 = 1KB, it means "10% of files are smaller than 1KB"
-  let lightness;
+  // Color progression: Blue (cold/small) → Cyan → Green → Yellow → Orange → Red (hot/largest)
+  // Better color distribution across the full spectrum
+  let hue, saturation, lightness;
+
   if (size < percentiles[0]) {
-    lightness = maxLightness; // Bottom 10%: lightest (90%)
+    // Bottom 10%: Very light blue
+    hue = 210;
+    saturation = 75;
+    lightness = 85;
   } else if (size < percentiles[1]) {
-    lightness = 75; // 10th-25th percentile
+    // 10th-25th percentile: Light blue
+    hue = 210;
+    saturation = 80;
+    lightness = 65;
   } else if (size < percentiles[2]) {
-    lightness = 60; // 25th-50th percentile (median)
+    // 25th-50th percentile: Cyan
+    hue = 180;
+    saturation = 70;
+    lightness = 55;
   } else if (size < percentiles[3]) {
-    lightness = 45; // 50th-75th percentile
+    // 50th-75th percentile: Green/Yellow-green
+    hue = 90;
+    saturation = 65;
+    lightness = 50;
   } else if (size < percentiles[4]) {
-    lightness = 30; // 75th-90th percentile
+    // 75th-90th percentile: Orange
+    hue = 30;
+    saturation = 85;
+    lightness = 55;
+  } else if (size < percentiles[5]) {
+    // 90th-95th percentile: Red-Orange
+    hue = 10;
+    saturation = 85;
+    lightness = 50;
   } else {
-    lightness = minLightness; // Top 10%: darkest (20%)
+    // Top 5%: Dark red (largest files)
+    hue = 0;
+    saturation = 90;
+    lightness = 40;
   }
 
-  // Calculate saturation (more vibrant for larger files)
-  const saturationRange = maxSaturation - minSaturation;
-  const lightnessNormalized = (maxLightness - lightness) / (maxLightness - minLightness);
-  const saturation = minSaturation + saturationRange * lightnessNormalized;
-
-  return `hsl(${hue}, ${Math.round(saturation)}%, ${lightness}%)`;
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }

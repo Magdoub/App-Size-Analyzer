@@ -46,15 +46,20 @@
       </div>
 
       <!-- Breadcrumb navigation -->
-      <div v-if="xray.currentPath" class="flex items-center gap-4">
+      <div class="flex items-center gap-4">
         <Breadcrumb
+          v-if="xray.zoomPath"
           :path="breadcrumbSegments"
           @navigate="handleBreadcrumbNavigate"
           class="flex-1"
         />
+        <div v-else class="flex-1 text-sm text-gray-600">
+          Viewing entire app
+        </div>
         <button
+          v-if="xray.zoomPath"
           @click="handleZoomOut"
-          class="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
         >
           ← Back
         </button>
@@ -81,15 +86,28 @@
 
     <!-- Treemap -->
     <div class="p-4 w-full" style="height: 700px">
-      <Treemap
-        v-if="treemapData"
-        :data="treemapData"
-        :total-size="currentAnalysis.totalInstallSize"
-        :color-mode="colorMode"
-        :size-percentiles="sizePercentiles"
-        :search-matches="searchMatches"
-        @node-click="handleNodeClick"
-      />
+      <div v-if="treemapData" class="relative h-full">
+        <Treemap
+          :data="treemapData"
+          :total-size="currentAnalysis.totalInstallSize"
+          :color-mode="colorMode"
+          :size-percentiles="sizePercentiles"
+          :search-matches="searchMatches"
+          @node-click="handleNodeClick"
+        />
+        <!-- Reset Zoom button (floating on top) -->
+        <button
+          v-if="xray.zoomPath"
+          @click="handleResetZoom"
+          class="absolute top-2 right-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white/95 hover:bg-white border border-gray-300 rounded-md shadow-sm hover:shadow-md transition-all"
+        >
+          🔄 Reset Zoom
+        </button>
+        <!-- Zoom hint -->
+        <div class="absolute bottom-2 right-2 text-xs text-gray-500 bg-white/80 px-2 py-1 rounded shadow">
+          💡 Use mouse wheel or trackpad to zoom in/out
+        </div>
+      </div>
       <div v-else class="flex items-center justify-center h-full">
         <div class="text-gray-500">No data to display</div>
       </div>
@@ -138,7 +156,7 @@ export default {
       const filtered = filterByCategories(currentAnalysis.value.breakdownRoot, categories);
 
       // Generate treemap data with optional zoom
-      const result = generateSubtreeData(filtered, xray.value.currentPath || null, {
+      const result = generateSubtreeData(filtered, xray.value.zoomPath || null, {
         maxDepth: 3,
         minSize: 100
       });
@@ -154,8 +172,8 @@ export default {
 
     // Generate breadcrumb segments from current zoom path
     const breadcrumbSegments = computed(() => {
-      if (!xray.value.currentPath) return ['All'];
-      return ['All', ...xray.value.currentPath.split('/').filter(Boolean)];
+      if (!xray.value.zoomPath) return ['All'];
+      return ['All', ...xray.value.zoomPath.split('/').filter(Boolean)];
     });
 
     // Handle drill-down (zoom into node)
@@ -165,13 +183,18 @@ export default {
 
     // Handle zoom out (breadcrumb navigation)
     const handleZoomOut = () => {
-      if (!xray.value.currentPath) return;
+      if (!xray.value.zoomPath) return;
 
-      const pathParts = xray.value.currentPath.split('/');
+      const pathParts = xray.value.zoomPath.split('/');
       pathParts.pop();
       const parentPath = pathParts.join('/');
 
       uiStore.setXRayZoom(parentPath || null);
+    };
+
+    // Handle reset zoom (go to root)
+    const handleResetZoom = () => {
+      uiStore.setXRayZoom(null);
     };
 
     // Handle breadcrumb navigation
@@ -221,6 +244,7 @@ export default {
       breadcrumbSegments,
       handleNodeClick,
       handleZoomOut,
+      handleResetZoom,
       handleBreadcrumbNavigate,
       setColorMode
     };
