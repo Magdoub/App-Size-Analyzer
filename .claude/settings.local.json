@@ -12,7 +12,11 @@
       "Bash(curl:*)",
       "Bash(npm info:*)",
       "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(git branch:*)",
+      "WebFetch(domain:echarts.apache.org)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//var/folders/wn/56cr5wd900x9n4l1g1m2nkth0000gn/T/TemporaryItems/NSIRD_screencaptureui_4CT0Zr/**)"
     ],
     "deny": [],
     "ask": []

@@ -7,7 +7,7 @@
 import { defineStore } from 'pinia';
 
 /**
- * @typedef {'upload'|'breakdown'|'xray'|'insights'} ViewType
+ * @typedef {'upload'|'breakdown'|'xray'|'insights'|'summary'} ViewType
  */
 
 /**
@@ -80,6 +80,14 @@ export const useUiStore = defineStore('ui', {
       groupBySeverity: true,
       /** @type {number} */
       scrollPosition: 0,
+    },
+
+    // Summary view state
+    summary: {
+      /** @type {number} */
+      scrollPosition: 0,
+      /** @type {Set<string>} */
+      collapsedSections: new Set(),
     },
   }),
 
@@ -463,6 +471,37 @@ export const useUiStore = defineStore('ui', {
       this.insights.scrollPosition = position;
     },
 
+    // ========== Summary Actions ==========
+
+    /**
+     * Toggle summary section collapse state
+     * @param {string} sectionId - Section ID to toggle
+     */
+    toggleSummarySection(sectionId) {
+      if (this.summary.collapsedSections.has(sectionId)) {
+        this.summary.collapsedSections.delete(sectionId);
+      } else {
+        this.summary.collapsedSections.add(sectionId);
+      }
+    },
+
+    /**
+     * Check if a summary section is collapsed
+     * @param {string} sectionId - Section ID to check
+     * @returns {boolean}
+     */
+    isSummarySectionCollapsed(sectionId) {
+      return this.summary.collapsedSections.has(sectionId);
+    },
+
+    /**
+     * Save summary scroll position
+     * @param {number} position - Scroll position
+     */
+    saveSummaryScrollPosition(position) {
+      this.summary.scrollPosition = position;
+    },
+
     // ========== Global Actions ==========
 
     /**
@@ -480,6 +519,9 @@ export const useUiStore = defineStore('ui', {
           break;
         case 'insights':
           this.insights.scrollPosition = position;
+          break;
+        case 'summary':
+          this.summary.scrollPosition = position;
           break;
       }
     },
@@ -518,6 +560,10 @@ export const useUiStore = defineStore('ui', {
         searchQuery: '',
         groupBySeverity: true,
         scrollPosition: 0,
+      };
+      this.summary = {
+        scrollPosition: 0,
+        collapsedSections: new Set(),
       };
     },
   },
