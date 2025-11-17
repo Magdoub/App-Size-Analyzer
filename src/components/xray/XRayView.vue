@@ -10,39 +10,11 @@
   <div v-else class="flex flex-col bg-white">
     <!-- Header -->
     <div class="p-4 border-b border-gray-200">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-2xl font-bold text-gray-900">X-Ray View</h2>
-          <p class="text-sm text-gray-600">
-            Interactive treemap visualization of app contents
-          </p>
-        </div>
-
-        <!-- Color scheme toggle -->
-        <div class="flex gap-2">
-          <button
-            @click="setColorMode('size')"
-            :class="[
-              'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-              colorMode === 'size'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            ]"
-          >
-            Color by Size
-          </button>
-          <button
-            @click="setColorMode('type')"
-            :class="[
-              'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-              colorMode === 'type'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            ]"
-          >
-            Color by Type
-          </button>
-        </div>
+      <div class="mb-4">
+        <h2 class="text-2xl font-bold text-gray-900">X-Ray View</h2>
+        <p class="text-sm text-gray-600">
+          Interactive treemap visualization of app contents
+        </p>
       </div>
 
       <!-- Breadcrumb navigation -->
@@ -90,7 +62,6 @@
         <Treemap
           :data="treemapData"
           :total-size="currentAnalysis.totalInstallSize"
-          :color-mode="colorMode"
           :size-percentiles="sizePercentiles"
           :search-matches="searchMatches"
           @node-click="handleNodeClick"
@@ -144,7 +115,6 @@ export default {
     const searchQuery = ref('');
 
     // Computed properties from store
-    const colorMode = computed(() => xray.value.colorMode);
     const sizePercentiles = computed(() => xray.value.sizePercentiles);
 
     // Generate treemap data based on current filters
@@ -209,11 +179,6 @@ export default {
       }
     };
 
-    // Handle color mode change
-    const setColorMode = (mode) => {
-      uiStore.setXRayColorMode(mode);
-    };
-
     // Calculate and update size percentiles when analysis changes
     onMounted(() => {
       if (currentAnalysis.value?.breakdownRoot) {
@@ -236,7 +201,6 @@ export default {
     return {
       currentAnalysis,
       xray,
-      colorMode,
       sizePercentiles,
       searchQuery,
       treemapData,
@@ -245,8 +209,7 @@ export default {
       handleNodeClick,
       handleZoomOut,
       handleResetZoom,
-      handleBreadcrumbNavigate,
-      setColorMode
+      handleBreadcrumbNavigate
     };
   }
 };

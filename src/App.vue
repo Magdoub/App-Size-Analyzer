@@ -26,6 +26,17 @@
                 Breakdown
               </button>
               <button
+                @click="uiStore.setActiveView('summary')"
+                :class="[
+                  'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                  uiStore.activeView === 'summary'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+                ]"
+              >
+                Summary
+              </button>
+              <button
                 @click="uiStore.setActiveView('xray')"
                 :class="[
                   'px-4 py-2 rounded-md text-sm font-medium transition-colors',
@@ -93,10 +104,26 @@
               :errors="validationErrors"
               @dismiss="validationErrors = []"
             />
+
+            <!-- Sample File Gallery -->
+            <div class="mt-8">
+              <h2 class="text-lg font-medium text-gray-900 mb-4">
+                Or try a sample file
+              </h2>
+              <SampleFileGallery
+                ref="sampleGalleryRef"
+                :disabled="appStore.isLoading"
+                @file-selected="handleFileSelect"
+                @loading-error="handleSampleLoadError"
+              />
+            </div>
           </div>
 
           <!-- Breakdown View -->
           <BreakdownView v-if="uiStore.activeView === 'breakdown'" />
+
+          <!-- Summary View -->
+          <SummaryView v-if="uiStore.activeView === 'summary'" />
 
           <!-- X-Ray View -->
           <XRayView v-if="uiStore.activeView === 'xray'" />
@@ -130,7 +157,9 @@ import ErrorBoundary from './components/shared/ErrorBoundary.vue';
 import LoadingSpinner from './components/shared/LoadingSpinner.vue';
 import UploadZone from './components/upload/UploadZone.vue';
 import FileValidator from './components/upload/FileValidator.vue';
+import SampleFileGallery from './components/upload/SampleFileGallery.vue';
 import BreakdownView from './components/breakdown/BreakdownView.vue';
+import SummaryView from './components/summary/SummaryView.vue';
 import XRayView from './components/xray/XRayView.vue';
 import InsightsView from './components/insights/InsightsView.vue';
 
@@ -142,7 +171,9 @@ export default {
     LoadingSpinner,
     UploadZone,
     FileValidator,
+    SampleFileGallery,
     BreakdownView,
+    SummaryView,
     XRayView,
     InsightsView,
   },
@@ -159,6 +190,7 @@ export default {
     // Local state
     const selectedFile = ref(null);
     const validationErrors = ref([]);
+    const sampleGalleryRef = ref(null);
 
     // Watch parser progress and update app store
     watch(progress, (value) => {
@@ -187,6 +219,11 @@ export default {
 
     // Handle file selection
     const handleFileSelect = async (file) => {
+      // Cancel any in-progress sample file load
+      if (sampleGalleryRef.value) {
+        sampleGalleryRef.value.cancelCurrentLoad();
+      }
+
       selectedFile.value = file;
       validationErrors.value = [];
       appStore.setCurrentFile(file);
@@ -211,6 +248,11 @@ export default {
     // Handle validation errors
     const handleValidationError = (errors) => {
       validationErrors.value = errors;
+    };
+
+    // Handle sample file loading errors
+    const handleSampleLoadError = (error) => {
+      appStore.setError(`Failed to load sample file: ${error.message}`);
     };
 
     // Analyze file using composable
@@ -333,8 +375,10 @@ export default {
       uiStore,
       selectedFile,
       validationErrors,
+      sampleGalleryRef,
       handleFileSelect,
       handleValidationError,
+      handleSampleLoadError,
       handleNewAnalysis,
     };
   },

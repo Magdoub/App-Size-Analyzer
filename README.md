@@ -31,12 +31,15 @@ App Size Analyzer helps developers understand and optimize mobile app binary siz
 
 4. **Open the app** at http://localhost:5173
 
-5. **Drag and drop a sample file** to analyze:
+5. **Try a sample file** (one-click quickstart):
+   - Click any sample file card on the homepage
+   - No upload required - instant analysis starts
+   - Available sample files:
+     - **A Night Battle HD** (5.1 MB iOS) - Quick test
+     - **Tools for Procreate** (47 MB iOS) - Medium size
+     - **Grasshopper Dialer** (79 MB Android) - Large app
 
-**Try with sample files** (see [sample-files/README.md](sample-files/README.md) for details):
-- **Quick test** (5MB): `sample-files/A Night Battle HD 1.2.ipa` - Fast verification (~5 seconds)
-- **Medium test** (47MB): `sample-files/Tools-for-Procreate-IPAOMTK.COM.ipa` - Realistic app size (~20 seconds)
-- **Large test** (79MB): `sample-files/com.grasshopper.dialer APK` - Comprehensive analysis (~30 seconds)
+   Or **drag and drop your own file** to analyze (`.ipa`, `.apk`, `.xapk`)
 
 6. **Explore the analysis**:
    - **Breakdown** tab: File hierarchy, size breakdown, drill-down
@@ -44,6 +47,9 @@ App Size Analyzer helps developers understand and optimize mobile app binary siz
    - **Insights** tab: Optimization recommendations
 
 ## Features
+
+### 🚀 One-Click Quickstart with Sample Files
+Try the analyzer instantly without uploading your own files. Click any sample file card on the homepage to load and analyze pre-included iOS and Android apps (ranging from 5-80MB). Perfect for first-time users to see the tool in action within seconds.
 
 ### 📊 Breakdown View
 Hierarchical file system tree with sortable columns (name, size, percentage). Drill down through directories and file structures to identify large files and optimization opportunities. Analyze both compressed and uncompressed sizes.
@@ -58,7 +64,7 @@ Automated analysis engine with severity-based insights (critical, warning, info)
 
 **100% Client-Side** - Your data never leaves your machine:
 
-1. **File Upload**: Drag & drop or select `.ipa`, `.apk`, or `.xapk` files
+1. **File Selection**: Choose from sample files or upload your own `.ipa`, `.apk`, or `.xapk` files
 2. **Validation**: Client-side file type and size validation (up to 2GB)
 3. **Web Worker Parsing**: Binary parsing runs off the main thread for smooth UI
    - ZIP extraction using `fflate` library
@@ -130,9 +136,17 @@ npm run type-check       # Type check without emitting
 
 Run `npm run dev` and open http://localhost:5173 in your browser.
 
-### 2. Upload a Binary
+### 2. Analyze a Binary
 
-Drag and drop an `.ipa`, `.apk`, or `.xapk` file, or click to browse. See [sample-files/README.md](sample-files/README.md) for ready-to-use test files.
+**Option A: Try a sample file** (instant quickstart):
+- Click any sample file card displayed on the homepage
+- Sample files are pre-loaded and ready for one-click analysis
+- No manual upload needed - perfect for first-time users
+
+**Option B: Upload your own file**:
+- Drag and drop an `.ipa`, `.apk`, or `.xapk` file
+- Or click the upload zone to browse your files
+- See [sample-files/README.md](sample-files/README.md) for test file details
 
 ### 3. Explore the Analysis
 
