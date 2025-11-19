@@ -1,68 +1,87 @@
 <template>
   <ErrorBoundary>
-    <div class="min-h-screen bg-gray-50">
-      <!-- Header -->
-      <header class="bg-white shadow-sm">
+    <div class="min-h-screen flex flex-col relative">
+      <!-- Decorative background elements -->
+      <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-[#0a89fc] opacity-[0.04] rounded-full blur-3xl"></div>
+        <div class="absolute top-1/3 -left-20 w-72 h-72 bg-[hsl(45,90%,55%)] opacity-[0.05] rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-[#0a89fc] opacity-[0.03] rounded-full blur-3xl"></div>
+      </div>
+
+      <!-- Header - only show when not on upload page -->
+      <header v-if="uiStore.activeView !== 'upload'" class="relative bg-gradient-to-b from-white/90 to-white/70 border-b border-[hsl(35,20%,85%)] sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div class="flex items-center justify-between">
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900">App Size Analyzer</h1>
-              <p class="text-sm text-gray-500">
-                Client-side binary analysis for iOS & Android
-              </p>
-            </div>
+            <button @click="handleNewAnalysis" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <!-- Logo mark -->
+              <div class="logo-interactive w-11 h-11 rounded-2xl bg-gradient-to-br from-[#0a89fc] to-[#0070d4] flex items-center justify-center shadow-lg shadow-[#0a89fc]/25 rotate-3 hover:rotate-0 transition-transform duration-300">
+                <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div class="text-left">
+                <h1 class="text-xl font-bold text-[hsl(25,20%,18%)] tracking-tight">App Size Analyzer</h1>
+                <p class="text-xs text-[hsl(25,15%,45%)] font-medium">
+                  Optimize your app size
+                </p>
+              </div>
+            </button>
 
-            <!-- Navigation - only show when analysis is available -->
-            <nav v-if="uiStore.activeView !== 'upload'" class="flex gap-2">
+            <!-- Navigation -->
+            <nav class="flex items-center gap-1">
               <button
-                @click="uiStore.setActiveView('breakdown')"
+                @click="handleNavClick('breakdown')"
                 :class="[
-                  'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                  'nav-btn nav-btn-underline px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300',
                   uiStore.activeView === 'breakdown'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+                    ? 'nav-btn-active bg-gradient-to-br from-[#0a89fc] to-[#0070d4] text-white shadow-md shadow-[#0a89fc]/25 active'
+                    : 'nav-btn-glow bg-[hsl(35,35%,91%)] text-[hsl(25,25%,25%)] hover:bg-[hsl(35,35%,87%)] hover:shadow-sm',
                 ]"
               >
                 Breakdown
               </button>
               <button
-                @click="uiStore.setActiveView('summary')"
+                @click="handleNavClick('summary')"
                 :class="[
-                  'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                  'nav-btn nav-btn-underline px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300',
                   uiStore.activeView === 'summary'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+                    ? 'nav-btn-active bg-gradient-to-br from-[#0a89fc] to-[#0070d4] text-white shadow-md shadow-[#0a89fc]/25 active'
+                    : 'nav-btn-glow bg-[hsl(35,35%,91%)] text-[hsl(25,25%,25%)] hover:bg-[hsl(35,35%,87%)] hover:shadow-sm',
                 ]"
               >
                 Summary
               </button>
               <button
-                @click="uiStore.setActiveView('xray')"
+                @click="handleNavClick('xray')"
                 :class="[
-                  'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                  'nav-btn nav-btn-underline px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300',
                   uiStore.activeView === 'xray'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+                    ? 'nav-btn-active bg-gradient-to-br from-[#0a89fc] to-[#0070d4] text-white shadow-md shadow-[#0a89fc]/25 active'
+                    : 'nav-btn-glow bg-[hsl(35,35%,91%)] text-[hsl(25,25%,25%)] hover:bg-[hsl(35,35%,87%)] hover:shadow-sm',
                 ]"
               >
                 X-Ray
               </button>
               <button
-                @click="uiStore.setActiveView('insights')"
+                @click="handleNavClick('insights')"
                 :class="[
-                  'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                  'nav-btn nav-btn-underline px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300',
                   uiStore.activeView === 'insights'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+                    ? 'nav-btn-active bg-gradient-to-br from-[#0a89fc] to-[#0070d4] text-white shadow-md shadow-[#0a89fc]/25 active'
+                    : 'nav-btn-glow bg-[hsl(35,35%,91%)] text-[hsl(25,25%,25%)] hover:bg-[hsl(35,35%,87%)] hover:shadow-sm',
                 ]"
               >
                 Insights
               </button>
+              <div class="w-px h-6 bg-[hsl(35,20%,85%)] mx-2"></div>
               <button
                 @click="handleNewAnalysis"
-                class="ml-2 px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                class="new-btn nav-btn px-4 py-2.5 rounded-xl text-sm font-semibold bg-[hsl(45,90%,55%)] text-[hsl(25,20%,18%)] hover:bg-[hsl(45,90%,50%)] transition-all duration-300 flex items-center gap-2 shadow-sm hover:shadow-md"
               >
-                New Analysis
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                New
               </button>
             </nav>
           </div>
@@ -70,13 +89,23 @@
       </header>
 
       <!-- Main Content -->
-      <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main :class="[
+        'relative flex-1 w-full',
+        uiStore.activeView === 'upload'
+          ? 'flex flex-col items-center justify-center px-4 py-12'
+          : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
+      ]">
         <!-- Error Display -->
         <div
           v-if="appStore.error"
-          class="mb-4 bg-red-50 border border-red-200 rounded-md p-4"
+          class="mb-4 bg-[hsl(0,65%,50%)]/10 border border-[hsl(0,65%,50%)]/20 rounded-2xl p-4 max-w-2xl mx-auto"
         >
-          <p class="text-sm text-red-800">{{ appStore.error }}</p>
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-[hsl(0,65%,50%)] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p class="text-sm text-[hsl(0,65%,40%)] font-medium">{{ appStore.error }}</p>
+          </div>
         </div>
 
         <!-- Loading Spinner -->
@@ -87,10 +116,24 @@
           :progress="appStore.loadingProgress"
         />
 
-        <!-- Content Views -->
-        <div v-else class="bg-white shadow rounded-lg p-8">
-          <!-- Upload View -->
-          <div v-if="uiStore.activeView === 'upload'">
+        <!-- Upload View - Clean centered layout -->
+        <template v-else-if="uiStore.activeView === 'upload'">
+          <div class="text-center mb-10 animate-grow">
+            <!-- Logo mark -->
+            <div class="logo-interactive w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0a89fc] to-[#0070d4] flex items-center justify-center shadow-lg shadow-[#0a89fc]/25 mx-auto mb-6 cursor-pointer hover:shadow-xl hover:shadow-[#0a89fc]/30 transition-shadow duration-300">
+              <svg class="w-9 h-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-bold text-[hsl(25,20%,18%)] tracking-tight mb-4">
+              App Size Analyzer
+            </h1>
+            <p class="text-lg text-[hsl(25,15%,45%)] max-w-xl mx-auto">
+              App Size analysis for iOS/Android apps
+            </p>
+          </div>
+
+          <div class="w-full max-w-2xl animate-grow" style="animation-delay: 0.1s">
             <UploadZone
               :on-file-select="handleFileSelect"
               @file-selected="handleFileSelect"
@@ -104,21 +147,24 @@
               :errors="validationErrors"
               @dismiss="validationErrors = []"
             />
-
-            <!-- Sample File Gallery -->
-            <div class="mt-8">
-              <h2 class="text-lg font-medium text-gray-900 mb-4">
-                Or try a sample file
-              </h2>
-              <SampleFileGallery
-                ref="sampleGalleryRef"
-                :disabled="appStore.isLoading"
-                @file-selected="handleFileSelect"
-                @loading-error="handleSampleLoadError"
-              />
-            </div>
           </div>
 
+          <!-- Sample File Gallery -->
+          <div class="mt-12 w-full max-w-3xl animate-grow" style="animation-delay: 0.3s">
+            <h2 class="text-center text-sm font-medium text-[hsl(25,15%,45%)] mb-4">
+              Or try with a sample file
+            </h2>
+            <SampleFileGallery
+              ref="sampleGalleryRef"
+              :disabled="appStore.isLoading"
+              @file-selected="handleFileSelect"
+              @loading-error="handleSampleLoadError"
+            />
+          </div>
+        </template>
+
+        <!-- Other Views - With container -->
+        <div v-else class="bg-gradient-to-br from-white to-[hsl(45,40%,98%)] shadow-lg shadow-[hsl(25,40%,35%)]/5 rounded-3xl p-8 border border-[hsl(35,20%,85%)] animate-grow">
           <!-- Breakdown View -->
           <BreakdownView v-if="uiStore.activeView === 'breakdown'" />
 
@@ -134,10 +180,24 @@
       </main>
 
       <!-- Footer -->
-      <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 mt-8">
-        <p class="text-center text-sm text-gray-500">
-          Client-side binary analysis tool for iOS & Android apps
-        </p>
+      <footer class="relative border-t border-[hsl(35,20%,85%)] bg-gradient-to-b from-white/60 to-[hsl(35,35%,94%)]/60 backdrop-blur-sm mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-[hsl(25,20%,18%)]">App Size Analyzer by</span>
+              <a href="https://luciq.ai/?ref=appsizeanalyzer.com" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
+                <img
+                  src="https://cdn.prod.website-files.com/6898c7bad2e3e342ea1c43bd/68a09b6734e6f04641e9adae_luciq-logo.svg"
+                  alt="Luciq"
+                  class="h-5"
+                />
+              </a>
+            </div>
+            <p class="text-xs text-[hsl(25,15%,45%)]">
+              &copy; 2025 App Size Analyzer.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   </ErrorBoundary>
@@ -370,6 +430,14 @@ export default {
       selectedFile.value = null;
     };
 
+    // Handle navigation click with animation
+    const handleNavClick = (view) => {
+      // Only animate if switching to a different view
+      if (uiStore.activeView !== view) {
+        uiStore.setActiveView(view);
+      }
+    };
+
     return {
       appStore,
       analysisStore,
@@ -381,6 +449,7 @@ export default {
       handleValidationError,
       handleSampleLoadError,
       handleNewAnalysis,
+      handleNavClick,
     };
   },
 };

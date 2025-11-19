@@ -10,12 +10,12 @@
       @dragover.prevent="handleDragOver"
       @drop.prevent="handleDrop"
       :class="[
-        'relative border-2 border-dashed rounded-lg p-12 text-center',
-        'transition-colors duration-200',
+        'relative border-2 border-dashed rounded-3xl px-8 py-6 text-center',
+        'transition-all duration-500 ease-out',
         disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
         isDragging
-          ? 'border-blue-500 bg-blue-50'
-          : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
+          ? 'border-[#0a89fc] bg-[#0a89fc]/5 scale-[1.02] shadow-xl shadow-[#0a89fc]/10'
+          : 'border-[hsl(35,20%,85%)] bg-[hsl(35,35%,91%)]/30 hover:border-[#0a89fc]/50 hover:bg-[#0a89fc]/5 hover:shadow-lg'
       ]"
     >
       <input
@@ -29,36 +29,51 @@
       />
 
       <label for="file-upload" :class="disabled ? 'cursor-not-allowed' : 'cursor-pointer'">
-        <div class="flex flex-col items-center gap-4">
+        <div class="flex flex-col items-center gap-3">
           <!-- Upload Icon -->
-          <svg
-            class="w-16 h-16 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            />
-          </svg>
+          <div :class="[
+            'w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-500',
+            isDragging
+              ? 'bg-gradient-to-br from-[#0a89fc] to-[#0070d4] shadow-lg shadow-[#0a89fc]/30 rotate-6'
+              : 'bg-gradient-to-br from-[#0a89fc]/10 to-[#0a89fc]/5 rotate-0'
+          ]">
+            <svg
+              :class="[
+                'w-7 h-7 transition-all duration-500',
+                isDragging ? 'text-white scale-110' : 'text-[#0a89fc]'
+              ]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              />
+            </svg>
+          </div>
 
           <!-- Text -->
           <div>
-            <p class="text-lg font-medium text-gray-900">
-              {{ isDragging ? 'Drop your file here' : 'Drag and drop your app file' }}
+            <p class="text-lg font-semibold text-[hsl(25,20%,18%)]">
+              {{ isDragging ? 'Release to plant your file' : 'Drop your app to analyze' }}
             </p>
-            <p class="mt-1 text-sm text-gray-500">
-              or <span class="text-blue-600 hover:text-blue-700">browse</span> to choose
+            <p class="mt-1 text-sm text-[hsl(25,15%,45%)]">
+              or <span class="text-[#0a89fc] font-semibold hover:text-[#0070d4] underline decoration-2 underline-offset-2 decoration-[#0a89fc]/30 hover:decoration-[#0a89fc]">browse your files</span>
             </p>
           </div>
 
           <!-- Accepted formats -->
-          <div class="mt-2 text-xs text-gray-500">
-            <p>Supported formats: {{ acceptedFormats.join(', ') }}</p>
-            <p class="mt-1">Maximum size: {{ (maxSize / (1024 * 1024)).toFixed(0) }}MB</p>
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            <span
+              v-for="format in acceptedFormats"
+              :key="format"
+              class="px-3 py-1 bg-gradient-to-r from-[hsl(35,35%,91%)] to-[hsl(45,40%,93%)] rounded-full text-xs font-semibold text-[hsl(25,25%,25%)] border border-[hsl(35,20%,85%)]"
+            >
+              {{ format }}
+            </span>
           </div>
         </div>
       </label>
@@ -206,6 +221,18 @@ export default {
       }
     };
 
+    /**
+     * Format file size for display
+     * @param {number} bytes - Size in bytes
+     * @returns {string} Formatted size string
+     */
+    const formatSize = (bytes) => {
+      if (bytes >= 1024 * 1024 * 1024) {
+        return `${(bytes / (1024 * 1024 * 1024)).toFixed(0)} GB`;
+      }
+      return `${(bytes / (1024 * 1024)).toFixed(0)} MB`;
+    };
+
     return {
       isDragging,
       fileInputRef,
@@ -213,7 +240,8 @@ export default {
       handleDragLeave,
       handleDragOver,
       handleDrop,
-      handleFileInput
+      handleFileInput,
+      formatSize
     };
   }
 };
