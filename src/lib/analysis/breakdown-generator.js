@@ -120,6 +120,8 @@ function detectFolderType(path, name) {
   if (name === 'res') return 'resource';
   if (name === 'assets') return 'asset';
   if (path.startsWith('lib/')) return 'native_lib';
+  // Android localization: values, values-es, values-zh-rCN, etc.
+  if (name === 'values' || name.startsWith('values-')) return 'localization';
 
   // Generic
   if (name === 'fonts' || name === 'Fonts') return 'font';

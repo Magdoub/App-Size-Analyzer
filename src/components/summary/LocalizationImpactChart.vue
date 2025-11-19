@@ -38,7 +38,8 @@ const localizationData = computed(() => {
   return analyzeLocalizations(
     analysis.breakdownRoot,
     analysis.platform,
-    analysis.totalInstallSize
+    analysis.totalInstallSize,
+    analysis.resourceTableLocales
   );
 });
 

@@ -59,7 +59,7 @@
     </div>
 
     <!-- Virtual Scrolling Container -->
-    <div ref="parentRef" class="flex-1 overflow-auto bg-white">
+    <div v-if="!isFilteredEmpty || activeTab === 'all'" ref="parentRef" class="flex-1 overflow-auto bg-white">
       <div
         :style="{
           height: `${virtualizer.getTotalSize()}px`,
@@ -151,6 +151,14 @@
       </div>
     </div>
 
+    <!-- Empty State for Filtered Results -->
+    <div v-if="isFilteredEmpty && activeTab !== 'all'" class="flex-1 flex items-center justify-center bg-white">
+      <div class="text-center py-12">
+        <div class="text-4xl mb-4">{{ emptyStateIcon }}</div>
+        <p class="text-gray-500 text-lg">{{ emptyStateMessage }}</p>
+      </div>
+    </div>
+
     <!-- Footer Stats -->
     <div class="bg-gray-50 border-t border-gray-200 px-6 py-3">
       <div class="text-sm text-gray-600">
@@ -235,7 +243,47 @@ export default {
         return null;
       };
 
-      return filterByType(props.breakdownRoot) || props.breakdownRoot;
+      const filtered = filterByType(props.breakdownRoot);
+      // Return empty root if no matches found (don't fall back to showing all files)
+      if (!filtered) {
+        return {
+          ...props.breakdownRoot,
+          children: []
+        };
+      }
+      return filtered;
+    });
+
+    // Empty state messages for filtered tabs
+    const emptyStateMessage = computed(() => {
+      switch (props.activeTab) {
+        case 'frameworks':
+          return 'No frameworks or libraries detected';
+        case 'assets':
+          return 'No assets detected';
+        case 'localizations':
+          return 'No localizations detected';
+        default:
+          return 'No items found';
+      }
+    });
+
+    const emptyStateIcon = computed(() => {
+      switch (props.activeTab) {
+        case 'frameworks':
+          return '📦';
+        case 'assets':
+          return '🖼️';
+        case 'localizations':
+          return '🌐';
+        default:
+          return '📁';
+      }
+    });
+
+    // Check if filtered results are empty (root has no children)
+    const isFilteredEmpty = computed(() => {
+      return filteredRoot.value.children.length === 0;
     });
 
     // Flatten tree to visible nodes with search filtering and sorting
@@ -374,7 +422,10 @@ export default {
       handleSort,
       handleSearchInput,
       formatBytes,
-      formatPercentage
+      formatPercentage,
+      emptyStateMessage,
+      emptyStateIcon,
+      isFilteredEmpty
     };
   }
 };

@@ -58,7 +58,14 @@
 
     <!-- Treemap -->
     <div class="p-4 w-full" style="height: 700px">
-      <div v-if="treemapData" class="relative h-full">
+      <!-- Empty state when filter returns no results -->
+      <div v-if="isFilteredEmpty" class="flex items-center justify-center h-full">
+        <div class="text-center">
+          <div class="text-4xl mb-4">{{ emptyStateIcon }}</div>
+          <div class="text-gray-500 text-lg">{{ emptyStateMessage }}</div>
+        </div>
+      </div>
+      <div v-else-if="treemapData" class="relative h-full">
         <Treemap
           :data="treemapData"
           :total-size="currentAnalysis.totalInstallSize"
@@ -140,6 +147,66 @@ export default {
       return searchTree(currentAnalysis.value.breakdownRoot, searchQuery.value);
     });
 
+    // Check if filtered results are empty
+    const isFilteredEmpty = computed(() => {
+      if (!treemapData.value) return false;
+      const categories = xray.value.categories || new Set();
+      // If categories are selected and result has no children, it's empty
+      // Note: children may be undefined (not just empty array) when no matches
+      return categories.size > 0 && (!treemapData.value.children || treemapData.value.children.length === 0);
+    });
+
+    // Get the single selected category (for message display)
+    const selectedCategory = computed(() => {
+      const categories = xray.value.categories || new Set();
+      if (categories.size === 1) {
+        return Array.from(categories)[0];
+      }
+      return null;
+    });
+
+    // Empty state message based on selected category
+    const emptyStateMessage = computed(() => {
+      const category = selectedCategory.value;
+      const categoryLabels = {
+        'localization': 'No localizations detected',
+        'framework': 'No frameworks detected',
+        'native_lib': 'No native libraries detected',
+        'asset': 'No assets detected',
+        'image': 'No images detected',
+        'video': 'No videos detected',
+        'audio': 'No audio files detected',
+        'font': 'No fonts detected',
+        'dex': 'No DEX files detected',
+        'executable': 'No executables detected',
+        'resource': 'No resources detected',
+        'data': 'No data files detected',
+        'config': 'No config files detected',
+      };
+      return category ? categoryLabels[category] || 'No items found' : 'No items match the selected filters';
+    });
+
+    // Empty state icon based on selected category
+    const emptyStateIcon = computed(() => {
+      const category = selectedCategory.value;
+      const categoryIcons = {
+        'localization': '🌐',
+        'framework': '📦',
+        'native_lib': '📦',
+        'asset': '🖼️',
+        'image': '🖼️',
+        'video': '🎬',
+        'audio': '🎵',
+        'font': '🔤',
+        'dex': '📱',
+        'executable': '⚙️',
+        'resource': '📋',
+        'data': '📄',
+        'config': '⚙️',
+      };
+      return category ? categoryIcons[category] || '📁' : '🔍';
+    });
+
     // Generate breadcrumb segments from current zoom path
     const breadcrumbSegments = computed(() => {
       if (!xray.value.zoomPath) return ['All'];
@@ -206,6 +273,9 @@ export default {
       treemapData,
       searchMatches,
       breadcrumbSegments,
+      isFilteredEmpty,
+      emptyStateMessage,
+      emptyStateIcon,
       handleNodeClick,
       handleZoomOut,
       handleResetZoom,

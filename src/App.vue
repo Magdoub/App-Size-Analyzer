@@ -319,11 +319,12 @@ export default {
                 allFiles: fileEntries,
                 frameworks: [],
                 assets: parseResult.assets.map((asset) => asset.path),
-                localizations: [],
+                localizations: parseResult.resourceTable?.locales || [],
                 executables: [],
                 nativeLibraries: parseResult.nativeLibs.map((lib) => lib.path),
                 dexFiles: parseResult.dexFiles.map((_, idx) => `classes${idx > 0 ? idx + 1 : ''}.dex`),
                 modules: [],
+                resourceTableLocales: parseResult.resourceTable?.locales || [],
               };
 
         // Set analysis result in store

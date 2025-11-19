@@ -501,9 +501,10 @@ export function analyzeCompressionByType(breakdownRoot, platform) {
  * @param {Object} breakdownRoot - Root of the breakdown tree
  * @param {string} platform - 'iOS' or 'Android'
  * @param {number} totalInstallSize - Total app install size
+ * @param {Array} [resourceTableLocales] - Locales parsed from resources.arsc (Android only)
  * @returns {Array} Array of localization data per locale
  */
-export function analyzeLocalizations(breakdownRoot, platform, totalInstallSize) {
+export function analyzeLocalizations(breakdownRoot, platform, totalInstallSize, resourceTableLocales = []) {
   const localeMap = new Map();
 
   // Locale display names
@@ -519,7 +520,31 @@ export function analyzeLocalizations(breakdownRoot, platform, totalInstallSize) 
     'ko': 'Korean',
     'ru': 'Russian',
     'ar': 'Arabic',
-    'base': 'Base'
+    'nl': 'Dutch',
+    'pl': 'Polish',
+    'tr': 'Turkish',
+    'vi': 'Vietnamese',
+    'th': 'Thai',
+    'id': 'Indonesian',
+    'ms': 'Malay',
+    'hi': 'Hindi',
+    'bn': 'Bengali',
+    'uk': 'Ukrainian',
+    'cs': 'Czech',
+    'el': 'Greek',
+    'ro': 'Romanian',
+    'hu': 'Hungarian',
+    'sv': 'Swedish',
+    'da': 'Danish',
+    'fi': 'Finnish',
+    'no': 'Norwegian',
+    'he': 'Hebrew',
+    'sk': 'Slovak',
+    'hr': 'Croatian',
+    'ca': 'Catalan',
+    'fil': 'Filipino',
+    'base': 'Base',
+    'default': 'Default'
   };
 
   function extractLocale(path) {
@@ -528,8 +553,13 @@ export function analyzeLocalizations(breakdownRoot, platform, totalInstallSize) 
       const match = path.match(/([^/]+)\.lproj/);
       return match ? match[1].toLowerCase() : null;
     } else {
-      // Android: res/values-es/, res/values-zh-rCN/
-      const match = path.match(/values-([a-z]{2})/);
+      // Android: res/values/ (default), res/values-es/, res/values-zh-rCN/
+      // Match default values folder
+      if (path.match(/res\/values(?:\/|$)/) && !path.includes('values-')) {
+        return 'default';
+      }
+      // Match locale-specific values folders
+      const match = path.match(/values-([a-z]{2}(?:-r[A-Z]{2})?)/);
       return match ? match[1].toLowerCase() : null;
     }
   }
@@ -563,6 +593,40 @@ export function analyzeLocalizations(breakdownRoot, platform, totalInstallSize) 
   }
 
   traverse(breakdownRoot);
+
+  // For Android apps with obfuscated resources (like Instagram Lite),
+  // folder-based detection fails. Use parsed locale data from resources.arsc instead.
+  if (platform === 'Android' && localeMap.size === 0 && resourceTableLocales && resourceTableLocales.length > 0) {
+    // Get resources.arsc file size to estimate per-locale size
+    let arscSize = 0;
+    function findArscSize(node) {
+      if (node.name === 'resources.arsc') {
+        arscSize = node.size || 0;
+        return;
+      }
+      if (node.children) {
+        node.children.forEach(findArscSize);
+      }
+    }
+    findArscSize(breakdownRoot);
+
+    // Filter out 'default' entries and count unique locales
+    const uniqueLocales = resourceTableLocales.filter(l => l.locale !== 'default');
+    const totalStringCount = uniqueLocales.reduce((sum, l) => sum + l.stringCount, 0);
+
+    // Distribute the resources.arsc size proportionally across locales
+    for (const localeData of uniqueLocales) {
+      const locale = localeData.locale.toLowerCase();
+      const proportion = totalStringCount > 0 ? localeData.stringCount / totalStringCount : 1 / uniqueLocales.length;
+      const estimatedSize = Math.round(arscSize * proportion);
+
+      localeMap.set(locale, {
+        locale,
+        size: estimatedSize,
+        count: localeData.stringCount
+      });
+    }
+  }
 
   // Generate colors for locales
   const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#f97316', '#6366f1'];

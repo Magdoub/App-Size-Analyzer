@@ -149,10 +149,13 @@ export function filterByCategories(node, categories) {
   // If no categories selected, return all
   if (categories.size === 0) return node;
 
-  // Filter children
+  // First recursively filter all children
   const filteredChildren = node.children
-    .filter((child) => categories.has(child.type) || child.children.length > 0)
-    .map((child) => filterByCategories(child, categories));
+    .map((child) => filterByCategories(child, categories))
+    .filter((child) => {
+      // Keep child if it matches the category OR has filtered children
+      return categories.has(child.type) || child.children.length > 0;
+    });
 
   return {
     ...node,
