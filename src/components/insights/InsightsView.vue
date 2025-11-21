@@ -33,24 +33,27 @@
         <!-- Summary Stats -->
         <div
           v-if="filteredInsights.length > 0"
-          class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4"
+          class="flex gap-4"
         >
-          <div class="text-sm text-gray-600">Total Potential Savings</div>
-          <div class="text-3xl font-bold text-blue-900">{{ formatBytes(totalSavings) }}</div>
-          <div class="text-sm text-gray-600 mt-1">
-            {{ totalSavingsPercent.toFixed(2) }}% of total size
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div class="text-sm text-gray-600">Current Size</div>
+            <div class="text-2xl font-bold text-gray-900">{{ formatBytes(currentAnalysis.totalInstallSize, 1) }}</div>
+          </div>
+          <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+            <div class="text-sm text-gray-600">Estimated Savings</div>
+            <div class="text-2xl font-bold text-blue-900">{{ formatBytes(Math.round(totalSavings * 0.6), 1) }} - {{ formatBytes(totalSavings, 1) }}</div>
+            <div class="text-xs text-gray-500 mt-1">
+              Range accounts for overlapping optimizations
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Filters -->
       <InsightFilters
-        :selected-severities="severityFilter"
         :selected-categories="categoryFilter"
-        :group-by-severity="groupBySeverity"
-        @severity-toggle="handleSeverityToggle"
+        :insights="insights"
         @category-toggle="handleCategoryToggle"
-        @toggle-group-by-severity="groupBySeverity = !groupBySeverity"
       />
     </div>
 
@@ -69,17 +72,7 @@
         </div>
       </div>
 
-      <!-- Grouped by Severity -->
-      <div v-else-if="groupBySeverity">
-        <SeveritySection
-          v-for="severity in ['critical', 'high', 'medium', 'low']"
-          :key="severity"
-          :severity="severity"
-          :insights="groupedInsights[severity] || []"
-        />
-      </div>
-
-      <!-- Flat List -->
+      <!-- Insights List -->
       <div v-else class="space-y-4">
         <InsightCard
           v-for="(insight, index) in filteredInsights"
@@ -97,7 +90,6 @@ import { storeToRefs } from 'pinia';
 import { useAnalysisStore } from '../../stores/analysisStore';
 import InsightCard from './InsightCard.vue';
 import InsightFilters from './InsightFilters.vue';
-import SeveritySection from './SeveritySection.vue';
 import { getDefaultInsightEngine } from '../../lib/analysis';
 import { formatBytes } from '../../utils/formatters';
 
@@ -106,8 +98,7 @@ export default {
 
   components: {
     InsightCard,
-    InsightFilters,
-    SeveritySection
+    InsightFilters
   },
 
   setup() {
@@ -117,9 +108,7 @@ export default {
     const isAnalyzing = ref(false);
     const error = ref(null);
     const insights = ref([]);
-    const severityFilter = ref(new Set());
     const categoryFilter = ref(new Set());
-    const groupBySeverity = ref(true);
 
     // Run insights analysis when view loads
     const runAnalysis = async () => {
@@ -151,15 +140,9 @@ export default {
       }
     });
 
-    // Filter insights
+    // Filter insights by category and sort by savings
     const filteredInsights = computed(() => {
       let filtered = insights.value;
-
-      if (severityFilter.value.size > 0) {
-        filtered = filtered.filter((insight) =>
-          severityFilter.value.has(insight.severity)
-        );
-      }
 
       if (categoryFilter.value.size > 0) {
         filtered = filtered.filter((insight) =>
@@ -167,30 +150,8 @@ export default {
         );
       }
 
-      return filtered;
-    });
-
-    // Group insights by severity
-    const groupedInsights = computed(() => {
-      if (!groupBySeverity.value) return null;
-
-      const groups = {
-        critical: [],
-        high: [],
-        medium: [],
-        low: []
-      };
-
-      filteredInsights.value.forEach((insight) => {
-        groups[insight.severity].push(insight);
-      });
-
-      // Sort within each group by potentialSavings
-      Object.values(groups).forEach((group) => {
-        group.sort((a, b) => (b.potentialSavings || 0) - (a.potentialSavings || 0));
-      });
-
-      return groups;
+      // Sort by potentialSavings descending
+      return [...filtered].sort((a, b) => (b.potentialSavings || 0) - (a.potentialSavings || 0));
     });
 
     // Calculate total savings
@@ -203,17 +164,7 @@ export default {
       return (totalSavings.value / currentAnalysis.value.totalInstallSize) * 100;
     });
 
-    // Handle filter toggles
-    const handleSeverityToggle = (severity) => {
-      const newFilter = new Set(severityFilter.value);
-      if (newFilter.has(severity)) {
-        newFilter.delete(severity);
-      } else {
-        newFilter.add(severity);
-      }
-      severityFilter.value = newFilter;
-    };
-
+    // Handle category filter toggle
     const handleCategoryToggle = (category) => {
       const newFilter = new Set(categoryFilter.value);
       if (newFilter.has(category)) {
@@ -229,14 +180,10 @@ export default {
       isAnalyzing,
       error,
       insights,
-      severityFilter,
       categoryFilter,
-      groupBySeverity,
       filteredInsights,
-      groupedInsights,
       totalSavings,
       totalSavingsPercent,
-      handleSeverityToggle,
       handleCategoryToggle,
       formatBytes
     };

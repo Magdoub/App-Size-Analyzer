@@ -56,6 +56,13 @@ fixtures/**/*.apk
 fixtures/**/*.aab
 fixtures/**/*.xcarchive
 
+# Test fixtures for unit tests (large binaries)
+tests/fixtures/
+tests/fixtures/**/*.ipa
+tests/fixtures/**/*.apk
+tests/fixtures/**/*.aab
+tests/fixtures/**/*.xcarchive
+
 # Build artifacts
 .turbo
 *.tsbuildinfo

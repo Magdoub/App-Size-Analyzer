@@ -48,6 +48,9 @@ export const useAppStore = defineStore('app', {
     /** @type {string} */
     loadingStatus: '',
 
+    /** @type {string} */
+    loadingStatusText: '',
+
     /** @type {string|null} */
     error: null,
   }),
@@ -154,12 +157,14 @@ export const useAppStore = defineStore('app', {
      * Set loading state
      * @param {boolean} isLoading - Loading state
      * @param {number} [progress=0] - Progress percentage
-     * @param {string} [status=''] - Status message
+     * @param {string} [statusText=''] - Detailed status text (e.g., "Extracting archive...")
      */
-    setLoading(isLoading, progress = 0, status = '') {
+    setLoading(isLoading, progress = 0, statusText = '') {
       this.isLoading = isLoading;
       this.loadingProgress = progress;
-      this.loadingStatus = status;
+      this.loadingStatusText = statusText;
+      // Set high-level status based on state
+      this.loadingStatus = isLoading ? 'parsing' : '';
     },
 
     /**
@@ -207,6 +212,7 @@ export const useAppStore = defineStore('app', {
       this.isLoading = false;
       this.loadingProgress = 0;
       this.loadingStatus = '';
+      this.loadingStatusText = '';
       this.error = null;
     },
   },

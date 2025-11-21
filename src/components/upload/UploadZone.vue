@@ -75,6 +75,11 @@
               {{ format }}
             </span>
           </div>
+
+          <!-- Size limit notice -->
+          <p class="text-xs text-[hsl(25,15%,55%)] mt-1">
+            Max file size: 300 MB
+          </p>
         </div>
       </label>
     </div>
@@ -116,7 +121,7 @@ export default {
      */
     acceptedFormats: {
       type: Array,
-      default: () => ['.ipa', '.apk', '.aab', '.xapk'],
+      default: () => ['.ipa', '.apk', '.aab', '.xapk', '.zip'],
       validator: (formats) => formats.every(f => typeof f === 'string' && f.startsWith('.'))
     },
 

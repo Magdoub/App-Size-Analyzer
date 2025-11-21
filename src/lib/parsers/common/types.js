@@ -5,7 +5,7 @@
  */
 
 /**
- * @typedef {'framework' | 'bundle' | 'localization' | 'dex' | 'native_lib' | 'resource' | 'asset' | 'executable' | 'image' | 'video' | 'audio' | 'font' | 'data' | 'config' | 'other' | 'unknown'} ContentType
+ * @typedef {'framework' | 'bundle' | 'localization' | 'dex' | 'native_lib' | 'resource' | 'asset' | 'executable' | 'image' | 'video' | 'audio' | 'font' | 'data' | 'config' | 'protobuf' | 'header' | 'module' | 'metadata' | 'other' | 'unknown'} ContentType
  */
 
 /**
@@ -55,6 +55,21 @@ export function detectContentType(path) {
     return 'config';
   }
 
+  // Protobuf files (AAB)
+  if (ext === 'pb') {
+    return 'protobuf';
+  }
+
+  // Header files (Framework)
+  if (ext === 'h' || ext === 'hpp' || ext === 'hxx') {
+    return 'header';
+  }
+
+  // Module files (Framework)
+  if (ext === 'modulemap' || ext === 'swiftmodule' || ext === 'swiftinterface') {
+    return 'module';
+  }
+
   // Android DEX files
   if (ext === 'dex' || pathLower.includes('classes.dex')) {
     return 'dex';
@@ -86,14 +101,30 @@ export function detectContentType(path) {
     return 'localization';
   }
 
+  // Framework-specific folders
+  if (pathLower.includes('/headers/') || pathLower.includes('/privateheaders/')) {
+    return 'header';
+  }
+  if (pathLower.includes('/modules/')) {
+    return 'module';
+  }
+  if (pathLower.includes('/_codesignature/')) {
+    return 'metadata';
+  }
+
   // Android res/ folder - only for non-extension files or unknown extensions
-  if (pathLower.startsWith('res/')) {
+  if (pathLower.startsWith('res/') || pathLower.includes('/res/')) {
     return 'resource';
   }
 
   // Android assets/ folder
-  if (pathLower.startsWith('assets/')) {
+  if (pathLower.startsWith('assets/') || pathLower.includes('/assets/')) {
     return 'asset';
+  }
+
+  // AAB manifest folder
+  if (pathLower.includes('/manifest/')) {
+    return 'metadata';
   }
 
   return 'unknown';

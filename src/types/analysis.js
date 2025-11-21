@@ -75,6 +75,51 @@
  * @property {Map<string, string>} [fileHashes] - path -> SHA-256 hash (lazy computed)
  * @property {'debug'|'release'|'unknown'} [buildType] - Build type
  * @property {'none'|'O0'|'Os'|'O2'|'Oz'} [compilerOptimization] - Compiler optimization level
+ * @property {FileEntry[]} [imageFiles] - All image files (.png, .jpg, .webp, .heic) extracted
+ * @property {FileEntry[]} [fontFiles] - All font files (.ttf, .otf, .woff, .woff2) extracted
+ * @property {Object} [plistData] - Parsed Info.plist data (iOS only)
+ * @property {Object} [manifestData] - Parsed AndroidManifest.xml data (Android only)
+ * @property {Map<string, ImageCompressionResult>} [compressionCache] - Cache compression results by file hash
+ * @property {Map<string, DuplicateGroup>} [duplicateGroups] - Duplicate groups by hash
+ */
+
+/**
+ * ImageCompressionResult - Result of image compression testing
+ *
+ * @typedef {Object} ImageCompressionResult
+ * @property {string} filePath - Original image path
+ * @property {string} originalFormat - Original format (png, jpeg, webp, heic)
+ * @property {number} originalSize - Original file size in bytes
+ * @property {CompressedFormat[]} testedFormats - All tested compressions
+ * @property {CompressedFormat} bestFormat - Best compression result
+ * @property {number} savings - Bytes saved with best format
+ * @property {number} reductionPercent - % reduction with best format
+ * @property {number} testDuration - Time taken to test in milliseconds
+ * @property {Object} [previewUrls] - Object URLs for preview
+ * @property {string} [previewUrls.original] - Original image blob URL
+ * @property {string} [previewUrls.compressed] - Compressed image blob URL
+ */
+
+/**
+ * CompressedFormat - Single compression test result
+ *
+ * @typedef {Object} CompressedFormat
+ * @property {string} format - Compression format (jpeg, webp, png)
+ * @property {number} quality - Compression quality (0.0-1.0)
+ * @property {number} size - Compressed file size in bytes
+ * @property {Blob} blob - Compressed image data
+ */
+
+/**
+ * DuplicateGroup - Group of files with identical content
+ *
+ * @typedef {Object} DuplicateGroup
+ * @property {string} hash - SHA-256 hex (64 chars)
+ * @property {string[]} paths - Paths of duplicate files
+ * @property {number} fileSize - Size of each duplicate
+ * @property {number} duplicateCount - Number of duplicates
+ * @property {number} potentialSavings - (n-1) × fileSize
+ * @property {Platform} platform - Platform (for threshold logic)
  */
 
 /**

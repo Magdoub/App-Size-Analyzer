@@ -282,3 +282,101 @@ function extractArchitectures(
 
   return Array.from(architectures);
 }
+
+/**
+ * Analyze iOS app icons to distinguish primary vs alternate icons
+ * @param {ZIPEntry[]} entries - ZIP entries
+ * @param {string} appBundlePath - App bundle path
+ * @param {Object} plistData - Parsed Info.plist data
+ * @returns {Object[]} Array of icon metadata
+ */
+export function analyzeIOSIcons(entries, appBundlePath, plistData) {
+  const icons = [];
+
+  // Extract primary icon names from Info.plist
+  const primaryIconNames = new Set();
+  const alternateIconNames = new Set();
+
+  // Check for CFBundleIcons structure (iOS 5+)
+  if (plistData.CFBundleIcons) {
+    const bundleIcons = plistData.CFBundleIcons;
+
+    // Primary icon
+    if (bundleIcons.CFBundlePrimaryIcon && bundleIcons.CFBundlePrimaryIcon.CFBundleIconFiles) {
+      const iconFiles = bundleIcons.CFBundlePrimaryIcon.CFBundleIconFiles;
+      if (Array.isArray(iconFiles)) {
+        iconFiles.forEach(name => primaryIconNames.add(name));
+      }
+    }
+
+    // Alternate icons
+    if (bundleIcons.CFBundleAlternateIcons) {
+      const alternateIcons = bundleIcons.CFBundleAlternateIcons;
+      for (const [iconSetName, iconSetData] of Object.entries(alternateIcons)) {
+        if (iconSetData.CFBundleIconFiles && Array.isArray(iconSetData.CFBundleIconFiles)) {
+          iconSetData.CFBundleIconFiles.forEach(name => {
+            alternateIconNames.add(name);
+          });
+        }
+      }
+    }
+  }
+
+  // Also check legacy CFBundleIconFiles (iOS 3-4 compatibility)
+  if (plistData.CFBundleIconFiles && Array.isArray(plistData.CFBundleIconFiles)) {
+    plistData.CFBundleIconFiles.forEach(name => primaryIconNames.add(name));
+  }
+
+  // Find icon files in the bundle
+  const iconExtensions = new Set(['png', 'jpg', 'jpeg']);
+
+  for (const entry of entries) {
+    if (!entry.name.startsWith(appBundlePath)) continue;
+
+    const filename = entry.name.split('/').pop() || '';
+    const ext = filename.split('.').pop()?.toLowerCase();
+
+    if (!ext || !iconExtensions.has(ext)) continue;
+
+    // Check if this file matches any icon name patterns
+    const baseName = filename.replace(/\.(png|jpg|jpeg)$/i, '');
+    const baseNameWithoutScale = baseName.replace(/@\dx$/, ''); // Remove @2x, @3x suffixes
+
+    let iconType = null;
+
+    // Check if it's a primary icon
+    for (const primaryName of primaryIconNames) {
+      if (baseName === primaryName || baseNameWithoutScale === primaryName ||
+          filename === primaryName || filename === `${primaryName}.png`) {
+        iconType = 'primary';
+        break;
+      }
+    }
+
+    // Check if it's an alternate icon
+    if (!iconType) {
+      for (const alternateName of alternateIconNames) {
+        if (baseName === alternateName || baseNameWithoutScale === alternateName ||
+            filename === alternateName || filename === `${alternateName}.png`) {
+          iconType = 'alternate';
+          break;
+        }
+      }
+    }
+
+    // Only include icons that are explicitly referenced in Info.plist
+    if (iconType) {
+      icons.push({
+        filePath: entry.name,
+        fileName: filename,
+        iconType: iconType,
+        fileSize: entry.size,
+        resolution: null, // Will be populated when analyzing with Canvas API
+        detailLevel: null, // Will be populated when analyzing with Canvas API
+        optimizable: null // Will be determined after detail level detection
+      });
+    }
+  }
+
+  return icons;
+}

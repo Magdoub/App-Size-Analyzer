@@ -39,6 +39,9 @@ export function useParserWorker() {
   let worker = null;
   let workerAPI = null;
 
+  // Status message for current phase
+  const statusMessage = ref('');
+
   // Initialize worker lazily (only when needed)
   const initializeWorker = () => {
     if (worker) return; // Already initialized
@@ -49,6 +52,16 @@ export function useParserWorker() {
         new URL('../workers/parser-worker.js', import.meta.url),
         { type: 'module' }
       );
+
+      // Listen for progress messages from worker
+      worker.addEventListener('message', (event) => {
+        if (event.data?.type === 'progress') {
+          progress.value = event.data.progress;
+          if (event.data.message) {
+            statusMessage.value = event.data.message;
+          }
+        }
+      });
 
       // Wrap worker with Comlink for type-safe communication
       workerAPI = wrap(worker);
@@ -72,26 +85,54 @@ export function useParserWorker() {
   });
 
   /**
+   * Check if a ZIP file contains a .framework directory
+   * @param {File} file - ZIP file to check
+   * @returns {Promise<boolean>} True if contains .framework
+   */
+  const checkForFramework = async (file) => {
+    try {
+      // Read first portion of file to check ZIP contents
+      const buffer = await file.slice(0, Math.min(file.size, 65536)).arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+
+      // Simple check: look for ".framework/" in the ZIP central directory
+      const decoder = new TextDecoder('utf-8', { fatal: false });
+      const text = decoder.decode(bytes);
+      return text.includes('.framework/');
+    } catch {
+      return false;
+    }
+  };
+
+  /**
    * Parse a file (auto-detects platform based on file extension)
-   * @param {File} file - The binary file to parse (.ipa, .apk, .aab, .xapk)
+   * @param {File} file - The binary file to parse (.ipa, .apk, .aab, .xapk, or .zip with .framework)
    * @returns {Promise<Object>} Parse result with metadata, breakdown, treemap, and summary
    * @throws {Error} If parsing fails or file type is unsupported
    */
   const parseFile = async (file) => {
     // Detect platform from file extension
     const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    const fileName = file.name.toLowerCase();
 
     if (ext === '.ipa') {
       return parseIOS(file);
     } else if (['.apk', '.aab', '.xapk'].includes(ext)) {
       return parseAndroid(file);
-    } else {
-      const err = new Error(`Unsupported file type: ${ext}. Please upload .ipa, .apk, .aab, or .xapk files.`);
-      error.value = err;
-      status.value = 'error';
-      state.value = 'error';
-      throw err;
+    } else if (ext === '.zip') {
+      // Check if it's a framework bundle
+      const isFramework = await checkForFramework(file);
+      if (isFramework) {
+        return parseFrameworkBundle(file);
+      }
+      // Fall through to error
     }
+
+    const err = new Error(`Unsupported file type: ${ext}. Please upload .ipa, .apk, .aab, .xapk files, or a zipped .framework bundle.`);
+    error.value = err;
+    status.value = 'error';
+    state.value = 'error';
+    throw err;
   };
 
   /**
@@ -179,6 +220,48 @@ export function useParserWorker() {
   };
 
   /**
+   * Parse iOS framework bundle (zipped .framework)
+   * @param {File} file - Zipped framework to parse
+   * @returns {Promise<Object>} Parse result
+   */
+  const parseFrameworkBundle = async (file) => {
+    try {
+      // Initialize worker if not already done
+      initializeWorker();
+
+      if (!workerAPI) {
+        throw new Error('Worker not initialized');
+      }
+
+      // Reset state
+      status.value = 'parsing';
+      state.value = 'parsing';
+      error.value = null;
+      progress.value = 0;
+
+      console.log('[useParserWorker] Starting Framework parse:', file.name);
+
+      // Call worker method
+      const result = await workerAPI.parseFrameworkBundle(file);
+
+      // Success
+      status.value = 'success';
+      state.value = 'success';
+      progress.value = 100;
+
+      console.log('[useParserWorker] Framework parse successful');
+
+      return result;
+    } catch (err) {
+      console.error('[useParserWorker] Framework parse failed:', err);
+      error.value = err;
+      status.value = 'error';
+      state.value = 'error';
+      throw err;
+    }
+  };
+
+  /**
    * Cancel the current parsing operation
    * @returns {Promise<void>}
    */
@@ -224,6 +307,7 @@ export function useParserWorker() {
     status,
     state, // Alias for status
     error,
+    statusMessage,
 
     // Computed properties
     isParsing,
@@ -233,6 +317,7 @@ export function useParserWorker() {
     parseFile,
     parseIOS,
     parseAndroid,
+    parseFrameworkBundle,
     cancel,
     reset,
   };

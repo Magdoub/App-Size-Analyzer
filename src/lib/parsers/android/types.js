@@ -56,4 +56,52 @@
  * @property {string} [resourceType] - Resource type (drawable, layout, etc.)
  */
 
+/**
+ * AAB Module representation
+ * @typedef {Object} AABModule
+ * @property {string} name - Module name (e.g., "base", "feature_camera")
+ * @property {boolean} isBase - True if this is the base module
+ * @property {number} size - Total size of module contents
+ * @property {AABModuleContents} contents - Breakdown of module contents
+ */
+
+/**
+ * AAB Module Contents breakdown
+ * @typedef {Object} AABModuleContents
+ * @property {number} dexSize - Size of DEX files
+ * @property {number} dexCount - Number of DEX files
+ * @property {number} resourcesSize - Size of res/ contents
+ * @property {number} assetsSize - Size of assets/
+ * @property {number} nativeSize - Size of native libraries
+ * @property {string[]} architectures - Native architectures present
+ */
+
+/**
+ * AAB Metadata from AndroidManifest
+ * @typedef {Object} AABMetadata
+ * @property {string} packageName - Android package name (e.g., "com.example.app")
+ * @property {number} versionCode - Integer version code
+ * @property {string} versionName - Human-readable version (e.g., "1.0.0")
+ * @property {string|null} minSdkVersion - Minimum SDK version (if available)
+ * @property {string|null} targetSdkVersion - Target SDK version (if available)
+ * @property {string[]} permissions - Declared permissions (if extracted)
+ */
+
+/**
+ * AAB parse result
+ * @typedef {Object} AABParseResult
+ * @property {'aab'} format - File format identifier
+ * @property {string} fileName - Original file name
+ * @property {number} fileSize - Total file size in bytes
+ * @property {AABMetadata} metadata - Extracted bundle metadata
+ * @property {AABModule[]} modules - List of modules in the bundle
+ * @property {Array<{path: string, size: number, compressedSize: number, contentType: string}>} files - All files in the bundle
+ * @property {Object} breakdown - Categorized size breakdown
+ * @property {string[]} architectures - List of supported architectures
+ * @property {number} totalSize - Total uncompressed size
+ * @property {number} downloadSize - Compressed size
+ * @property {number} installSize - Uncompressed size
+ */
+
 export {};
+

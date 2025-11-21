@@ -14,21 +14,27 @@ export * from './insight-engine.js';
 export * from './insight-rules.js';
 
 // Import for default engine setup
-import { InsightEngine } from './insight-engine.js';
+import { InsightEngine, registerEnhancedInsightRules } from './insight-engine.js';
 import { allInsightRules } from './insight-rules.js';
 
 /**
  * Create a fully configured insight engine with all rules registered
  *
  * This is the main factory function for creating an insight engine in production.
- * It automatically registers all available insight rules.
+ * It automatically registers all available insight rules (basic + enhanced).
  * @returns {InsightEngine} Configured insight engine
  */
 export function createConfiguredInsightEngine() {
   const engine = new InsightEngine(true); // Enable caching
+
+  // Register basic insight rules (R001-R006)
   engine.registerRules(allInsightRules);
 
-  console.log(`[InsightEngine] Registered ${allInsightRules.length} rules:`, allInsightRules.map(r => r.id));
+  // Register enhanced insight rules (large files, media, frameworks, etc.)
+  registerEnhancedInsightRules(engine);
+
+  const totalRules = engine.getRules().length;
+  console.log(`[InsightEngine] Registered ${totalRules} rules (${allInsightRules.length} basic + ${totalRules - allInsightRules.length} enhanced)`);
 
   return engine;
 }

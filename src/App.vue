@@ -114,6 +114,7 @@
           size="lg"
           :message="appStore.loadingStatus"
           :progress="appStore.loadingProgress"
+          :statusText="appStore.loadingStatusText"
         />
 
         <!-- Upload View - Clean centered layout -->
@@ -245,12 +246,13 @@ export default {
     const uiStore = useUiStore();
 
     // Parser worker composable
-    const { progress, status, state, error, parseFile } = useParserWorker();
+    const { progress, status, state, error, statusMessage, parseFile } = useParserWorker();
 
     // Local state
     const selectedFile = ref(null);
     const validationErrors = ref([]);
     const sampleGalleryRef = ref(null);
+    const currentStatusMessage = ref('');
 
     // Watch parser progress and update app store
     watch(progress, (value) => {
@@ -259,12 +261,24 @@ export default {
         progress: value,
         message: status.value,
       });
+      // Also update the loading progress in app store
+      if (state.value === 'parsing') {
+        appStore.setLoading(true, value, statusMessage.value || 'Analyzing...');
+      }
+    });
+
+    // Watch status message changes
+    watch(statusMessage, (value) => {
+      currentStatusMessage.value = value;
+      if (state.value === 'parsing') {
+        appStore.setLoading(true, progress.value, value);
+      }
     });
 
     // Watch parser state for loading indicator
     watch(state, (value) => {
       if (value === 'parsing') {
-        appStore.setLoading(true, progress.value, status.value);
+        appStore.setLoading(true, progress.value, statusMessage.value || 'Starting...');
       } else if (value === 'success' || value === 'error') {
         appStore.setLoading(false);
       }
@@ -296,6 +310,9 @@ export default {
         platform = 'iOS';
       } else if (['.apk', '.aab', '.xapk'].includes(extension)) {
         platform = 'Android';
+      } else if (extension === '.zip') {
+        // ZIP files are assumed to be framework bundles (validated by parser)
+        platform = 'iOS';
       } else {
         appStore.setError(`Unsupported file format: ${extension}`);
         return;
@@ -333,59 +350,125 @@ export default {
           console.warn('Tree size validation failed');
         }
 
-        // Determine metadata based on platform
-        const analysisData =
-          platform === 'iOS'
-            ? {
-                fileId: `${file.name}-${Date.now()}`,
-                timestamp: new Date(),
-                platform,
-                metadata: {
-                  platform: 'iOS',
-                  bundleId: parseResult.metadata.bundleId,
-                  version: parseResult.metadata.version,
-                },
-                appName: parseResult.metadata.displayName,
-                bundleId: parseResult.metadata.bundleId,
-                version: parseResult.metadata.version,
-                totalInstallSize: parseResult.installSize,
-                totalDownloadSize: parseResult.downloadSize,
-                breakdownRoot,
-                allFiles: fileEntries,
-                frameworks: parseResult.frameworks.map((fw) => fw.path),
-                assets: parseResult.assets.map((asset) => asset.path),
-                localizations: parseResult.localizations,
-                executables: parseResult.mainExecutable ? [parseResult.metadata.displayName] : [],
-                nativeLibraries: [],
-                dexFiles: [],
-                modules: [],
-              }
-            : {
-                fileId: `${file.name}-${Date.now()}`,
-                timestamp: new Date(),
-                platform,
-                metadata: {
-                  platform: 'Android',
-                  bundleId: parseResult.metadata.packageName,
-                  version: parseResult.metadata.versionName,
-                },
-                appName: parseResult.metadata.applicationLabel || parseResult.metadata.packageName,
-                bundleId: parseResult.metadata.packageName,
-                version: parseResult.metadata.versionName,
-                versionCode: parseResult.metadata.versionCode,
-                totalInstallSize: parseResult.installSize,
-                totalDownloadSize: parseResult.downloadSize,
-                breakdownRoot,
-                allFiles: fileEntries,
-                frameworks: [],
-                assets: parseResult.assets.map((asset) => asset.path),
-                localizations: parseResult.resourceTable?.locales || [],
-                executables: [],
-                nativeLibraries: parseResult.nativeLibs.map((lib) => lib.path),
-                dexFiles: parseResult.dexFiles.map((_, idx) => `classes${idx > 0 ? idx + 1 : ''}.dex`),
-                modules: [],
-                resourceTableLocales: parseResult.resourceTable?.locales || [],
-              };
+        // Determine metadata based on platform and format
+        let analysisData;
+
+        // Check for new formats first
+        if (parseResult.format === 'aab') {
+          // AAB format
+          analysisData = {
+            fileId: `${file.name}-${Date.now()}`,
+            timestamp: new Date(),
+            platform: 'Android',
+            parseResult,
+            metadata: {
+              platform: 'Android',
+              bundleId: parseResult.metadata.packageName,
+              version: parseResult.metadata.versionName,
+            },
+            appName: parseResult.metadata.packageName,
+            bundleId: parseResult.metadata.packageName,
+            version: parseResult.metadata.versionName,
+            versionCode: parseResult.metadata.versionCode,
+            totalInstallSize: parseResult.installSize,
+            totalDownloadSize: parseResult.downloadSize,
+            breakdownRoot,
+            allFiles: fileEntries,
+            frameworks: [],
+            assets: [],
+            localizations: [],
+            executables: [],
+            nativeLibraries: [],
+            dexFiles: [],
+            modules: parseResult.modules || [],
+            architectures: parseResult.architectures || [],
+          };
+        } else if (parseResult.format === 'framework') {
+          // Framework format
+          analysisData = {
+            fileId: `${file.name}-${Date.now()}`,
+            timestamp: new Date(),
+            platform: 'iOS',
+            parseResult,
+            metadata: {
+              platform: 'iOS',
+              bundleId: parseResult.metadata.bundleIdentifier,
+              version: parseResult.metadata.version,
+            },
+            appName: parseResult.metadata.bundleName,
+            bundleId: parseResult.metadata.bundleIdentifier,
+            version: parseResult.metadata.version,
+            buildVersion: parseResult.metadata.buildVersion,
+            totalInstallSize: parseResult.installSize,
+            totalDownloadSize: parseResult.downloadSize,
+            breakdownRoot,
+            allFiles: fileEntries,
+            frameworks: [],
+            assets: [],
+            localizations: [],
+            executables: [parseResult.metadata.bundleExecutable],
+            nativeLibraries: [],
+            dexFiles: [],
+            modules: [],
+            architectures: parseResult.architectures || [],
+          };
+        } else if (platform === 'iOS') {
+          // IPA format
+          analysisData = {
+            fileId: `${file.name}-${Date.now()}`,
+            timestamp: new Date(),
+            platform,
+            parseResult,
+            metadata: {
+              platform: 'iOS',
+              bundleId: parseResult.metadata.bundleId,
+              version: parseResult.metadata.version,
+            },
+            appName: parseResult.metadata.displayName,
+            bundleId: parseResult.metadata.bundleId,
+            version: parseResult.metadata.version,
+            totalInstallSize: parseResult.installSize,
+            totalDownloadSize: parseResult.downloadSize,
+            breakdownRoot,
+            allFiles: fileEntries,
+            frameworks: parseResult.frameworks.map((fw) => fw.path),
+            assets: parseResult.assets.map((asset) => asset.path),
+            localizations: parseResult.localizations,
+            executables: parseResult.mainExecutable ? [parseResult.metadata.displayName] : [],
+            nativeLibraries: [],
+            dexFiles: [],
+            modules: [],
+          };
+        } else {
+          // APK/XAPK format
+          analysisData = {
+            fileId: `${file.name}-${Date.now()}`,
+            timestamp: new Date(),
+            platform,
+            parseResult,
+            metadata: {
+              platform: 'Android',
+              bundleId: parseResult.metadata.packageName,
+              version: parseResult.metadata.versionName,
+            },
+            appName: parseResult.metadata.applicationLabel || parseResult.metadata.packageName,
+            bundleId: parseResult.metadata.packageName,
+            version: parseResult.metadata.versionName,
+            versionCode: parseResult.metadata.versionCode,
+            totalInstallSize: parseResult.installSize,
+            totalDownloadSize: parseResult.downloadSize,
+            breakdownRoot,
+            allFiles: fileEntries,
+            frameworks: [],
+            assets: parseResult.assets.map((asset) => asset.path),
+            localizations: parseResult.resourceTable?.locales || [],
+            executables: [],
+            nativeLibraries: parseResult.nativeLibs.map((lib) => lib.path),
+            dexFiles: parseResult.dexFiles.map((_, idx) => `classes${idx > 0 ? idx + 1 : ''}.dex`),
+            modules: [],
+            resourceTableLocales: parseResult.resourceTable?.locales || [],
+          };
+        }
 
         // Set analysis result in store
         analysisStore.setAnalysisResult(analysisData);

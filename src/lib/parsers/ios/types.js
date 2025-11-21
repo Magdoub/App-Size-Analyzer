@@ -65,4 +65,43 @@
  * @property {string} [localization] - Localization language
  */
 
+/**
+ * Architecture slice in a universal binary
+ * @typedef {Object} ArchitectureSlice
+ * @property {string} name - Architecture name (arm64, x86_64, etc.)
+ * @property {number} cputype - Mach-O CPU type
+ * @property {number} cpusubtype - Mach-O CPU subtype
+ * @property {number} offset - Offset in binary
+ * @property {number} size - Size of this slice
+ */
+
+/**
+ * Framework Metadata from Info.plist
+ * @typedef {Object} FrameworkMetadata
+ * @property {string} bundleIdentifier - Bundle ID (e.g., "com.example.MyFramework")
+ * @property {string} bundleName - Framework name
+ * @property {string} bundleExecutable - Main binary name
+ * @property {string} version - Marketing version (CFBundleShortVersionString)
+ * @property {string} buildVersion - Build number (CFBundleVersion)
+ * @property {string|null} minimumOSVersion - Minimum OS version
+ * @property {string|null} platformName - Platform (iphoneos, macosx, etc.)
+ * @property {boolean} isVersioned - True if macOS versioned structure
+ */
+
+/**
+ * Framework parse result
+ * @typedef {Object} FrameworkParseResult
+ * @property {'framework'} format - File format identifier
+ * @property {string} fileName - Original file name
+ * @property {number} fileSize - Total file size in bytes
+ * @property {FrameworkMetadata} metadata - Extracted bundle metadata
+ * @property {ArchitectureSlice[]} architectures - Architecture slices in binary
+ * @property {Array<{path: string, size: number, compressedSize: number, contentType: string}>} files - All files in the framework
+ * @property {Object} breakdown - Categorized size breakdown
+ * @property {number} totalSize - Total uncompressed size
+ * @property {number} downloadSize - Compressed size
+ * @property {number} installSize - Uncompressed size
+ */
+
 export {};
+

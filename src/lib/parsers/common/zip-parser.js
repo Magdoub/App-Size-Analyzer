@@ -24,14 +24,30 @@ import { unzip, Unzip } from 'fflate';
  */
 
 /**
+ * Maximum file size for in-memory processing (300MB)
+ * Larger files need streaming or will cause OOM errors
+ */
+const MAX_MEMORY_FILE_SIZE = 300 * 1024 * 1024;
+
+/**
  * Extract all files from a ZIP archive
- * Uses synchronous unzip for simplicity - can handle files up to 2GB
+ * Uses synchronous unzip for simplicity - can handle files up to ~300MB
+ * For larger files, use extractZIPStreaming or extractZIPMetadataOnly
  * @param {File} file - ZIP file to extract
  * @param {ZIPParseOptions} [options] - Parsing options
  * @returns {Promise<ZIPEntry[]>} Array of extracted ZIP entries
  */
 export async function extractZIP(file, options = {}) {
   const { filter, onProgress, maxFileSize } = options;
+
+  // Check file size to prevent OOM
+  if (file.size > MAX_MEMORY_FILE_SIZE) {
+    throw new Error(
+      `File too large for browser processing (${(file.size / 1024 / 1024).toFixed(0)}MB). ` +
+      `Maximum supported size is ${MAX_MEMORY_FILE_SIZE / 1024 / 1024}MB. ` +
+      `For larger apps, consider using command-line tools like 'unzip -l' or Android Studio's APK Analyzer.`
+    );
+  }
 
   // Read file as ArrayBuffer
   const arrayBuffer = await file.arrayBuffer();

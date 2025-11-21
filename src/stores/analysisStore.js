@@ -111,6 +111,63 @@ export const useAnalysisStore = defineStore('analysis', {
      * @returns {string|null}
      */
     version: (state) => state.metadata?.version || null,
+
+    /**
+     * Get file format (ipa, apk, aab, framework)
+     * @returns {string|null}
+     */
+    format: (state) => state.currentAnalysis?.parseResult?.format || null,
+
+    /**
+     * Check if current analysis is AAB format
+     * @returns {boolean}
+     */
+    isAAB: (state) => state.currentAnalysis?.parseResult?.format === 'aab',
+
+    /**
+     * Check if current analysis is Framework format
+     * @returns {boolean}
+     */
+    isFramework: (state) => state.currentAnalysis?.parseResult?.format === 'framework',
+
+    /**
+     * Get AAB modules (only for AAB format)
+     * @returns {Array}
+     */
+    modules: (state) => {
+      if (state.currentAnalysis?.parseResult?.format === 'aab') {
+        return state.currentAnalysis.parseResult.modules || [];
+      }
+      return [];
+    },
+
+    /**
+     * Get architecture slices (for Framework format)
+     * @returns {Array}
+     */
+    architectureSlices: (state) => {
+      if (state.currentAnalysis?.parseResult?.format === 'framework') {
+        return state.currentAnalysis.parseResult.architectures || [];
+      }
+      return [];
+    },
+
+    /**
+     * Get supported architectures (for all formats)
+     * @returns {Array}
+     */
+    architectures: (state) => {
+      const parseResult = state.currentAnalysis?.parseResult;
+      if (!parseResult) return [];
+
+      // Framework has detailed architecture slices
+      if (parseResult.format === 'framework' && parseResult.architectures) {
+        return parseResult.architectures.map((a) => a.name);
+      }
+
+      // Other formats have simple architecture list
+      return parseResult.architectures || [];
+    },
   },
 
   actions: {

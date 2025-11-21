@@ -72,6 +72,45 @@ export class InsightEngine {
   }
 
   /**
+   * Prepare indexed context with imageFiles, fontFiles, and other preprocessed data
+   * @param {AnalysisContext} context - Original analysis context
+   * @returns {AnalysisContext} Enhanced context with indexes
+   */
+  #prepareContext(context) {
+    // Create enhanced context with image and font file indexes
+    const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.heic'];
+    const fontExtensions = ['.ttf', '.otf', '.woff', '.woff2'];
+
+    // Filter image files
+    const imageFiles = context.allFiles.filter((file) => {
+      const ext = file.path.toLowerCase().split('.').pop();
+      return imageExtensions.includes(`.${ext}`);
+    });
+
+    // Filter font files
+    const fontFiles = context.allFiles.filter((file) => {
+      const ext = file.path.toLowerCase().split('.').pop();
+      return fontExtensions.includes(`.${ext}`);
+    });
+
+    // Initialize compression cache if not present
+    const compressionCache = context.compressionCache || new Map();
+
+    // Initialize duplicate groups if not present
+    const duplicateGroups = context.duplicateGroups || new Map();
+
+    console.log(`[InsightEngine] Indexed ${imageFiles.length} images, ${fontFiles.length} fonts`);
+
+    return {
+      ...context,
+      imageFiles,
+      fontFiles,
+      compressionCache,
+      duplicateGroups
+    };
+  }
+
+  /**
    * Execute all rules against an analysis context
    * @param {AnalysisContext} context - Analysis context
    * @returns {Promise<InsightResult[]>} Insight results
@@ -85,6 +124,9 @@ export class InsightEngine {
       return this.#cache.get(cacheKey);
     }
 
+    // Prepare context with indexed data (imageFiles, fontFiles, etc.)
+    const enhancedContext = this.#prepareContext(context);
+
     console.log(`[InsightEngine] Executing ${this.#rules.size} rules...`);
     const results = [];
 
@@ -92,7 +134,7 @@ export class InsightEngine {
     const rulePromises = Array.from(this.#rules.values()).map(async (rule) => {
       try {
         console.log(`[InsightEngine] Executing rule ${rule.id}: ${rule.name}`);
-        const ruleResults = await rule.execute(context);
+        const ruleResults = await rule.execute(enhancedContext);
         return ruleResults;
       } catch (error) {
         console.error(`[InsightEngine] Rule ${rule.id} failed:`, error);
@@ -102,9 +144,15 @@ export class InsightEngine {
 
     const ruleResultArrays = await Promise.all(rulePromises);
 
-    // Flatten results
+    // Flatten results (handle arrays, single objects, and null/undefined)
     ruleResultArrays.forEach((ruleResults) => {
-      results.push(...ruleResults);
+      if (!ruleResults) return; // Skip null/undefined
+      if (Array.isArray(ruleResults)) {
+        results.push(...ruleResults);
+      } else {
+        // Single result object
+        results.push(ruleResults);
+      }
     });
 
     // Sort by severity and potential savings
@@ -142,7 +190,12 @@ export class InsightEngine {
     for (const rule of filteredRules) {
       try {
         const ruleResults = await rule.execute(context);
-        results.push(...ruleResults);
+        if (!ruleResults) continue;
+        if (Array.isArray(ruleResults)) {
+          results.push(...ruleResults);
+        } else {
+          results.push(ruleResults);
+        }
       } catch (error) {
         console.error(`[InsightEngine] Rule ${rule.id} failed:`, error);
       }
@@ -170,7 +223,12 @@ export class InsightEngine {
     for (const rule of filteredRules) {
       try {
         const ruleResults = await rule.execute(context);
-        results.push(...ruleResults);
+        if (!ruleResults) continue;
+        if (Array.isArray(ruleResults)) {
+          results.push(...ruleResults);
+        } else {
+          results.push(ruleResults);
+        }
       } catch (error) {
         console.error(`[InsightEngine] Rule ${rule.id} failed:`, error);
       }
@@ -377,47 +435,65 @@ Focus on the top 3-5 files first for maximum impact with minimal effort.`,
 }
 
 /**
- * Rule: Identify uncompressed images
+ * Rule: Identify images that could benefit from format optimization
+ *
+ * This rule detects images where ZIP compression provides minimal benefit,
+ * indicating they may benefit from modern format conversion (WebP, HEIC).
+ *
+ * Note: High ZIP compression ratio (close to 1.0) means the image is already
+ * in a compressed format (PNG, JPEG) but may still benefit from format conversion.
+ *
  * @param {AnalysisContext} context - Analysis context
  * @returns {Promise<import('../../types/analysis.js').EnhancedInsightResult>} Enhanced insight result
  */
 export async function ruleUncompressedImages(context) {
-  const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp'];
+  const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp'];
+  // Exclude already-modern formats that are well optimized
+  const modernFormats = ['.webp', '.heic', '.heif', '.avif'];
 
-  const uncompressedImages = context.allFiles
+  const optimizableImages = context.allFiles
     .filter((file) => {
-      const ext = file.path.toLowerCase().split('.').pop();
-      return imageExtensions.includes(`.${ext}`) && file.compressedSize;
+      const ext = `.${file.path.toLowerCase().split('.').pop()}`;
+      // Include legacy formats, exclude modern formats
+      return imageExtensions.includes(ext) && !modernFormats.includes(ext) && file.compressedSize;
     })
     .filter((file) => {
-      const compressionRatio = file.compressedSize / file.size;
-      return compressionRatio > 0.9; // Poorly compressed (> 90%)
+      // Focus on larger images (>10KB) that would benefit from optimization
+      return file.size > 10240;
     })
     .sort((a, b) => b.size - a.size)
-    .slice(0, 20); // Top 20 uncompressed images
+    .slice(0, 20); // Top 20 images by size
 
-  if (uncompressedImages.length === 0) {
+  if (optimizableImages.length === 0) {
     return null;
   }
 
-  const totalAffectedSize = uncompressedImages.reduce((sum, f) => sum + f.size, 0);
+  const totalAffectedSize = optimizableImages.reduce((sum, f) => sum + f.size, 0);
   const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
-  const potentialSavings = Math.round(totalAffectedSize * 0.7); // Assume 70% reduction
+  // Conservative estimate: WebP typically saves 25-35% over PNG/JPEG
+  const potentialSavings = Math.round(totalAffectedSize * 0.3);
 
   return {
     ruleId: 'uncompressed-images',
     severity: 'high',
     category: 'compression',
-    title: 'Uncompressed Images Detected',
-    description: `Found ${uncompressedImages.length} poorly compressed images (${percentageOfApp.toFixed(1)}% of app size). These images have compression ratios above 90%, indicating significant optimization potential.`,
-    affectedFiles: uncompressedImages.map((file) => ({
-      path: file.path,
-      size: file.size,
-      type: file.type,
-      compressedSize: file.compressedSize,
-      compressionRatio: file.compressedSize / file.size,
-      context: `${((file.compressedSize / file.size) * 100).toFixed(0)}% compressed - ${(100 - ((file.compressedSize / file.size) * 100)).toFixed(0)}% potential reduction`,
-    })),
+    title: 'Images Eligible for Format Optimization',
+    description: `Found ${optimizableImages.length} images (${percentageOfApp.toFixed(1)}% of app size) using legacy formats (PNG, JPEG, GIF, BMP). Converting to modern formats like WebP can reduce size by 25-35%.`,
+    affectedFiles: optimizableImages.map((file) => {
+      const ext = file.path.toLowerCase().split('.').pop();
+      const formatHint = ext === 'png' ? 'Convert to WebP (lossless) for ~30% reduction' :
+                         ext === 'bmp' ? 'Convert to WebP or PNG for ~90% reduction' :
+                         ['jpg', 'jpeg'].includes(ext) ? 'Convert to WebP for ~25% reduction' :
+                         'Consider WebP format';
+      return {
+        path: file.path,
+        size: file.size,
+        type: file.type,
+        compressedSize: file.compressedSize,
+        compressionRatio: file.compressedSize / file.size,
+        context: formatHint,
+      };
+    }),
     recommendation:
       `Image optimization action plan:\n
 1. **Quick wins (automated tools)**:\n

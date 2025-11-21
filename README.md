@@ -169,7 +169,30 @@ Once parsing completes, navigate between views:
 | `.ipa` | iOS | Standard iOS app packages |
 | `.apk` | Android | Android application packages |
 | `.xapk` | Android | XAPK containers (splits extraction) |
-| `.aab` | Android | Android App Bundles (UI accepts, limited parsing) |
+| `.aab` | Android | Android App Bundles with module breakdown |
+| `.zip` | iOS | Zipped .framework bundles with architecture analysis |
+
+### Android App Bundle (AAB) Support
+
+AAB files are fully supported with:
+- Module detection (base + dynamic feature modules)
+- Per-module size breakdown (DEX, resources, assets, native libraries)
+- Protobuf manifest parsing for package name, version, SDK versions
+- Architecture detection from native libraries
+
+### iOS Framework Bundle Support
+
+Framework bundles can be analyzed by zipping the `.framework` directory:
+1. Locate your `MyFramework.framework` directory
+2. Create a ZIP: `zip -r MyFramework.framework.zip MyFramework.framework`
+3. Drop the ZIP file into the analyzer
+
+Features include:
+- Info.plist metadata extraction (bundle ID, version, platform)
+- Mach-O binary parsing for architecture detection (arm64, x86_64, etc.)
+- Universal binary slice breakdown with per-architecture sizes
+- Content categorization (binary, headers, modules, resources)
+- Support for both iOS flat and macOS versioned framework structures
 
 ## Documentation
 
@@ -191,8 +214,8 @@ src/
 ├── lib/
 │   ├── analysis/        # Breakdown generator & insight engine
 │   ├── parsers/         # Binary parsers (iOS/Android)
-│   │   ├── ios/         # IPA, Mach-O, plist, asset catalogs
-│   │   └── android/     # APK, XAPK, DEX, ARSC, binary XML
+│   │   ├── ios/         # IPA, Framework, Mach-O, plist, asset catalogs
+│   │   └── android/     # APK, AAB, XAPK, DEX, ARSC, binary XML, protobuf
 │   └── visualization/   # Treemap generation & color schemes
 ├── store/               # Zustand state management
 ├── types/               # TypeScript type definitions

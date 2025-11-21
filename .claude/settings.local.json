@@ -16,7 +16,9 @@
       "Bash(git branch:*)",
       "WebFetch(domain:echarts.apache.org)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Read(//var/folders/wn/56cr5wd900x9n4l1g1m2nkth0000gn/T/TemporaryItems/NSIRD_screencaptureui_4CT0Zr/**)"
+      "Read(//var/folders/wn/56cr5wd900x9n4l1g1m2nkth0000gn/T/TemporaryItems/NSIRD_screencaptureui_4CT0Zr/**)",
+      "Bash(git rev-parse:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

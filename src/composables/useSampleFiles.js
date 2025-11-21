@@ -47,12 +47,16 @@ function extractBasicMetadata(filePath, url) {
   const platform = extension === 'ipa' ? 'iOS' : 'Android';
   const displayName = cleanFileName(fileName);
 
+  // Format label for display (IPA, APK, AAB)
+  const formatLabel = extension.toUpperCase();
+
   return {
     url,
     name: fileName,
     displayName,
     platform,
     extension,
+    formatLabel,
     size: null,
     sizeFormatted: null,
   };
@@ -114,7 +118,7 @@ export function useSampleFiles() {
   const activeAbortController = ref(null);
 
   // T003: Discover sample files using Vite's import.meta.glob (build-time)
-  const sampleFileUrls = import.meta.glob('/sample-files/*.{ipa,apk}', {
+  const sampleFileUrls = import.meta.glob('/sample-files/*.{ipa,apk,aab}', {
     query: '?url',
     import: 'default',
     eager: true,

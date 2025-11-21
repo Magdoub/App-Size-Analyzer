@@ -6,7 +6,7 @@
       class="text-center py-8 text-gray-500"
     >
       <p class="text-sm">No sample files available</p>
-      <p class="text-xs mt-2">Add .ipa or .apk files to the sample-files/ directory</p>
+      <p class="text-xs mt-2">Add .ipa, .apk or .aab files to the sample-files/ directory</p>
     </div>
 
     <!-- Sample file cards grid -->
@@ -18,7 +18,7 @@
         v-for="file in sampleFiles"
         :key="file.url"
         :data-testid="`sample-file-card-${file.name}`"
-        class="sample-file-card"
+        class="sample-file-card group"
         :class="{
           'sample-file-card--loading': isLoading && loadingFileName === file.name,
           'sample-file-card--disabled': disabled || (isLoading && loadingFileName !== file.name),
@@ -27,7 +27,7 @@
         :aria-label="`Load ${file.displayName} sample file`"
         @click="handleCardClick(file)"
       >
-        <!-- Platform badge -->
+        <!-- Platform + Format badge -->
         <div
           class="platform-badge"
           :class="{
@@ -35,7 +35,7 @@
             'platform-badge--android': file.platform === 'Android',
           }"
         >
-          {{ file.platform }}
+          {{ file.platform }} · {{ file.formatLabel }}
         </div>
 
         <!-- File info -->

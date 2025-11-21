@@ -31,7 +31,7 @@
           :style="{ backgroundColor: entry.color }"
         />
         <span>{{ entry.label }}</span>
-        <span class="text-gray-500 text-xs">({{ entry.formattedSize }})</span>
+        <span class="text-green-700 text-xs font-semibold">({{ entry.formattedSize }})</span>
       </button>
     </div>
 
