@@ -72,6 +72,7 @@
 import { computed } from 'vue';
 import { useAnalysisStore } from '../../stores/analysisStore';
 import { formatBytes, formatNumber } from '../../utils/formatters';
+import { analyzeLocalizations } from '../../utils/calculations';
 
 // Import chart components
 import FileTypeDistributionChart from './FileTypeDistributionChart.vue';
@@ -91,8 +92,19 @@ const totalFileCount = computed(() => {
 
 const hasLocalizations = computed(() => {
   const analysis = analysisStore.currentAnalysis;
-  if (!analysis) return false;
-  return analysis.localizations?.length > 0;
+  if (!analysis || !analysis.breakdownRoot) return false;
+
+  const locData = analyzeLocalizations(
+    analysis.breakdownRoot,
+    analysis.platform,
+    analysis.totalInstallSize,
+    analysis.resourceTableLocales
+  );
+
+  // Require 2+ localizations AND >2% total size
+  if (locData.length < 2) return false;
+  const totalPct = locData.reduce((sum, loc) => sum + loc.percentage, 0);
+  return totalPct > 2;
 });
 
 const hasAssets = computed(() => {

@@ -257,7 +257,7 @@ export function aggregateFilesByType(breakdownRoot, platform, totalInstallSize) 
 
   // Group categories <1% into "Other" (FR-019)
   // First separate categories >=1% from those <1%
-  const significantCategories = result.filter(cat => cat.percentage >= 1);
+  const significantCategories = result.filter(cat => cat.percentage >= 1 && cat.category !== 'Other');
   const smallCategories = result.filter(cat => cat.percentage < 1 && cat.category !== 'Other');
 
   // If there are small categories, aggregate them into "Other"

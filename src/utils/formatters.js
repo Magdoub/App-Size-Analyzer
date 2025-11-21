@@ -21,6 +21,15 @@ export function formatBytes(bytes, decimals = 2) {
 }
 
 /**
+ * Format bytes compactly for chart axis labels (0 decimals)
+ * @param {number} bytes - Size in bytes
+ * @returns {string} Formatted size string
+ */
+export function formatBytesCompact(bytes) {
+  return formatBytes(bytes, 0);
+}
+
+/**
  * Format bytes to MB specifically
  * @param {number} bytes - Size in bytes
  * @param {number} decimals - Number of decimal places

@@ -110,8 +110,9 @@ export function buildVerticalBarChartOptions(data, title, valueFormatter, option
     },
     yAxis: {
       type: 'value',
+      splitNumber: 4,
       axisLabel: {
-        formatter: valueFormatter
+        formatter: (v) => valueFormatter(v, 0)
       }
     },
     series: data.series.map((s, idx) => ({
@@ -176,9 +177,11 @@ export function buildHorizontalBarChartOptions(data, title, valueFormatter, opti
     }),
     xAxis: {
       type: 'value',
+      splitNumber: 3,
       axisLabel: {
-        formatter: valueFormatter
-      }
+        formatter: options.axisFormatter || ((v) => valueFormatter(v, 0))
+      },
+      min: 0
     },
     yAxis: {
       type: 'category',
@@ -318,15 +321,31 @@ export function transformComponentsToBarChart(components, metric = 'size', inclu
  * @returns {Object} Horizontal bar chart data structure
  */
 export function transformFilesToHorizontalBarChart(files, valueFormatter) {
+  // Find duplicate names and add parent context
+  const nameCounts = {};
+  files.forEach(f => {
+    nameCounts[f.name] = (nameCounts[f.name] || 0) + 1;
+  });
+
   return {
-    items: files.map(f => ({
-      name: f.name,
-      value: f.size,
-      color: f.color,
-      tooltip: `<strong>${f.name}</strong><br/>` +
-               `Path: ${f.path}<br/>` +
-               `Size: ${valueFormatter(f.size)} (${f.percentage.toFixed(1)}%)`
-    }))
+    items: files.map(f => {
+      let displayName = f.name;
+      // Add parent directory for duplicate names
+      if (nameCounts[f.name] > 1 && f.path) {
+        const parts = f.path.split('/');
+        if (parts.length >= 2) {
+          displayName = `${parts[parts.length - 2]}/${f.name}`;
+        }
+      }
+      return {
+        name: displayName,
+        value: f.size,
+        color: f.color,
+        tooltip: `<strong>${f.name}</strong><br/>` +
+                 `Path: ${f.path}<br/>` +
+                 `Size: ${valueFormatter(f.size)} (${f.percentage.toFixed(1)}%)`
+      };
+    })
   };
 }
 

@@ -18,7 +18,7 @@ import { useAnalysisStore } from '../../stores/analysisStore';
 import { useAppStore } from '../../stores/appStore';
 import { getTopFiles } from '../../utils/calculations';
 import { transformFilesToHorizontalBarChart, buildHorizontalBarChartOptions } from '../../utils/chart-options';
-import { formatBytes } from '../../utils/formatters';
+import { formatBytes, formatBytesCompact } from '../../utils/formatters';
 import { useResponsiveChart } from '../../composables/useResponsiveChart';
 
 use([CanvasRenderer, BarChart, TitleComponent, TooltipComponent, GridComponent]);
