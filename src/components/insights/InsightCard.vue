@@ -108,7 +108,17 @@
               <div class="flex flex-col gap-1">
                 <div class="flex items-center justify-between gap-2">
                   <span class="truncate font-semibold">{{ file.path }}</span>
-                  <span class="whitespace-nowrap text-blue-700 font-bold">{{ formatBytes(file.size) }}</span>
+                  <!-- Show before → after sizes if available -->
+                  <div class="flex items-center gap-1 whitespace-nowrap">
+                    <span class="text-blue-700 font-bold">{{ formatBytes(file.size) }}</span>
+                    <template v-if="file.estimatedSizeAfter !== undefined && file.estimatedSizeAfter < file.size">
+                      <span class="text-gray-400">→</span>
+                      <span class="text-green-600 font-bold">{{ formatBytes(file.estimatedSizeAfter) }}</span>
+                      <span class="text-green-700 text-[10px] bg-green-100 px-1 rounded">
+                        -{{ Math.round((1 - file.estimatedSizeAfter / file.size) * 100) }}%
+                      </span>
+                    </template>
+                  </div>
                 </div>
                 <div class="flex items-center gap-4 text-xs opacity-75">
                   <span v-if="file.type" class="px-1.5 py-0.5 bg-gray-200 rounded">{{ file.type }}</span>
@@ -116,6 +126,10 @@
                   <span v-if="file.compressedSize" class="text-green-700 font-medium">
                     Compressed: {{ formatBytes(file.compressedSize) }}
                   </span>
+                </div>
+                <!-- Per-file recommendation -->
+                <div v-if="file.recommendation" class="mt-1 p-1.5 bg-yellow-50 border border-yellow-200 rounded text-[11px] text-yellow-800">
+                  <span class="font-semibold">💡 </span>{{ file.recommendation }}
                 </div>
               </div>
             </div>

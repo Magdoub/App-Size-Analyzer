@@ -387,6 +387,161 @@ export function createInsightEngine(config) {
 }
 
 /**
+ * Get file-specific optimization recommendation and estimated savings
+ * @param {string} path - File path
+ * @param {number} size - File size in bytes
+ * @param {string} type - File type
+ * @returns {{recommendation: string, savingsPercent: number, estimatedSize: number}}
+ */
+function getFileOptimizationDetails(path, size, type) {
+  const ext = path.toLowerCase().split('.').pop();
+  const fileName = path.split('/').pop();
+
+  // Image files - legacy formats
+  if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff'].includes(ext)) {
+    const formatNote = ext === 'bmp' ? 'BMP is uncompressed - convert to PNG/WebP for major savings.' :
+                       ext === 'gif' ? 'If animated, consider video format. If static, convert to PNG/WebP.' :
+                       'Consider WebP format if not already optimized. Use "Run Compression Test" to verify actual savings.';
+    return {
+      recommendation: formatNote,
+      savingsPercent: ext === 'bmp' ? 0.9 : 0.2, // Conservative unless BMP
+      estimatedSize: Math.round(size * (ext === 'bmp' ? 0.1 : 0.8)),
+    };
+  }
+
+  // Modern image formats - already optimized
+  if (['webp', 'heic', 'heif', 'avif'].includes(ext)) {
+    return {
+      recommendation: 'Already using modern format. Check if resolution matches actual display size needed.',
+      savingsPercent: 0.1,
+      estimatedSize: Math.round(size * 0.9),
+    };
+  }
+
+  // Video files
+  if (['mp4', 'mov', 'avi', 'mkv', 'm4v', 'webm'].includes(ext)) {
+    return {
+      recommendation: 'Move to CDN streaming, use on-demand resources, or compress with H.265/VP9',
+      savingsPercent: 0.95, // Can remove entirely via streaming
+      estimatedSize: 0, // Stream instead of bundle
+    };
+  }
+
+  // Audio files
+  if (['mp3', 'wav', 'aac', 'm4a', 'flac', 'ogg'].includes(ext)) {
+    return {
+      recommendation: ext === 'wav' || ext === 'flac'
+        ? 'Convert to AAC/MP3 (128kbps usually sufficient), or stream from CDN'
+        : 'Consider streaming from CDN, or reduce bitrate if quality allows',
+      savingsPercent: ext === 'wav' ? 0.9 : ext === 'flac' ? 0.7 : 0.5,
+      estimatedSize: Math.round(size * (ext === 'wav' ? 0.1 : ext === 'flac' ? 0.3 : 0.5)),
+    };
+  }
+
+  // DEX files (Android code)
+  if (ext === 'dex' || type === 'dex') {
+    return {
+      recommendation: 'Enable R8/ProGuard with aggressive shrinking, remove unused code paths',
+      savingsPercent: 0.25,
+      estimatedSize: Math.round(size * 0.75),
+    };
+  }
+
+  // Native libraries (.so files)
+  if (ext === 'so' || path.includes('/lib/')) {
+    return {
+      recommendation: 'Strip debug symbols, remove unused architectures (keep arm64 only for modern devices)',
+      savingsPercent: 0.4,
+      estimatedSize: Math.round(size * 0.6),
+    };
+  }
+
+  // SPO files (Facebook specific optimized resources)
+  if (ext === 'spo') {
+    return {
+      recommendation: 'Facebook-specific optimized format. Review if all contained assets are needed',
+      savingsPercent: 0.15,
+      estimatedSize: Math.round(size * 0.85),
+    };
+  }
+
+  // Hermes bytecode (React Native)
+  if (ext === 'hbc' || fileName.includes('hermes')) {
+    return {
+      recommendation: 'Enable tree-shaking, remove unused npm packages, split code with dynamic imports',
+      savingsPercent: 0.2,
+      estimatedSize: Math.round(size * 0.8),
+    };
+  }
+
+  // JavaScript bundles
+  if (['js', 'jsbundle'].includes(ext)) {
+    return {
+      recommendation: 'Enable tree-shaking, remove unused dependencies, use code splitting',
+      savingsPercent: 0.3,
+      estimatedSize: Math.round(size * 0.7),
+    };
+  }
+
+  // Font files
+  if (['ttf', 'otf', 'woff', 'woff2'].includes(ext)) {
+    return {
+      recommendation: 'Subset fonts to include only used characters, convert to WOFF2 format',
+      savingsPercent: 0.5,
+      estimatedSize: Math.round(size * 0.5),
+    };
+  }
+
+  // JSON/data files
+  if (['json', 'plist', 'xml'].includes(ext)) {
+    return {
+      recommendation: 'Large data payload. Consider: (1) load from server on-demand instead of bundling, (2) split into smaller chunks loaded as needed, (3) remove unused data fields.',
+      savingsPercent: 0.5, // Can often be loaded on-demand
+      estimatedSize: Math.round(size * 0.5),
+    };
+  }
+
+  // Resource files (Android)
+  if (ext === 'arsc' || path.includes('resources.arsc')) {
+    return {
+      recommendation: 'Use Android App Bundle to deliver only needed language/density resources. Can reduce by ~50% with proper configuration.',
+      savingsPercent: 0.5,
+      estimatedSize: Math.round(size * 0.5),
+    };
+  }
+
+  // XZS compressed files (Facebook specific)
+  if (ext === 'xzs' || ext === 'bin') {
+    return {
+      recommendation: 'Pre-compressed data file. If unused, remove entirely (100% savings). Otherwise, verify all data is needed at runtime.',
+      savingsPercent: 0.15, // Conservative: assume needed but can be trimmed
+      estimatedSize: Math.round(size * 0.85),
+    };
+  }
+
+  // META-INF files (signature/manifest) - skip, not optimizable
+  if (path.includes('META-INF/')) {
+    return null; // Signal to exclude from insights
+  }
+
+  // Asset files (generic)
+  if (type === 'asset' || path.includes('/assets/')) {
+    return {
+      recommendation: 'Check if asset is actually used in code. If unused: remove (100% savings). If used: consider lazy-loading from CDN.',
+      savingsPercent: 0.3, // Conservative estimate assuming partial optimization
+      estimatedSize: Math.round(size * 0.7),
+    };
+  }
+
+  // Default/unknown
+  return {
+    recommendation: 'Unknown file type. Check if required - if unused, safe to remove (100% savings). If needed, no optimization available.',
+    savingsPercent: 0.1, // Very conservative for unknown files
+    estimatedSize: Math.round(size * 0.9),
+  };
+}
+
+/**
  * Rule: Identify top 10 largest files
  * @param {AnalysisContext} context - Analysis context
  * @returns {Promise<import('../../types/analysis.js').EnhancedInsightResult>} Enhanced insight result
@@ -401,35 +556,55 @@ export async function ruleLargeFilesTop10(context) {
   };
 
   const leaves = flattenToLeaves(context.breakdownRoot);
-  const sorted = leaves.sort((a, b) => b.size - a.size).slice(0, 10);
+
+  // Filter out non-optimizable files (META-INF, etc.) before sorting
+  const optimizableLeaves = leaves.filter((file) => {
+    const details = getFileOptimizationDetails(file.path, file.size, file.type);
+    return details !== null; // Exclude files that return null (not optimizable)
+  });
+
+  const sorted = optimizableLeaves.sort((a, b) => b.size - a.size).slice(0, 10);
 
   const totalAffectedSize = sorted.reduce((sum, f) => sum + f.size, 0);
   const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
+
+  // Calculate actual potential savings based on file-specific optimizations
+  let totalEstimatedSavings = 0;
+  const filesWithDetails = sorted.map((file, index) => {
+    const details = getFileOptimizationDetails(file.path, file.size, file.type);
+    const savings = file.size - details.estimatedSize;
+    totalEstimatedSavings += savings;
+
+    return {
+      path: file.path,
+      size: file.size,
+      type: file.type,
+      context: `#${index + 1} - ${((file.size / context.totalInstallSize) * 100).toFixed(1)}% of app`,
+      recommendation: details.recommendation,
+      estimatedSizeAfter: details.estimatedSize,
+      potentialSavings: savings,
+    };
+  });
 
   return {
     ruleId: 'large-files-top-10',
     severity: 'medium',
     category: 'size-optimization',
     title: 'Top 10 Largest Files',
-    description: `These ${sorted.length} files account for ${percentageOfApp.toFixed(1)}% of your app size. Optimizing these high-impact files will significantly reduce your app's footprint.`,
-    affectedFiles: sorted.map((file, index) => ({
-      path: file.path,
-      size: file.size,
-      type: file.type,
-      context: `#${index + 1} - ${((file.size / context.totalInstallSize) * 100).toFixed(1)}% of app`,
-    })),
+    description: `These ${sorted.length} files total ${(totalAffectedSize / 1024 / 1024).toFixed(1)}MB (${percentageOfApp.toFixed(1)}% of your app). Estimated savings: ${(totalEstimatedSavings / 1024 / 1024).toFixed(1)}MB if optimized.`,
+    affectedFiles: filesWithDetails,
     recommendation:
-      `Optimization strategies by file type:\n
-• Images/Assets: Convert to WebP or HEIF format, use appropriate resolutions for different screen sizes, remove EXIF metadata\n
-• Code/JavaScript: Enable tree-shaking, remove unused exports, split into smaller chunks with dynamic imports\n
-• Native Libraries: Strip debug symbols, remove unused architectures (keep only arm64 for modern devices)\n
-• Frameworks: Review included modules, enable ProGuard/R8 (Android) or strip unused Swift modules (iOS)\n
-• Media (audio/video): Use streaming instead of bundling, compress with appropriate codecs (H.265/VP9, AAC)\n\n
-Focus on the top 3-5 files first for maximum impact with minimal effort.`,
-    potentialSavings: Math.round(totalAffectedSize * 0.3), // Assume 30% reduction possible
+      `Each file above has a specific recommendation. General strategies:\n
+• Images: Convert PNG/JPG to WebP (25-35% smaller)\n
+• Video/Audio: Stream from CDN instead of bundling (up to 95% savings)\n
+• Code/DEX: Enable R8/ProGuard shrinking (20-30% reduction)\n
+• Native libs: Strip debug symbols, use arm64 only (30-50% smaller)\n\n
+Focus on the top 3-5 files first for maximum impact.`,
+    potentialSavings: totalEstimatedSavings,
     metadata: {
       totalAffectedSize,
       percentageOfApp,
+      estimatedSizeAfter: totalAffectedSize - totalEstimatedSavings,
     },
   };
 }
@@ -470,30 +645,39 @@ export async function ruleUncompressedImages(context) {
 
   const totalAffectedSize = optimizableImages.reduce((sum, f) => sum + f.size, 0);
   const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
-  // Conservative estimate: WebP typically saves 25-35% over PNG/JPEG
-  const potentialSavings = Math.round(totalAffectedSize * 0.3);
+
+  // Calculate file-specific savings
+  let totalEstimatedSavings = 0;
+  const filesWithDetails = optimizableImages.map((file) => {
+    const ext = file.path.toLowerCase().split('.').pop();
+    // Conservative estimates - actual savings depend on image content
+    const savingsPercent = ext === 'bmp' ? 0.9 : ext === 'png' ? 0.2 : 0.15;
+    const estimatedSizeAfter = Math.round(file.size * (1 - savingsPercent));
+    const savings = file.size - estimatedSizeAfter;
+    totalEstimatedSavings += savings;
+
+    const recommendation = ext === 'bmp' ? 'BMP is uncompressed - convert to PNG/WebP for major savings.' :
+                           ext === 'png' ? 'Try WebP lossless. Use "Run Compression Test" to verify actual savings.' :
+                           ext === 'gif' ? 'If static, convert to PNG/WebP. If animated, consider video.' :
+                           'Try WebP format. Use "Run Compression Test" to verify actual savings.';
+
+    return {
+      path: file.path,
+      size: file.size,
+      type: file.type,
+      recommendation,
+      estimatedSizeAfter,
+      potentialSavings: savings,
+    };
+  });
 
   return {
     ruleId: 'uncompressed-images',
     severity: 'high',
     category: 'compression',
     title: 'Images Eligible for Format Optimization',
-    description: `Found ${optimizableImages.length} images (${percentageOfApp.toFixed(1)}% of app size) using legacy formats (PNG, JPEG, GIF, BMP). Converting to modern formats like WebP can reduce size by 25-35%.`,
-    affectedFiles: optimizableImages.map((file) => {
-      const ext = file.path.toLowerCase().split('.').pop();
-      const formatHint = ext === 'png' ? 'Convert to WebP (lossless) for ~30% reduction' :
-                         ext === 'bmp' ? 'Convert to WebP or PNG for ~90% reduction' :
-                         ['jpg', 'jpeg'].includes(ext) ? 'Convert to WebP for ~25% reduction' :
-                         'Consider WebP format';
-      return {
-        path: file.path,
-        size: file.size,
-        type: file.type,
-        compressedSize: file.compressedSize,
-        compressionRatio: file.compressedSize / file.size,
-        context: formatHint,
-      };
-    }),
+    description: `Found ${optimizableImages.length} images (${percentageOfApp.toFixed(1)}% of app). Use "Run Compression Test" to verify actual savings on your device.`,
+    affectedFiles: filesWithDetails,
     recommendation:
       `Image optimization action plan:\n
 1. **Quick wins (automated tools)**:\n
@@ -513,96 +697,10 @@ export async function ruleUncompressedImages(context) {
    • Enable asset catalog compression in Xcode (iOS)\n
    • Use Android App Bundle with density splits\n
    • Consider on-demand resources for rarely-used images\n\n
-**Estimated time savings**: Up to ${(potentialSavings / 1024 / 1024).toFixed(1)}MB (~${((potentialSavings / context.totalInstallSize) * 100).toFixed(0)}% of total app size)`,
-    potentialSavings,
+**Estimated savings**: Up to ${(totalEstimatedSavings / 1024 / 1024).toFixed(1)}MB (~${((totalEstimatedSavings / context.totalInstallSize) * 100).toFixed(0)}% of total app size). Run compression test for accurate results.`,
+    potentialSavings: totalEstimatedSavings,
     metadata: {
       totalAffectedSize,
-      percentageOfApp,
-    },
-  };
-}
-
-/**
- * Rule: Detect duplicate file names (potential accidental includes)
- * @param {AnalysisContext} context - Analysis context
- * @returns {Promise<import('../../types/analysis.js').EnhancedInsightResult | null>} Enhanced insight result or null
- */
-export async function ruleDuplicateFileNames(context) {
-  // Group files by name
-  const nameToFiles = new Map();
-
-  context.allFiles.forEach((file) => {
-    const fileName = file.path.split('/').pop();
-    if (!nameToFiles.has(fileName)) {
-      nameToFiles.set(fileName, []);
-    }
-    nameToFiles.get(fileName).push(file);
-  });
-
-  // Find duplicates (files with same name but different paths)
-  const duplicates = [];
-  nameToFiles.forEach((files, fileName) => {
-    if (files.length > 1) {
-      duplicates.push({ fileName, files });
-    }
-  });
-
-  if (duplicates.length === 0) {
-    return null;
-  }
-
-  // Calculate total duplicate size
-  const totalDuplicateSize = duplicates.reduce((sum, dup) => {
-    const duplicateSizes = dup.files.reduce((s, f) => s + f.size, 0);
-    return sum + duplicateSizes - dup.files[0].size; // Keep one copy
-  }, 0);
-
-  const percentageOfApp = (totalDuplicateSize / context.totalInstallSize) * 100;
-
-  // Flatten to affected files list
-  const affectedFiles = [];
-  duplicates.forEach((dup) => {
-    dup.files.forEach((file, index) => {
-      affectedFiles.push({
-        path: file.path,
-        size: file.size,
-        type: file.type,
-        context: `${dup.files.length}x duplicate - instance ${index + 1}`,
-      });
-    });
-  });
-
-  return {
-    ruleId: 'duplicate-file-names',
-    severity: 'medium',
-    category: 'size-optimization',
-    title: 'Duplicate File Names Detected',
-    description: `Found ${duplicates.length} file names appearing multiple times across different directories. This may indicate accidental includes or copy-paste errors, potentially wasting ${percentageOfApp.toFixed(1)}% of your app size.`,
-    affectedFiles: affectedFiles.slice(0, 30), // Limit to 30 files
-    recommendation:
-      `Investigation and resolution steps:\n
-1. **Identify true duplicates**:\n
-   • Use file comparison tools (diff, Beyond Compare)\n
-   • Check if files are binary-identical or just share names\n
-   • Look for version numbers or platform suffixes (e.g., image@2x.png)\n\n
-2. **Common duplicate scenarios**:\n
-   • **Vendor libraries**: Same dependency included multiple times (check node_modules, CocoaPods)\n
-   • **Localized resources**: Images/strings duplicated across language folders (can often be unified)\n
-   • **Platform variants**: Separate iOS/Android assets that could be shared\n
-   • **Build artifacts**: Temporary files accidentally included in bundle\n\n
-3. **Resolution strategies**:\n
-   • **If truly identical**: Keep one copy, create symlinks or references\n
-   • **If localized**: Extract common assets to base.lproj (iOS) or values/ (Android)\n
-   • **If versioned**: Update build scripts to exclude outdated versions\n
-   • **If platform-specific**: Verify if platform differences are necessary (many assets can be shared)\n\n
-4. **Prevention**:\n
-   • Add build validation to detect duplicate file names\n
-   • Use asset catalogs (iOS) or resource management systems\n
-   • Implement naming conventions with clear ownership (e.g., module_feature_asset.png)\n\n
-**Quick tip**: Start by investigating the largest duplicates (shown at the top of the list) for maximum impact.`,
-    potentialSavings: Math.round(totalDuplicateSize * 0.8), // Assume 80% can be eliminated
-    metadata: {
-      totalAffectedSize: totalDuplicateSize,
       percentageOfApp,
     },
   };
@@ -881,14 +979,6 @@ export function registerEnhancedInsightRules(engine) {
     category: 'compression',
     severity: 'high',
     execute: ruleUncompressedImages,
-  });
-
-  engine.registerRule({
-    id: 'duplicate-file-names',
-    name: 'Duplicate File Names',
-    category: 'size-optimization',
-    severity: 'medium',
-    execute: ruleDuplicateFileNames,
   });
 
   engine.registerRule({

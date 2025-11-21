@@ -2858,7 +2858,7 @@ android {
  */
 export const allInsightRules = [
   duplicateDetectionRule,
-  unoptimizedPNGRule,
+  // unoptimizedPNGRule, // Removed - duplicates 'uncompressed-images' rule in insight-engine.js
   debugSymbolsRule,
   iOSAssetCatalogRule,
   unusedAndroidResourcesRule,
@@ -2867,7 +2867,7 @@ export const allInsightRules = [
   avoidManyFilesRule,
   optimizeIconsRule,
   firebaseAPIExposedRule,
-  imageOptimizationRule, // R011: Image optimization with real testing
+  // imageOptimizationRule, // R011: Removed - duplicates 'uncompressed-images' rule in insight-engine.js
   iOSAlternateIconOptimizationRule, // R013: iOS alternate icon optimization
   iOSLocalizationMinificationRule, // R014: iOS localization minification
   iOSUnnecessaryFilesRule, // R015: Unnecessary files in bundle
