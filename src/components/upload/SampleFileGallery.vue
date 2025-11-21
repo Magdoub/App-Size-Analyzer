@@ -54,7 +54,7 @@
           class="loading-overlay"
         >
           <div class="loading-spinner" />
-          <span class="loading-text">Loading...</span>
+          <span class="loading-text">Uploading...</span>
         </div>
       </button>
     </div>

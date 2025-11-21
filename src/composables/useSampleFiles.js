@@ -87,7 +87,18 @@ async function fetchFileSize(url) {
  */
 async function loadSampleFileAsFile(url, fileName, signal = null) {
   // 1. Fetch file as blob (handles large files efficiently)
-  const response = await fetch(url, { signal });
+  // Retry once on failure (handles cold-start issues)
+  let response;
+  try {
+    response = await fetch(url, { signal });
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      // Retry once
+      response = await fetch(url, { signal });
+    } else {
+      throw err;
+    }
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to fetch ${fileName}: HTTP ${response.status}`);

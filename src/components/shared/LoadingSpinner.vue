@@ -45,7 +45,7 @@ export default {
      */
     message: {
       type: String,
-      default: 'Loading...'
+      default: 'Uploading...'
     },
 
     /**
