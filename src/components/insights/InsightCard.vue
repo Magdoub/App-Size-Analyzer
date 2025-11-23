@@ -5,54 +5,52 @@
 <template>
   <div
     :class="[
+      'compact-insight-card',
       getBorderClass(insight.severity),
-      'rounded-lg p-4',
       getSeverityColor(insight.severity)
     ]"
   >
     <!-- Header -->
-    <div class="flex items-start justify-between mb-2">
-      <div class="flex items-start gap-3 flex-1">
-        <span class="text-2xl">{{ getCategoryIcon(insight.category) }}</span>
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 class="text-lg font-semibold">{{ insight.title }}</h3>
-            <span v-if="insight.potentialSavings > 0" class="px-2 py-0.5 text-xs bg-green-100 text-green-800 font-semibold rounded-full">
+    <div class="card-header-compact">
+      <!-- Left side: Icon + Content -->
+      <div class="header-left-compact">
+        <span class="icon-compact">{{ getCategoryIcon(insight.category) }}</span>
+        <div class="content-compact">
+          <!-- Title row with inline badges -->
+          <div class="title-row-compact">
+            <h3 class="title-compact">{{ insight.title }}</h3>
+            <span v-if="insight.potentialSavings > 0" class="savings-badge-compact">
               {{ formatBytes(insight.potentialSavings) }}
             </span>
-            <span class="px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded-full">
+            <span class="category-badge-compact">
               {{ insight.category.replace(/-/g, ' ') }}
             </span>
           </div>
-          <p class="text-sm mt-1 opacity-90">{{ insight.description }}</p>
+          <p class="description-compact">{{ insight.description }}</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <span
-          :class="[
-            'px-3 py-1.5 rounded text-xs font-bold uppercase',
-            getSeverityBadgeColor(insight.severity),
-            (insight.severity === 'critical' || insight.severity === 'high') ? 'text-sm' : ''
-          ]"
-        >
+
+      <!-- Right side: Severity + Actions -->
+      <div class="header-actions-compact">
+        <span :class="['severity-badge-compact', getSeverityBadgeColor(insight.severity)]">
           {{ insight.severity }}
         </span>
         <button
           @click="handleDebugWithAI"
-          class="debug-ai-btn-header"
+          class="action-btn-compact"
           title="Get AI debugging prompt for ChatGPT, Claude, or Gemini"
         >
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
           </svg>
-          <span class="debug-ai-text">Debug with AI</span>
+          <span class="btn-text-compact">Debug with AI</span>
         </button>
         <button
           @click="isExpanded = !isExpanded"
-          class="p-1 hover:bg-black hover:bg-opacity-10 rounded transition-colors"
+          class="expand-btn-compact"
         >
           <svg
-            :class="['w-5 h-5 transition-transform', isExpanded ? 'rotate-180' : '']"
+            :class="['w-4 h-4 transition-transform', isExpanded ? 'rotate-180' : '']"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -608,6 +606,198 @@ export default {
 
   .debug-ai-btn-header {
     padding: 6px 8px;
+  }
+}
+
+/* ========================================
+   COMPACT CARD DESIGN
+   ======================================== */
+
+.compact-insight-card {
+  border-radius: 0.75rem;
+  padding: 1.125rem 1.25rem;
+  border: 1px solid hsl(220, 15%, 88%);
+  transition: all 0.2s ease;
+}
+
+.compact-insight-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* Header Layout */
+.card-header-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.header-left-compact {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.icon-compact {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.content-compact {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Title Row */
+.title-row-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.title-compact {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: hsl(25, 20%, 18%);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+/* Badges - Inline with title */
+.savings-badge-compact {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  background: linear-gradient(135deg, hsl(142, 76%, 95%) 0%, hsl(142, 70%, 92%) 100%);
+  color: hsl(142, 71%, 28%);
+  border: 1px solid hsl(142, 60%, 82%);
+  border-radius: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.category-badge-compact {
+  padding: 0.125rem 0.5rem;
+  background: hsl(35, 20%, 92%);
+  color: hsl(25, 15%, 48%);
+  border: 1px solid hsl(35, 15%, 84%);
+  border-radius: 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+
+/* Description */
+.description-compact {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: hsl(25, 15%, 42%);
+  margin-top: 0.125rem;
+}
+
+/* Actions */
+.header-actions-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.severity-badge-compact {
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.action-btn-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  background: hsl(35, 20%, 92%);
+  color: hsl(25, 15%, 45%);
+  border: 1px solid hsl(35, 15%, 84%);
+  border-radius: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.action-btn-compact:hover {
+  background: hsl(207, 90%, 96%);
+  color: hsl(207, 90%, 45%);
+  border-color: hsl(207, 70%, 80%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px hsla(207, 90%, 54%, 0.12);
+}
+
+.expand-btn-compact {
+  padding: 0.375rem;
+  background: transparent;
+  color: hsl(25, 15%, 45%);
+  border: 1px solid hsl(35, 15%, 84%);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expand-btn-compact:hover {
+  background: hsl(35, 20%, 88%);
+  border-color: hsl(35, 15%, 78%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .btn-text-compact {
+    display: none;
+  }
+
+  .action-btn-compact {
+    padding: 0.375rem;
+  }
+
+  .card-header-compact {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .header-actions-compact {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  .compact-insight-card {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .title-compact {
+    font-size: 0.875rem;
+  }
+
+  .icon-compact {
+    font-size: 1.25rem;
+  }
+
+  .description-compact {
+    font-size: 0.75rem;
   }
 }
 </style>

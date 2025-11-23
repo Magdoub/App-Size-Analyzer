@@ -31,10 +31,12 @@
           <!-- Header -->
           <div class="modal-header">
             <div class="ai-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18h6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10 22h4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M15 2v4" stroke-linecap="round"/>
+                <path d="M9 2v4" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
             <h2 id="modal-title" class="modal-title">Debug with AI</h2>
@@ -231,9 +233,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(25, 20, 18, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(25, 20, 18, 0.5);
   padding: 20px;
 }
 
