@@ -85,6 +85,7 @@ export async function parseAPKFromEntries(entries, originalFileSize) {
 
   // Build result object with exactOptionalPropertyTypes compliance
   const result = {
+    format: 'apk',
     metadata,
     dexFiles,
     nativeLibs,

@@ -165,7 +165,7 @@
         <!-- Loading Spinner -->
         <LoadingSpinner
           v-if="appStore.isLoading"
-          size="lg"
+          size="large"
           :message="appStore.loadingStatus"
           :progress="appStore.loadingProgress"
           :statusText="appStore.loadingStatusText"

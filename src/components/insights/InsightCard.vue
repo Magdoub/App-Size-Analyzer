@@ -38,6 +38,16 @@
           {{ insight.severity }}
         </span>
         <button
+          @click="handleDebugWithAI"
+          class="debug-ai-btn-header"
+          title="Get AI debugging prompt for ChatGPT, Claude, or Gemini"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          <span class="debug-ai-text">Debug with AI</span>
+        </button>
+        <button
           @click="isExpanded = !isExpanded"
           class="p-1 hover:bg-black hover:bg-opacity-10 rounded transition-colors"
         >
@@ -172,6 +182,14 @@
         <div class="recommendation-content" v-html="formatRecommendation(insight.recommendation)"></div>
       </div>
     </div>
+
+    <!-- AI Prompt Modal -->
+    <AIPromptModal
+      :isOpen="showAIModal"
+      :prompt="aiPrompt"
+      @close="closeAIModal"
+      @copy="handlePromptCopy"
+    />
   </div>
 </template>
 
@@ -179,13 +197,16 @@
 import { ref, computed } from 'vue';
 import { formatBytes } from '../../utils/formatters';
 import ImageComparisonPreview from './ImageComparisonPreview.vue';
+import AIPromptModal from './AIPromptModal.vue';
 import { useCompressionWorker } from '../../composables/useCompressionWorker';
+import { useChatGPTPrompt } from '../../composables/useChatGPTPrompt';
 
 export default {
   name: 'InsightCard',
 
   components: {
-    ImageComparisonPreview
+    ImageComparisonPreview,
+    AIPromptModal
   },
 
   props: {
@@ -205,6 +226,11 @@ export default {
     const compressionProgress = ref(0);
     const compressedCount = ref(0);
     const totalToCompress = ref(0);
+    const showAIModal = ref(false);
+    const aiPrompt = ref('');
+
+    // AI debugging integration
+    const { getInsightPrompt } = useChatGPTPrompt();
 
     // Check if this insight has images that need compression testing
     const hasCompressibleImages = computed(() => {
@@ -256,6 +282,31 @@ export default {
       }
 
       isCompressing.value = false;
+    };
+
+    /**
+     * Open AI prompt modal for this insight
+     */
+    const handleDebugWithAI = () => {
+      const promptData = getInsightPrompt(props.insight);
+      if (promptData) {
+        aiPrompt.value = promptData.prompt;
+        showAIModal.value = true;
+      }
+    };
+
+    /**
+     * Close AI modal
+     */
+    const closeAIModal = () => {
+      showAIModal.value = false;
+    };
+
+    /**
+     * Handle prompt copy
+     */
+    const handlePromptCopy = () => {
+      console.log('Prompt copied to clipboard!');
     };
 
     const getSeverityColor = (severity) => {
@@ -370,7 +421,12 @@ export default {
       totalToCompress,
       hasCompressibleImages,
       hasCompressionResults,
+      showAIModal,
+      aiPrompt,
       runCompressionTests,
+      handleDebugWithAI,
+      closeAIModal,
+      handlePromptCopy,
       getSeverityColor,
       getSeverityBadgeColor,
       getCategoryIcon,
@@ -500,5 +556,58 @@ export default {
 :deep(strong) {
   font-weight: 600;
   color: #92400e;
+}
+
+/* Debug with AI Button (Header Variant) - Subtle Design */
+.debug-ai-btn-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: hsl(35, 25%, 88%);
+  color: hsl(25, 15%, 45%);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid hsl(35, 20%, 82%);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.debug-ai-btn-header:hover {
+  background: hsl(207, 90%, 96%);
+  color: hsl(207, 97%, 45%);
+  border-color: hsl(207, 70%, 80%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(10, 137, 252, 0.15);
+}
+
+.debug-ai-btn-header:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(10, 137, 252, 0.1);
+}
+
+.debug-ai-btn-header svg {
+  opacity: 0.7;
+}
+
+.debug-ai-btn-header:hover svg {
+  opacity: 1;
+}
+
+.debug-ai-text {
+  display: inline;
+}
+
+/* Hide text on small screens, show icon only */
+@media (max-width: 768px) {
+  .debug-ai-text {
+    display: none;
+  }
+
+  .debug-ai-btn-header {
+    padding: 6px 8px;
+  }
 }
 </style>

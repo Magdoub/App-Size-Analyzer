@@ -124,6 +124,7 @@ export async function parseXAPK(file) {
     // Return aggregated result
     return {
       ...baseApkResult,
+      format: 'xapk',
       totalSize: totalInstallSize,
       installSize: totalInstallSize,
       downloadSize: totalDownloadSize,

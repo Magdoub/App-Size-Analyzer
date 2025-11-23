@@ -104,6 +104,7 @@ export async function parseIPA(file) {
 
   // Build result object with exactOptionalPropertyTypes compliance
   const result = {
+    format: 'ipa',
     metadata,
     frameworks,
     assets,
