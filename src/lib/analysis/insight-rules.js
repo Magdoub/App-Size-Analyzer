@@ -227,6 +227,16 @@ export const debugSymbolsRule = {
       // Add a warning about debug build
       const totalSize = context.totalInstallSize;
 
+      // Generate platform-specific fix suggestion for debug builds
+      let debugBuildFixSuggestion = '';
+      if (context.platform === 'iOS') {
+        debugBuildFixSuggestion = 'Build in Release mode with optimizations enabled. In Xcode: Product → Archive for distribution.';
+      } else if (context.platform === 'Android') {
+        debugBuildFixSuggestion = 'Build in Release mode with optimizations enabled. Use: ./gradlew assembleRelease or Build → Generate Signed Bundle/APK with ProGuard/R8 enabled.';
+      } else {
+        debugBuildFixSuggestion = 'Build in Release mode with optimizations enabled.';
+      }
+
       results.push({
         ruleId: 'R003',
         title: 'Debug Build Detected',
@@ -237,7 +247,7 @@ export const debugSymbolsRule = {
         potentialSavings: Math.floor(totalSize * 0.3), // Estimate 30% savings
         percentOfTotal: 30,
         actionable: true,
-        fixSuggestion: 'Build in Release mode with optimizations enabled. For iOS: Archive for distribution. For Android: Build release APK with ProGuard/R8.',
+        fixSuggestion: debugBuildFixSuggestion,
       });
     }
 
@@ -245,17 +255,11 @@ export const debugSymbolsRule = {
       const totalSize = affectedItems.reduce((sum, item) => sum + item.size, 0);
       const percentOfTotal = calculatePercentage(totalSize, context.totalInstallSize);
 
-      results.push({
-        ruleId: 'R003',
-        title: `${affectedItems.length} Debug Symbol Files Found`,
-        description: `Debug symbols and debug artifacts are included in the binary, adding unnecessary size.`,
-        severity: 'critical',
-        category: 'optimization',
-        affectedItems,
-        potentialSavings: totalSize,
-        percentOfTotal,
-        actionable: true,
-        fixSuggestion: `## Strip Debug Symbols from iOS Binaries
+      // Generate platform-specific fix suggestion
+      let fixSuggestion = '';
+
+      if (context.platform === 'iOS') {
+        fixSuggestion = `## Strip Debug Symbols from iOS Binaries
 
 Debug symbols significantly increase binary size. Strip them before App Store submission while preserving dSYMs for crash reporting.
 
@@ -387,26 +391,6 @@ nm MyApp.app/MyApp | wc -l
 objdump -h MyApp.app/MyApp | grep debug
 \`\`\`
 
-### For Android
-
-\`\`\`gradle
-android {
-    buildTypes {
-        release {
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
-                         'proguard-rules.pro'
-
-            // Strip native libraries
-            ndk {
-                debugSymbolLevel 'NONE'  // or 'SYMBOL_TABLE' for crash reports
-            }
-        }
-    }
-}
-\`\`\`
-
 ### Expected Savings
 
 Stripping debug symbols typically reduces binary size by **15-40%** depending on:
@@ -414,7 +398,162 @@ Stripping debug symbols typically reduces binary size by **15-40%** depending on
 - Number of third-party frameworks
 - Whether debug builds were accidentally shipped
 
-**Current debug files found:** ${affectedItems.length} files totaling ${(totalSize / 1024 / 1024).toFixed(2)}MB`,
+**Current debug files found:** ${affectedItems.length} files totaling ${(totalSize / 1024 / 1024).toFixed(2)}MB`;
+      } else if (context.platform === 'Android') {
+        fixSuggestion = `## Strip Debug Symbols from Android Binaries
+
+Debug symbols in native libraries can significantly increase APK/AAB size. Configure Gradle to strip them automatically.
+
+### Method 1: Gradle Build Configuration (Recommended)
+
+**Enable symbol stripping in build.gradle:**
+
+\`\`\`gradle
+android {
+    buildTypes {
+        release {
+            // Enable code shrinking and obfuscation
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                         'proguard-rules.pro'
+
+            // Strip native library debug symbols
+            ndk {
+                debugSymbolLevel 'SYMBOL_TABLE'  // or 'NONE' to strip all symbols
+            }
+        }
+    }
+
+    // If using App Bundle
+    bundle {
+        language {
+            enableSplit = true
+        }
+        density {
+            enableSplit = true
+        }
+        abi {
+            enableSplit = true
+        }
+    }
+}
+\`\`\`
+
+### Method 2: Manual Strip Command (Advanced)
+
+**For native libraries (.so files):**
+
+\`\`\`bash
+# Strip all symbols from native library
+\$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip lib/arm64-v8a/libmylib.so
+
+# Strip only debug symbols (keep dynamic symbols for crash reports)
+\$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-debug lib/arm64-v8a/libmylib.so
+\`\`\`
+
+### Method 3: Build Script Automation
+
+**Add to app/build.gradle:**
+
+\`\`\`gradle
+tasks.whenTaskAdded { task ->
+    if (task.name.contains("package") && task.name.contains("Release")) {
+        task.doLast {
+            fileTree(dir: "build/intermediates/merged_native_libs/release").each { file ->
+                if (file.name.endsWith(".so")) {
+                    println "Stripping: \${file.path}"
+                    exec {
+                        commandLine "\${System.env.ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip",
+                                    "--strip-debug",
+                                    file.path
+                    }
+                }
+            }
+        }
+    }
+}
+\`\`\`
+
+### Debug Symbol Level Options
+
+| Level | Description | Size Impact |
+|-------|-------------|-------------|
+| \`FULL\` | Keep all debug info | No reduction |
+| \`SYMBOL_TABLE\` | Strip debug info, keep symbols for stack traces | 30-50% reduction |
+| \`NONE\` | Strip everything | 50-70% reduction |
+
+**Recommendation:** Use \`SYMBOL_TABLE\` to balance size reduction with crash report quality.
+
+### Upload Symbols to Crash Reporting
+
+**After stripping, upload debug symbols separately:**
+
+\`\`\`bash
+# Firebase Crashlytics
+./gradlew :app:uploadCrashlyticsSymbolFileRelease
+
+# Sentry
+sentry-cli upload-dif --include-sources build/intermediates/merged_native_libs/release
+
+# Bugsnag
+bugsnag-cli upload android-ndk --variant release
+\`\`\`
+
+### Verify Stripping Worked
+
+\`\`\`bash
+# Check library size before/after
+ls -lh app/build/intermediates/merged_native_libs/release/out/lib/arm64-v8a/*.so
+
+# Check if debug symbols are stripped
+readelf -S libmylib.so | grep debug
+# Should return nothing if stripped
+
+# Check remaining symbols
+readelf -s libmylib.so | grep FUNC
+\`\`\`
+
+### Expected Savings
+
+Stripping debug symbols from native libraries typically reduces APK/AAB size by **30-70%** for the native component depending on:
+- Number of native libraries (.so files)
+- Amount of debug information included
+- NDK version and build configuration
+
+**Current debug files found:** ${affectedItems.length} files totaling ${(totalSize / 1024 / 1024).toFixed(2)}MB`;
+      } else {
+        // Unknown platform - provide generic advice
+        fixSuggestion = `## Strip Debug Symbols
+
+Debug symbols significantly increase binary size and should be removed from production builds.
+
+### General Recommendations:
+
+1. **Build in Release Mode**: Ensure you're creating a release build, not a debug build
+2. **Enable Symbol Stripping**: Configure your build system to strip debug symbols
+3. **Preserve Symbols Separately**: Keep debug symbols in a separate file for crash reporting
+4. **Upload to Crash Service**: Upload debug symbols to your crash reporting service (Firebase, Sentry, Bugsnag, etc.)
+
+### Platform-Specific Instructions:
+
+- **iOS**: Use Xcode's "Archive" feature with proper build settings (STRIP_INSTALLED_PRODUCT = YES)
+- **Android**: Configure Gradle with \`debugSymbolLevel = 'SYMBOL_TABLE'\` in your ndk block
+
+**Current debug files found:** ${affectedItems.length} files totaling ${(totalSize / 1024 / 1024).toFixed(2)}MB`;
+      }
+
+      results.push({
+        ruleId: 'R003',
+        title: `${affectedItems.length} Debug Symbol Files Found`,
+        description: `Debug symbols and debug artifacts are included in the binary, adding unnecessary size.`,
+        severity: 'critical',
+        category: 'optimization',
+        affectedItems,
+        potentialSavings: totalSize,
+        percentOfTotal,
+        actionable: true,
+        fixSuggestion,
       });
     }
 
@@ -679,6 +818,14 @@ export const unusedLocalizationRule = {
     const potentialSavings = Math.floor(totalSize * 0.5);
     const percentOfTotal = calculatePercentage(potentialSavings, context.totalInstallSize);
 
+    // Generate platform-specific fix suggestion
+    let localizationFixSuggestion = 'Review which languages your app actually supports and remove unused localizations.';
+    if (context.platform === 'iOS') {
+      localizationFixSuggestion += ' Use on-demand resources or App Store language-specific delivery to reduce initial download size.';
+    } else if (context.platform === 'Android') {
+      localizationFixSuggestion += ' Use Android App Bundles with language-specific delivery to reduce initial download size.';
+    }
+
     results.push({
       ruleId: 'R006',
       title: `${languages.size} Localizations Found`,
@@ -689,7 +836,7 @@ export const unusedLocalizationRule = {
       potentialSavings,
       percentOfTotal,
       actionable: true,
-      fixSuggestion: 'Review which languages your app actually supports and remove unused localizations. Use on-demand resources (iOS) or Android App Bundles for language-specific delivery.',
+      fixSuggestion: localizationFixSuggestion,
     });
 
     return results;
@@ -1167,13 +1314,11 @@ mogrify -format jpg -quality 85 *.png
 
 ### Platform-Specific Settings
 
-**iOS (Xcode):**
+${context.platform === 'iOS' ? `**iOS (Xcode):**
 1. Select Assets.xcassets → Inspector
 2. Enable "Compress PNG Files" (default: ON)
 3. Build Settings → COMPRESS_PNG_FILES = YES
-4. Consider using HEIC format for iOS 12+ (smaller than PNG)
-
-**Android (Gradle):**
+4. Consider using HEIC format for iOS 12+ (smaller than PNG)` : ''}${context.platform === 'Android' ? `**Android (Gradle):**
 \`\`\`gradle
 android {
   buildTypes {
@@ -1187,7 +1332,7 @@ android {
     }
   }
 }
-\`\`\`
+\`\`\`` : ''}
 
 ### Compression Guidelines
 
