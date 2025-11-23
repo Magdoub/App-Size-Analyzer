@@ -104,8 +104,10 @@ export function buildVerticalBarChartOptions(data, title, valueFormatter, option
       type: 'category',
       data: data.categories,
       axisLabel: {
-        rotate: data.categories.length > 6 ? 45 : 0,
-        interval: 0
+        rotate: data.categories.length > 4 ? 45 : 0,
+        interval: 0,
+        fontSize: 11,
+        margin: 10
       }
     },
     yAxis: {
@@ -224,8 +226,10 @@ export function buildStackedBarChartOptions(data, title, valueFormatter, options
       type: 'category',
       data: data.categories,
       axisLabel: {
-        rotate: data.categories.length > 6 ? 45 : 0,
-        interval: 0
+        rotate: data.categories.length > 4 ? 45 : 0,
+        interval: 0,
+        fontSize: 11,
+        margin: 10
       }
     },
     yAxis: {

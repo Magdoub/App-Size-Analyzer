@@ -89,6 +89,10 @@ export const useUiStore = defineStore('ui', {
       /** @type {Set<string>} */
       collapsedSections: new Set(),
     },
+
+    // Export modal state
+    /** @type {boolean} */
+    showExportModal: false,
   }),
 
   getters: {
@@ -502,6 +506,22 @@ export const useUiStore = defineStore('ui', {
       this.summary.scrollPosition = position;
     },
 
+    // ========== Export Modal Actions ==========
+
+    /**
+     * Open export modal
+     */
+    openExportModal() {
+      this.showExportModal = true;
+    },
+
+    /**
+     * Close export modal
+     */
+    closeExportModal() {
+      this.showExportModal = false;
+    },
+
     // ========== Global Actions ==========
 
     /**
@@ -565,6 +585,7 @@ export const useUiStore = defineStore('ui', {
         scrollPosition: 0,
         collapsedSections: new Set(),
       };
+      this.showExportModal = false;
     },
   },
 });

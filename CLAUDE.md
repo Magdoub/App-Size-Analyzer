@@ -202,6 +202,7 @@ Project setup verification (`/speckit.implement` step 4) auto-detects technology
 - JavaScript ES2020+ with Vue 3.5.24 (no TypeScript per project constitution) + Vue 3.5.24, Pinia 2.3.1, Vite 5.4.21 (009-sample-file-quickstart)
 - JavaScript ES2020+ with Vue 3.5.24 (no TypeScript per project constitution) + Vue 3.5.24, Pinia 2.3.1, fflate 0.8.2 (ZIP parsing), app-info-parser 1.1.6 (metadata extraction), ECharts 5.5.0 (visualization) (012-aab-framework-support)
 - JavaScript ES2020+ with Vue 3.5.24 (no TypeScript per project constitution) + Vue 3.5.24, Pinia 2.3.1, fflate 0.8.2 (ZIP parsing), app-info-parser 1.1.6 (metadata extraction), Canvas API (image compression), Comlink 4.4.2 (Web Worker communication), color2k 2.0.3 (color utilities) (011-insights-improvement)
+- JavaScript ES2020+ with Vue 3.5.24 (no TypeScript per project constitution) + Vue 3.5.24, Pinia 2.3.1 (state management), native browser APIs (Clipboard API, File API) (013-json-export)
 
 ## Recent Changes
 - 001-app-size-analyzer: Added TypeScript 5.x (strict mode), targeting ES2020+
