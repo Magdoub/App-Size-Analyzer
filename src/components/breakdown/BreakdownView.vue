@@ -19,7 +19,7 @@
           <span class="font-medium">Platform:</span> {{ currentAnalysis.platform }}
         </div>
         <div>
-          <span class="font-medium">Total Size:</span> {{ formatBytes(currentAnalysis.totalInstallSize) }}
+          <span class="font-medium">Total Install Size:</span> {{ formatBytes(currentAnalysis.totalInstallSize) }}
         </div>
         <div>
           <span class="font-medium">App:</span> {{ currentAnalysis.appName }}

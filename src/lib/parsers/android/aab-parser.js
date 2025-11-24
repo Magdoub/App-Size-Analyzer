@@ -101,7 +101,8 @@ export async function parseAAB(file, options = {}) {
   const architectures = extractArchitectures(entries);
 
   // Calculate sizes
-  const totalSize = entries.reduce((sum, e) => sum + e.size, 0);
+  // For Android AABs, files remain compressed on-disk, so use compressed sizes
+  const totalSize = entries.reduce((sum, e) => sum + e.compressedSize, 0);
   const downloadSize = entries.reduce((sum, e) => sum + e.compressedSize, 0);
 
   // Report progress: complete

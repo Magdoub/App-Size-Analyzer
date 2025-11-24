@@ -80,7 +80,8 @@ export async function parseAPKFromEntries(entries, originalFileSize) {
   const architectures = extractArchitectures(nativeLibs);
 
   // Calculate sizes
-  const totalSize = entries.reduce((sum, e) => sum + e.size, 0);
+  // For Android APKs, files remain compressed on-disk, so use compressed sizes
+  const totalSize = entries.reduce((sum, e) => sum + e.compressedSize, 0);
   const downloadSize = originalFileSize; // Use original file size for download size
 
   // Build result object with exactOptionalPropertyTypes compliance

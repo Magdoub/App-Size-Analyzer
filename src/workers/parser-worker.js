@@ -35,8 +35,8 @@ async function loadFrameworkParser() {
 /**
  * @typedef {Object} FileEntry
  * @property {string} path - File path
- * @property {number} size - Uncompressed size
- * @property {number} compressedSize - Compressed size
+ * @property {number} installSize - Actual bytes on device disk (platform-specific)
+ * @property {number} uncompressedSize - Uncompressed size (for reference)
  * @property {string} type - Content type
  * @property {Object} metadata - Additional metadata
  */
@@ -101,10 +101,11 @@ const api = {
 
       // Convert to FileEntry format
       reportProgress(85, 'Analyzing content types...');
+      // iOS: Files are extracted on disk, so installSize = uncompressed
       const fileEntries = entries.map((entry) => ({
         path: entry.name,
-        size: entry.size,
-        compressedSize: entry.compressedSize,
+        installSize: entry.size, // iOS files are uncompressed on disk
+        uncompressedSize: entry.size, // Same as installSize for iOS
         type: detectContentType(entry.name),
         metadata: {},
       }));
@@ -164,10 +165,11 @@ const api = {
 
       // Convert to FileEntry format
       reportProgress(85, 'Analyzing content types...');
+      // Android: Files stay compressed on-disk, so installSize = compressed
       const fileEntries = entries.map((entry) => ({
         path: entry.name,
-        size: entry.size,
-        compressedSize: entry.compressedSize,
+        installSize: entry.compressedSize, // Android files stay compressed on disk
+        uncompressedSize: entry.size,  // Store uncompressed size for reference
         type: detectContentType(entry.name),
         metadata: {},
       }));
@@ -214,10 +216,11 @@ const api = {
 
       // Convert to FileEntry format
       reportProgress(85, 'Analyzing content types...');
+      // iOS Framework: Files are extracted on disk, so installSize = uncompressed
       const fileEntries = entries.map((entry) => ({
         path: entry.name,
-        size: entry.size,
-        compressedSize: entry.compressedSize,
+        installSize: entry.size, // iOS framework files are uncompressed on disk
+        uncompressedSize: entry.size, // Same as installSize for iOS
         type: detectContentType(entry.name),
         metadata: {},
       }));

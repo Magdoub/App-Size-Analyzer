@@ -132,7 +132,7 @@
 
               <!-- Size Badge -->
               <div class="text-right pl-6 border-l border-[hsl(220,20%,88%)]">
-                <div class="text-xs font-medium text-[hsl(220,10%,50%)] uppercase tracking-wider">Total Size</div>
+                <div class="text-xs font-medium text-[hsl(220,10%,50%)] uppercase tracking-wider">Total Install Size</div>
                 <div class="text-xl font-bold text-[hsl(220,20%,20%)] tabular-nums">
                   {{ formatSize(analysisStore.currentAnalysis.totalInstallSize || analysisStore.currentAnalysis.parseResult?.totalSize || 0) }}
                 </div>

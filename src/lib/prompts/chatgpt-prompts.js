@@ -139,7 +139,7 @@ export function generateIndividualPrompt(params) {
   let issueSection = `Issue Detected: ${insightTitle}
 - Category: ${category}
 - Files Affected: ${affectedFiles.length} file${affectedFiles.length > 1 ? 's' : ''}
-- Total Size of Affected Files: ${totalAffectedSizeFormatted}`;
+- Total Install Size of Affected Files: ${totalAffectedSizeFormatted}`;
 
   if (percentOfTotal !== undefined && percentOfTotal !== null) {
     issueSection += ` (${percentOfTotal.toFixed(1)}% of total app)`;
@@ -256,7 +256,7 @@ export function generateSectionPrompt(params) {
     }
   }
 
-  appContext += `\n- Total Size: ${totalSizeFormatted}`;
+  appContext += `\n- Total Install Size: ${totalSizeFormatted}`;
 
   if (downloadSizeFormatted) {
     appContext += `\n- Download Size: ${downloadSizeFormatted}`;

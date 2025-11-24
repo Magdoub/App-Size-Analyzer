@@ -35,14 +35,14 @@
             @click="handleSort('size')"
             class="flex items-center justify-end gap-1 w-full hover:text-gray-900 focus:outline-none"
           >
-            Size
+            Install Size
             <svg v-if="uiStore.breakdown.sortBy === 'size'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path v-if="uiStore.breakdown.sortOrder === 'asc'" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
               <path v-else d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" />
             </svg>
           </button>
         </div>
-        <div class="col-span-2 text-right">Compressed</div>
+        <div class="col-span-2 text-right">Uncompressed</div>
         <div class="col-span-2 text-right">
           <button
             @click="handleSort('percentage')"
@@ -114,12 +114,12 @@
                 <span class="ml-2 text-xs text-gray-500">({{ visibleNodes[virtualRow.index].node.type }})</span>
               </div>
 
-              <!-- Size Column -->
+              <!-- Install Size Column -->
               <div class="col-span-2 text-right text-gray-700">
                 {{ formatBytes(visibleNodes[virtualRow.index].node.size) }}
               </div>
 
-              <!-- Compressed Size Column -->
+              <!-- Uncompressed Size Column (for reference) -->
               <div class="col-span-2 text-right text-gray-600">
                 {{ visibleNodes[virtualRow.index].node.compressedSize
                     ? formatBytes(visibleNodes[virtualRow.index].node.compressedSize)

@@ -30,6 +30,89 @@ import { unzip, Unzip } from 'fflate';
 const MAX_MEMORY_FILE_SIZE = 300 * 1024 * 1024;
 
 /**
+ * Parse ZIP central directory to extract compressed sizes
+ * @param {Uint8Array} data - ZIP file data
+ * @returns {Map<string, number>} Map of filename to compressed size
+ */
+function parseZIPCompressedSizes(data) {
+  const compressedSizes = new Map();
+
+  // Find End of Central Directory Record (EOCD)
+  // Signature: 0x06054b50
+  // EOCD is at the end of the file, work backwards to find it
+  let eocdOffset = -1;
+  for (let i = data.length - 22; i >= Math.max(0, data.length - 65557); i--) {
+    if (
+      data[i] === 0x50 &&
+      data[i + 1] === 0x4b &&
+      data[i + 2] === 0x05 &&
+      data[i + 3] === 0x06
+    ) {
+      eocdOffset = i;
+      break;
+    }
+  }
+
+  if (eocdOffset === -1) {
+    console.warn('[parseZIPCompressedSizes] Could not find EOCD, using uncompressed sizes');
+    return compressedSizes;
+  }
+
+  // Read central directory offset from EOCD (offset 16, 4 bytes, little-endian)
+  const centralDirOffset =
+    data[eocdOffset + 16] |
+    (data[eocdOffset + 17] << 8) |
+    (data[eocdOffset + 18] << 16) |
+    (data[eocdOffset + 19] << 24);
+
+  // Read number of entries from EOCD (offset 10, 2 bytes, little-endian)
+  const totalEntries = data[eocdOffset + 10] | (data[eocdOffset + 11] << 8);
+
+  // Parse central directory headers
+  let offset = centralDirOffset;
+  for (let i = 0; i < totalEntries && offset < data.length - 46; i++) {
+    // Check for Central Directory Header signature (0x02014b50)
+    if (
+      data[offset] !== 0x50 ||
+      data[offset + 1] !== 0x4b ||
+      data[offset + 2] !== 0x01 ||
+      data[offset + 3] !== 0x02
+    ) {
+      console.warn('[parseZIPCompressedSizes] Invalid central directory header signature');
+      break;
+    }
+
+    // Read compressed size (offset 20, 4 bytes, little-endian)
+    const compressedSize =
+      data[offset + 20] |
+      (data[offset + 21] << 8) |
+      (data[offset + 22] << 16) |
+      (data[offset + 23] << 24);
+
+    // Read filename length (offset 28, 2 bytes, little-endian)
+    const filenameLength = data[offset + 28] | (data[offset + 29] << 8);
+
+    // Read extra field length (offset 30, 2 bytes, little-endian)
+    const extraFieldLength = data[offset + 30] | (data[offset + 31] << 8);
+
+    // Read file comment length (offset 32, 2 bytes, little-endian)
+    const fileCommentLength = data[offset + 32] | (data[offset + 33] << 8);
+
+    // Read filename (starts at offset 46)
+    const filenameBytes = data.slice(offset + 46, offset + 46 + filenameLength);
+    const filename = new TextDecoder('utf-8').decode(filenameBytes);
+
+    // Store compressed size
+    compressedSizes.set(filename, compressedSize);
+
+    // Move to next central directory header
+    offset += 46 + filenameLength + extraFieldLength + fileCommentLength;
+  }
+
+  return compressedSizes;
+}
+
+/**
  * Extract all files from a ZIP archive
  * Uses synchronous unzip for simplicity - can handle files up to ~300MB
  * For larger files, use extractZIPStreaming or extractZIPMetadataOnly
@@ -52,6 +135,9 @@ export async function extractZIP(file, options = {}) {
   // Read file as ArrayBuffer
   const arrayBuffer = await file.arrayBuffer();
   const data = new Uint8Array(arrayBuffer);
+
+  // Parse ZIP central directory to get compressed sizes
+  const compressedSizes = parseZIPCompressedSizes(data);
 
   return new Promise((resolve, reject) => {
     const entries = [];
@@ -89,10 +175,13 @@ export async function extractZIP(file, options = {}) {
           continue;
         }
 
+        // Get compressed size from central directory, fallback to uncompressed size
+        const compressedSize = compressedSizes.get(name) ?? fileData.length;
+
         entries.push({
           name,
           size: fileData.length,
-          compressedSize: fileData.length, // fflate doesn't expose original compressed size
+          compressedSize,
           data: fileData,
           isDirectory: false,
         });

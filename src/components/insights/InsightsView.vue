@@ -70,7 +70,7 @@
           class="flex gap-4"
         >
           <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <div class="text-sm text-gray-600">Current Size</div>
+            <div class="text-sm text-gray-600">Current Install Size</div>
             <div class="text-2xl font-bold text-gray-900">{{ formatBytes(currentAnalysis.totalInstallSize, 1) }}</div>
           </div>
           <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
@@ -268,7 +268,12 @@ export default {
 
     // Calculate total savings
     const totalSavings = computed(() => {
-      return filteredInsights.value.reduce((sum, insight) => sum + (insight.potentialSavings || 0), 0);
+      const rawTotal = filteredInsights.value.reduce((sum, insight) => sum + (insight.potentialSavings || 0), 0);
+
+      // Cap at app size - you can't save more than the entire app!
+      // Insights may have overlapping files (e.g., same file flagged as "large" and "unused")
+      if (!currentAnalysis.value) return rawTotal;
+      return Math.min(rawTotal, currentAnalysis.value.totalInstallSize);
     });
 
     const totalSavingsPercent = computed(() => {

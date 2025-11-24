@@ -58,7 +58,7 @@ export const duplicateDetectionRule = {
         const fileEntry = context.allFiles.find((f) => f.path === path);
         return {
           path,
-          size: fileEntry?.size || 0,
+          size: fileEntry?.installSize || 0,
           reason: 'Duplicate of other files in this group',
           metadata: { hash, duplicateCount: paths.length },
         };
@@ -128,7 +128,7 @@ export const unoptimizedPNGRule = {
     // Filter for large PNGs (> 50KB) that are good candidates for optimization
     const largePNGs = pngFiles.filter((path) => {
       const fileEntry = context.allFiles.find((f) => f.path === path);
-      return fileEntry && fileEntry.size > 50 * 1024; // 50KB threshold
+      return fileEntry && fileEntry.installSize > 50 * 1024; // 50KB threshold
     });
 
     if (largePNGs.length === 0) {
@@ -137,7 +137,7 @@ export const unoptimizedPNGRule = {
 
     const affectedItems = largePNGs.map((path) => {
       const fileEntry = context.allFiles.find((f) => f.path === path);
-      const size = fileEntry?.size || 0;
+      const size = fileEntry?.installSize || 0;
 
       return {
         path,
@@ -214,7 +214,7 @@ export const debugSymbolsRule = {
         if (fileEntry) {
           affectedItems.push({
             path,
-            size: fileEntry.size,
+            size: fileEntry.installSize,
             reason: 'Debug symbols or debug build artifact',
             metadata: { type: 'debug_symbols' },
           });
@@ -609,7 +609,7 @@ export const iOSAssetCatalogRule = {
       const fileEntry = context.allFiles.find((f) => f.path === path);
       return {
         path,
-        size: fileEntry?.size || 0,
+        size: fileEntry?.installSize || 0,
         reason: '@2x/@3x image outside asset catalog - missing app thinning benefits',
         metadata: { recommendation: 'Move to asset catalog' },
       };
@@ -691,11 +691,11 @@ export const unusedAndroidResourcesRule = {
     );
 
     uncommonDensityFiles.forEach((file) => {
-      if (file.size > 10 * 1024) {
+      if (file.installSize > 10 * 1024) {
         // > 10KB
         affectedItems.push({
           path: file.path,
-          size: file.size,
+          size: file.installSize,
           reason: 'Resource in uncommon density folder (ldpi/tvdpi) - may be unused',
           metadata: { type: 'uncommon_density' },
         });
@@ -703,11 +703,11 @@ export const unusedAndroidResourcesRule = {
     });
 
     // Heuristic: Find very large resource files (> 500KB)
-    const largeResources = resourceFiles.filter((file) => file.size > 500 * 1024);
+    const largeResources = resourceFiles.filter((file) => file.installSize > 500 * 1024);
     largeResources.forEach((file) => {
       affectedItems.push({
         path: file.path,
-        size: file.size,
+        size: file.installSize,
         reason: 'Very large resource file - verify if used',
         metadata: { type: 'large_resource' },
       });
@@ -899,7 +899,7 @@ export const multipleArchitecturesRule = {
     // Calculate size per ABI
     const abiSizes = new Map();
     abiToFiles.forEach((files, abi) => {
-      const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+      const totalSize = files.reduce((sum, file) => sum + file.installSize, 0);
       abiSizes.set(abi, {
         abi,
         fileCount: files.length,
@@ -1097,21 +1097,21 @@ export const optimizeIconsRule = {
     // Find icons that are too large
     const unoptimizedIcons = iconFiles.filter((file) => {
       // Skip very small files (not actual icons)
-      if (file.size < 10 * 1024) return false;
+      if (file.installSize < 10 * 1024) return false;
 
       // Flag if larger than expected
       // For @3x icons: expect ~80KB, flag if >100KB
       // For @2x icons: expect ~50KB, flag if >75KB
       if (file.path.includes('@3x')) {
-        return file.size > 100 * 1024;
+        return file.installSize > 100 * 1024;
       } else if (file.path.includes('@2x')) {
-        return file.size > 75 * 1024;
+        return file.installSize > 75 * 1024;
       } else if (file.path.includes('1024')) {
         // 1024x1024 marketing icon
-        return file.size > 150 * 1024;
+        return file.installSize > 150 * 1024;
       } else {
         // Standard icons
-        return file.size > iconSizeThresholds.medium;
+        return file.installSize > iconSizeThresholds.medium;
       }
     });
 
@@ -1121,15 +1121,15 @@ export const optimizeIconsRule = {
 
     const affectedItems = unoptimizedIcons.map((file) => {
       // Estimate savings (typically 30-40% with lossless optimization)
-      const estimatedOptimizedSize = Math.floor(file.size * 0.65);
-      const potentialSavings = file.size - estimatedOptimizedSize;
+      const estimatedOptimizedSize = Math.floor(file.installSize * 0.65);
+      const potentialSavings = file.installSize - estimatedOptimizedSize;
 
       return {
         path: file.path,
-        size: file.size,
-        reason: `Icon is ${(file.size / 1024).toFixed(0)}KB (expected ~${file.path.includes('@3x') ? '80' : '50'}KB)`,
+        size: file.installSize,
+        reason: `Icon is ${(file.installSize / 1024).toFixed(0)}KB (expected ~${file.path.includes('@3x') ? '80' : '50'}KB)`,
         metadata: {
-          currentSize: file.size,
+          currentSize: file.installSize,
           expectedSize: estimatedOptimizedSize,
           potentialSavings
         }
@@ -1195,7 +1195,7 @@ export const imageOptimizationRule = {
 
     // Filter images > 4KB (minimum threshold from spec)
     const MIN_SIZE_THRESHOLD = 4096; // 4KB
-    const candidateImages = imageFiles.filter((file) => file.size > MIN_SIZE_THRESHOLD);
+    const candidateImages = imageFiles.filter((file) => file.installSize > MIN_SIZE_THRESHOLD);
 
     if (candidateImages.length === 0) {
       return results;
@@ -1223,11 +1223,11 @@ export const imageOptimizationRule = {
         estimatedSavingsPercent = 0.3; // JPEG already compressed, but can improve quality ratio
       }
 
-      const estimatedSavings = Math.floor(file.size * estimatedSavingsPercent);
+      const estimatedSavings = Math.floor(file.installSize * estimatedSavingsPercent);
 
       return {
         path: file.path,
-        size: file.size,
+        size: file.installSize,
         reason: `Could save ~${(estimatedSavings / 1024).toFixed(1)}KB with compression testing (JPEG 85% or WebP)`,
         metadata: {
           originalFormat: ext.substring(1), // Remove dot
@@ -1423,7 +1423,7 @@ export const firebaseAPIExposedRule = {
           ...file,
           service
         });
-        totalFirebaseSize += file.size;
+        totalFirebaseSize += file.installSize;
       });
     });
 
@@ -1460,7 +1460,7 @@ export const firebaseAPIExposedRule = {
 
     const affectedItems = firebaseFiles.slice(0, 20).map((file) => ({
       path: file.path,
-      size: file.size,
+      size: file.installSize,
       reason: `${file.service} - verify if needed`,
       metadata: { service: file.service }
     }));
@@ -1771,7 +1771,7 @@ export const iOSLocalizationMinificationRule = {
     for (const file of binaryPlistFiles) {
       affectedItems.push({
         path: file.path,
-        size: file.size,
+        size: file.installSize,
         reason: `Binary plist format (${file.language}) - could save ~${(file.potentialSavings / 1024).toFixed(1)}KB with SmallStrings`,
         metadata: {
           format: file.format,
@@ -1787,7 +1787,7 @@ export const iOSLocalizationMinificationRule = {
       if (!binaryPlistFiles.includes(file)) { // Avoid duplicates
         affectedItems.push({
           path: file.path,
-          size: file.size,
+          size: file.installSize,
           reason: `Contains ~${(file.commentBytes / 1024).toFixed(1)}KB of translator comments (${file.language})`,
           metadata: {
             format: file.format,
@@ -2030,11 +2030,11 @@ export const iOSUnnecessaryFilesRule = {
       for (const file of matchingFiles) {
         affectedItems.push({
           path: file.path,
-          size: file.size,
+          size: file.installSize,
           reason,
           metadata: { category, pattern: pattern.toString() }
         });
-        totalSize += file.size;
+        totalSize += file.installSize;
       }
     }
 
@@ -2169,11 +2169,11 @@ export const unusedFontsRule = {
         if (!declaredFonts.has(fileName)) {
           affectedItems.push({
             path: file.path,
-            size: file.size,
+            size: file.installSize,
             reason: 'Font not declared in Info.plist UIAppFonts - may be unused',
             metadata: { issue: 'undeclared', platform: 'iOS' }
           });
-          totalSize += file.size;
+          totalSize += file.installSize;
         }
       }
     }
@@ -2183,7 +2183,7 @@ export const unusedFontsRule = {
     const LARGE_FONT_THRESHOLD = 1024 * 1024; // 1MB
 
     for (const file of fontFiles) {
-      if (file.size > LARGE_FONT_THRESHOLD) {
+      if (file.installSize > LARGE_FONT_THRESHOLD) {
         const fileName = file.path.split('/').pop();
 
         // Check if likely CJK font by name
@@ -2195,13 +2195,13 @@ export const unusedFontsRule = {
         if (!alreadyAdded) {
           affectedItems.push({
             path: file.path,
-            size: file.size,
+            size: file.installSize,
             reason: isCJK
-              ? `Large CJK font (${(file.size / 1024 / 1024).toFixed(1)}MB) - consider subsetting for used characters only`
-              : `Large font file (${(file.size / 1024 / 1024).toFixed(1)}MB) - may have excessive character coverage`,
+              ? `Large CJK font (${(file.installSize / 1024 / 1024).toFixed(1)}MB) - consider subsetting for used characters only`
+              : `Large font file (${(file.installSize / 1024 / 1024).toFixed(1)}MB) - may have excessive character coverage`,
             metadata: { issue: 'oversized', isCJK, platform: context.platform }
           });
-          totalSize += file.size;
+          totalSize += file.installSize;
         }
       }
     }
@@ -2346,7 +2346,7 @@ export const videoOptimizationRule = {
     });
 
     const gifFiles = context.allFiles.filter(file =>
-      file.path.toLowerCase().endsWith('.gif') && file.size > 50 * 1024 // >50KB GIFs
+      file.path.toLowerCase().endsWith('.gif') && file.installSize > 50 * 1024 // >50KB GIFs
     );
 
     const lottieFiles = context.allFiles.filter(file =>
@@ -2368,24 +2368,24 @@ export const videoOptimizationRule = {
 
       // MOV files can often be converted to MP4/HEVC for 30-50% savings
       if (ext === '.mov') {
-        const savings = Math.floor(file.size * 0.4);
+        const savings = Math.floor(file.installSize * 0.4);
         affectedItems.push({
           path: file.path,
-          size: file.size,
+          size: file.installSize,
           reason: 'MOV file - convert to H.264/H.265 MP4 for ~40% savings',
           metadata: { type: 'video', format: 'mov', estimatedSavings: savings }
         });
-        totalSize += file.size;
+        totalSize += file.installSize;
         potentialSavings += savings;
-      } else if (file.size > 5 * 1024 * 1024) { // Large videos >5MB
-        const savings = Math.floor(file.size * 0.3);
+      } else if (file.installSize > 5 * 1024 * 1024) { // Large videos >5MB
+        const savings = Math.floor(file.installSize * 0.3);
         affectedItems.push({
           path: file.path,
-          size: file.size,
-          reason: `Large video (${(file.size / 1024 / 1024).toFixed(1)}MB) - verify compression settings`,
+          size: file.installSize,
+          reason: `Large video (${(file.installSize / 1024 / 1024).toFixed(1)}MB) - verify compression settings`,
           metadata: { type: 'video', format: ext.substring(1), estimatedSavings: savings }
         });
-        totalSize += file.size;
+        totalSize += file.installSize;
         potentialSavings += savings;
       }
     }
@@ -2393,28 +2393,28 @@ export const videoOptimizationRule = {
     // Process GIF files
     for (const file of gifFiles) {
       // GIFs are extremely inefficient - video format is 90% smaller
-      const savings = Math.floor(file.size * 0.9);
+      const savings = Math.floor(file.installSize * 0.9);
       affectedItems.push({
         path: file.path,
-        size: file.size,
+        size: file.installSize,
         reason: 'GIF animation - convert to video (MP4/WebM) for ~90% savings',
         metadata: { type: 'gif', estimatedSavings: savings }
       });
-      totalSize += file.size;
+      totalSize += file.installSize;
       potentialSavings += savings;
     }
 
     // Process Lottie files
     for (const file of lottieFiles) {
-      if (file.size > 50 * 1024) { // >50KB Lottie
-        const savings = Math.floor(file.size * 0.5);
+      if (file.installSize > 50 * 1024) { // >50KB Lottie
+        const savings = Math.floor(file.installSize * 0.5);
         affectedItems.push({
           path: file.path,
-          size: file.size,
+          size: file.installSize,
           reason: 'Large Lottie animation - consider minifying JSON or using dotLottie format',
           metadata: { type: 'lottie', estimatedSavings: savings }
         });
-        totalSize += file.size;
+        totalSize += file.installSize;
         potentialSavings += savings;
       }
     }

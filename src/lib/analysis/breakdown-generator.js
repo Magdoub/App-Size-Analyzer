@@ -71,7 +71,7 @@ function addFileToTree(root, file) {
         id: currentPath,
         name: part,
         path: currentPath,
-        size: isLastPart ? file.size : 0,
+        size: isLastPart ? file.installSize : 0,
         type: nodeType,
         parent: current.id,
         children: [],
@@ -79,8 +79,9 @@ function addFileToTree(root, file) {
       };
 
       // Only add compressedSize if it exists (exactOptionalPropertyTypes requirement)
-      if (isLastPart && file.compressedSize !== undefined) {
-        baseChild.compressedSize = file.compressedSize;
+      // compressedSize is for UI display only (shows in Breakdown table)
+      if (isLastPart && file.uncompressedSize !== undefined) {
+        baseChild.compressedSize = file.uncompressedSize;
       }
 
       child = baseChild;
@@ -88,9 +89,9 @@ function addFileToTree(root, file) {
       current.children.push(child);
     } else if (isLastPart && child) {
       // Update existing leaf node with file data
-      child.size = file.size;
-      if (file.compressedSize !== undefined) {
-        child.compressedSize = file.compressedSize;
+      child.size = file.installSize;
+      if (file.uncompressedSize !== undefined) {
+        child.compressedSize = file.uncompressedSize;
       }
       child.type = file.type;
     }

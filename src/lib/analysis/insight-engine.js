@@ -579,7 +579,7 @@ export async function ruleLargeFilesTop10(context) {
       path: file.path,
       size: file.size,
       type: file.type,
-      context: `#${index + 1} - ${((file.size / context.totalInstallSize) * 100).toFixed(1)}% of app`,
+      context: `#${index + 1} - ${((file.size / context.totalInstallSize) * 100).toFixed(1)}% of app install size`,
       recommendation: details.recommendation,
       estimatedSizeAfter: details.estimatedSize,
       potentialSavings: savings,
@@ -591,7 +591,7 @@ export async function ruleLargeFilesTop10(context) {
     severity: 'medium',
     category: 'size-optimization',
     title: 'Top 10 Largest Files',
-    description: `These ${sorted.length} files total ${(totalAffectedSize / 1024 / 1024).toFixed(1)}MB (${percentageOfApp.toFixed(1)}% of your app). Estimated savings: ${(totalEstimatedSavings / 1024 / 1024).toFixed(1)}MB if optimized.`,
+    description: `These ${sorted.length} files total ${(totalAffectedSize / 1024 / 1024).toFixed(1)}MB install size (${percentageOfApp.toFixed(1)}% of your app install size). Estimated savings: ${(totalEstimatedSavings / 1024 / 1024).toFixed(1)}MB install size if optimized.`,
     affectedFiles: filesWithDetails,
     recommendation:
       `Each file above has a specific recommendation. General strategies:\n
@@ -634,16 +634,16 @@ export async function ruleUncompressedImages(context) {
     })
     .filter((file) => {
       // Focus on larger images (>10KB) that would benefit from optimization
-      return file.size > 10240;
+      return file.installSize > 10240;
     })
-    .sort((a, b) => b.size - a.size)
+    .sort((a, b) => b.installSize - a.installSize)
     .slice(0, 20); // Top 20 images by size
 
   if (optimizableImages.length === 0) {
     return null;
   }
 
-  const totalAffectedSize = optimizableImages.reduce((sum, f) => sum + f.size, 0);
+  const totalAffectedSize = optimizableImages.reduce((sum, f) => sum + f.installSize, 0);
   const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
 
   // Calculate file-specific savings
@@ -652,8 +652,8 @@ export async function ruleUncompressedImages(context) {
     const ext = file.path.toLowerCase().split('.').pop();
     // Conservative estimates - actual savings depend on image content
     const savingsPercent = ext === 'bmp' ? 0.9 : ext === 'png' ? 0.2 : 0.15;
-    const estimatedSizeAfter = Math.round(file.size * (1 - savingsPercent));
-    const savings = file.size - estimatedSizeAfter;
+    const estimatedSizeAfter = Math.round(file.installSize * (1 - savingsPercent));
+    const savings = file.installSize - estimatedSizeAfter;
     totalEstimatedSavings += savings;
 
     const recommendation = ext === 'bmp' ? 'BMP is uncompressed - convert to PNG/WebP for major savings.' :
@@ -663,7 +663,7 @@ export async function ruleUncompressedImages(context) {
 
     return {
       path: file.path,
-      size: file.size,
+      size: file.installSize,
       type: file.type,
       recommendation,
       estimatedSizeAfter,
@@ -676,7 +676,7 @@ export async function ruleUncompressedImages(context) {
     severity: 'high',
     category: 'compression',
     title: 'Images Eligible for Format Optimization',
-    description: `Found ${optimizableImages.length} images (${percentageOfApp.toFixed(1)}% of app). Use "Run Compression Test" to verify actual savings on your device.`,
+    description: `Found ${optimizableImages.length} images (${percentageOfApp.toFixed(1)}% of app install size). Use "Run Compression Test" to verify actual savings on your device.`,
     affectedFiles: filesWithDetails,
     recommendation:
       `Image optimization action plan:\n
@@ -697,7 +697,7 @@ export async function ruleUncompressedImages(context) {
    • Enable asset catalog compression in Xcode (iOS)\n
    • Use Android App Bundle with density splits\n
    • Consider on-demand resources for rarely-used images\n\n
-**Estimated savings**: Up to ${(totalEstimatedSavings / 1024 / 1024).toFixed(1)}MB (~${((totalEstimatedSavings / context.totalInstallSize) * 100).toFixed(0)}% of total app size). Run compression test for accurate results.`,
+**Estimated savings**: Up to ${(totalEstimatedSavings / 1024 / 1024).toFixed(1)}MB install size (~${((totalEstimatedSavings / context.totalInstallSize) * 100).toFixed(0)}% of total app install size). Run compression test for accurate results.`,
     potentialSavings: totalEstimatedSavings,
     metadata: {
       totalAffectedSize,
@@ -765,7 +765,7 @@ export async function ruleFrameworkSizeAnalysis(context) {
     severity: 'high',
     category: 'size-optimization',
     title: 'Large Frameworks Detected',
-    description: `Found ${largeFrameworks.length} frameworks that are ${largeFrameworks[0]?.ratio.toFixed(1)}x larger than typical implementations (${percentageOfApp.toFixed(1)}% of app). This often indicates included debug symbols, unused modules, or missing optimizations.`,
+    description: `Found ${largeFrameworks.length} frameworks that are ${largeFrameworks[0]?.ratio.toFixed(1)}x larger than typical implementations (${percentageOfApp.toFixed(1)}% of app install size). This often indicates included debug symbols, unused modules, or missing optimizations.`,
     affectedFiles: largeFrameworks.map((fw) => ({
       path: fw.node.path,
       size: fw.node.size,
@@ -819,15 +819,15 @@ export async function ruleLargeMediaFiles(context) {
   const largeMediaFiles = context.allFiles
     .filter((file) => {
       const ext = file.path.toLowerCase().split('.').pop();
-      return mediaExtensions.includes(`.${ext}`) && file.size > largeSizeThreshold;
+      return mediaExtensions.includes(`.${ext}`) && file.installSize > largeSizeThreshold;
     })
-    .sort((a, b) => b.size - a.size);
+    .sort((a, b) => b.installSize - a.installSize);
 
   if (largeMediaFiles.length === 0) {
     return null;
   }
 
-  const totalAffectedSize = largeMediaFiles.reduce((sum, f) => sum + f.size, 0);
+  const totalAffectedSize = largeMediaFiles.reduce((sum, f) => sum + f.installSize, 0);
   const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
   const potentialSavings = Math.round(totalAffectedSize * 0.95); // Nearly all can be removed via streaming
 
@@ -836,12 +836,12 @@ export async function ruleLargeMediaFiles(context) {
     severity: 'critical',
     category: 'size-optimization',
     title: 'Large Media Files Bundled in App',
-    description: `Found ${largeMediaFiles.length} large audio/video files (${percentageOfApp.toFixed(1)}% of app). Bundling media reduces available storage on users' devices and increases download time. Consider streaming or on-demand download instead.`,
+    description: `Found ${largeMediaFiles.length} large audio/video files (${percentageOfApp.toFixed(1)}% of app install size). Bundling media reduces available storage on users' devices and increases download time. Consider streaming or on-demand download instead.`,
     affectedFiles: largeMediaFiles.map((file) => ({
       path: file.path,
-      size: file.size,
+      size: file.installSize,
       type: file.type,
-      context: `${(file.size / 1024 / 1024).toFixed(1)}MB - ${((file.size / context.totalInstallSize) * 100).toFixed(1)}% of app`,
+      context: `${(file.installSize / 1024 / 1024).toFixed(1)}MB install size - ${((file.installSize / context.totalInstallSize) * 100).toFixed(1)}% of app install size`,
     })),
     recommendation:
       `Media delivery best practices:\n
@@ -849,7 +849,7 @@ export async function ruleLargeMediaFiles(context) {
    • Host media on CDN (AWS CloudFront, Cloudflare, Akamai)\n
    • Implement progressive download with caching\n
    • Use adaptive bitrate streaming (HLS for video, multiple quality levels for audio)\n
-   • Expected app size reduction: ~${(totalAffectedSize / 1024 / 1024).toFixed(0)}MB\n\n
+   • Expected app install size reduction: ~${(totalAffectedSize / 1024 / 1024).toFixed(0)}MB\n\n
 2. **On-demand resources** (iOS specific):\n
    • Tag media as on-demand in Xcode\n
    • Download only when feature is accessed\n
@@ -869,7 +869,7 @@ export async function ruleLargeMediaFiles(context) {
    • Reduce resolution/bitrate - most mobile screens don't need 4K\n
    • Convert audio to AAC with appropriate bitrate (128kbps often sufficient)\n
    • Remove audio tracks from video if not needed\n\n
-**Impact**: Implementing streaming can reduce your app size by ${(potentialSavings / 1024 / 1024).toFixed(1)}MB, making it ${((potentialSavings / context.totalInstallSize) * 100).toFixed(0)}% smaller and significantly improving download conversion rates.`,
+**Impact**: Implementing streaming can reduce your app install size by ${(potentialSavings / 1024 / 1024).toFixed(1)}MB, making it ${((potentialSavings / context.totalInstallSize) * 100).toFixed(0)}% smaller and significantly improving download conversion rates.`,
     potentialSavings,
     metadata: {
       totalAffectedSize,
@@ -910,7 +910,7 @@ export async function ruleUnusedResources(context) {
     return null;
   }
 
-  const totalAffectedSize = suspiciousFiles.reduce((sum, f) => sum + f.size, 0);
+  const totalAffectedSize = suspiciousFiles.reduce((sum, f) => sum + f.installSize, 0);
   const percentageOfApp = (totalAffectedSize / context.totalInstallSize) * 100;
 
   // Only return insight if significant (> 0.5% of app)
@@ -923,10 +923,10 @@ export async function ruleUnusedResources(context) {
     severity: 'medium',
     category: 'size-optimization',
     title: 'Potentially Unused Resources Detected',
-    description: `Found ${suspiciousFiles.length} files with naming patterns suggesting they may be unused (${percentageOfApp.toFixed(1)}% of app). These include test data, samples, backups, or system files that shouldn't be in production builds.`,
+    description: `Found ${suspiciousFiles.length} files with naming patterns suggesting they may be unused (${percentageOfApp.toFixed(1)}% of app install size). These include test data, samples, backups, or system files that shouldn't be in production builds.`,
     affectedFiles: suspiciousFiles.slice(0, 30).map((file) => ({
       path: file.path,
-      size: file.size,
+      size: file.installSize,
       type: file.type,
       context: `${file.suspiciousCategory}`,
     })),
@@ -949,7 +949,7 @@ export async function ruleUnusedResources(context) {
    • Add pre-build validation script to detect suspicious patterns\n
    • Use tools like unused-webpack-plugin (React Native) or swift-outdated (iOS)\n
    • Enable warnings for unreferenced resources in IDE\n\n
-**Expected savings**: ${(totalAffectedSize / 1024 / 1024).toFixed(1)}MB by removing genuinely unused resources. Start with obvious candidates like backup files and system cruft.`,
+**Expected savings**: ${(totalAffectedSize / 1024 / 1024).toFixed(1)}MB install size by removing genuinely unused resources. Start with obvious candidates like backup files and system cruft.`,
     potentialSavings: Math.round(totalAffectedSize * 0.9), // Assume 90% are truly unused
     metadata: {
       totalAffectedSize,

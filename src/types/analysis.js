@@ -34,12 +34,16 @@
 /**
  * BreakdownNode - Hierarchical tree node representing a file, directory, framework, or module
  *
+ * Platform-specific size handling:
+ * - Android (APK/AAB): size = compressed (files stay compressed on-disk)
+ * - iOS (IPA): size = uncompressed (files are extracted on-disk)
+ *
  * @typedef {Object} BreakdownNode
  * @property {string} id - Unique ID (UUID or path-based)
  * @property {string} name - Display name (filename or component name)
  * @property {string} path - Full path in archive
- * @property {number} size - Total size in bytes (sum of children if directory)
- * @property {number} [compressedSize] - Compressed size (if applicable)
+ * @property {number} size - Install size in bytes (sum of children if directory, platform-specific)
+ * @property {number} [compressedSize] - Compressed size (for reference, UI display only)
  * @property {ContentType} type - Content type
  * @property {string} [parent] - Parent node ID (undefined for root)
  * @property {BreakdownNode[]} children - Child nodes (empty for files)
@@ -125,10 +129,14 @@
 /**
  * FileEntry - Flat representation of all files for search/filter
  *
+ * Platform-specific size handling:
+ * - Android (APK/AAB): installSize = compressed (files stay compressed on-disk)
+ * - iOS (IPA): installSize = uncompressed (files are extracted on-disk)
+ *
  * @typedef {Object} FileEntry
  * @property {string} path - Unique path in archive
- * @property {number} size - Uncompressed size in bytes
- * @property {number} [compressedSize] - Compressed size
+ * @property {number} installSize - Actual bytes on device disk (platform-specific)
+ * @property {number} [uncompressedSize] - Uncompressed size (for reference)
  * @property {ContentType} type - Content type
  * @property {string} [encoding] - File encoding
  * @property {Object} [metadata] - Additional metadata
