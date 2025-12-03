@@ -212,7 +212,7 @@
             <SampleFileGallery
               ref="sampleGalleryRef"
               :disabled="appStore.isLoading"
-              @file-selected="handleFileSelect"
+              @file-selected="handleSampleFileLoaded"
               @loading-error="handleSampleLoadError"
             />
           </div>
@@ -362,7 +362,7 @@ export default {
       }
     });
 
-    // Handle file selection
+    // Handle file selection (for regular file uploads)
     const handleFileSelect = async (file) => {
       // Cancel any in-progress sample file load
       if (sampleGalleryRef.value) {
@@ -391,6 +391,256 @@ export default {
 
       // Start analysis
       await analyzeFile(file, platform);
+    };
+
+    // Handle sample file loaded (for prebuilt JSON files)
+    const handleSampleFileLoaded = async (parseResult) => {
+      try {
+        appStore.setLoading(true, 50, 'Processing sample file...');
+        appStore.setError(null);
+
+        // Determine platform from parseResult.format
+        let platform;
+        if (parseResult.format === 'ipa') {
+          platform = 'iOS';
+        } else if (['apk', 'aab', 'xapk'].includes(parseResult.format)) {
+          platform = 'Android';
+        } else {
+          appStore.setError(`Unsupported format: ${parseResult.format}`);
+          return;
+        }
+
+        // Reconstruct file entries from parseResult
+        appStore.setLoading(true, 60, 'Building breakdown tree...');
+        const fileEntries = [];
+
+        // Helper function to detect content type from path
+        const detectContentType = (path) => {
+          const ext = path.substring(path.lastIndexOf('.') + 1).toLowerCase();
+          if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext)) return 'image';
+          if (['ttf', 'otf', 'woff', 'woff2'].includes(ext)) return 'font';
+          if (['json', 'xml', 'plist'].includes(ext)) return 'config';
+          if (['js', 'css', 'html'].includes(ext)) return 'web';
+          if (['dex', 'so', 'dylib', 'a'].includes(ext)) return 'code';
+          return 'other';
+        };
+
+        // Android formats
+        if (['apk', 'aab', 'xapk'].includes(parseResult.format)) {
+          // AAB format has a direct files array
+          if (parseResult.format === 'aab' && parseResult.files && parseResult.files.length > 0) {
+            parseResult.files.forEach(file => {
+              fileEntries.push({
+                path: file.path,
+                installSize: file.compressedSize || file.size,
+                uncompressedSize: file.size,
+                type: file.contentType || detectContentType(file.path),
+                metadata: {},
+              });
+            });
+          } else {
+            // APK/XAPK format uses separate arrays
+            // Add assets
+            if (parseResult.assets) {
+              parseResult.assets.forEach(asset => {
+                fileEntries.push({
+                  path: asset.path,
+                  installSize: asset.size,
+                  uncompressedSize: asset.size,
+                  type: detectContentType(asset.path),
+                  metadata: {},
+                });
+              });
+            }
+
+            // Add resources
+            if (parseResult.resources) {
+              parseResult.resources.forEach(resource => {
+                fileEntries.push({
+                  path: resource.path,
+                  installSize: resource.size,
+                  uncompressedSize: resource.size,
+                  type: 'resource',
+                  metadata: {},
+                });
+              });
+            }
+
+            // Add DEX files
+            if (parseResult.dexFiles) {
+              parseResult.dexFiles.forEach((dex, index) => {
+                fileEntries.push({
+                  path: `classes${index > 0 ? index + 1 : ''}.dex`,
+                  installSize: dex.fileSize,
+                  uncompressedSize: dex.fileSize,
+                  type: 'code',
+                  metadata: { methodCount: dex.methodCount, classCount: dex.classCount },
+                });
+              });
+            }
+
+            // Add native libraries
+            if (parseResult.nativeLibs) {
+              parseResult.nativeLibs.forEach(lib => {
+                fileEntries.push({
+                  path: lib.path,
+                  installSize: lib.size,
+                  uncompressedSize: lib.size,
+                  type: 'code',
+                  metadata: { architecture: lib.architecture },
+                });
+              });
+            }
+          }
+        }
+        // iOS formats
+        else if (parseResult.format === 'ipa') {
+          // Add assets from the IPA
+          if (parseResult.assets) {
+            parseResult.assets.forEach(asset => {
+              fileEntries.push({
+                path: asset.path,
+                installSize: asset.size,
+                uncompressedSize: asset.size,
+                type: asset.type || detectContentType(asset.path),
+                metadata: {
+                  inCatalog: asset.inCatalog,
+                  scale: asset.scale,
+                },
+              });
+            });
+          }
+
+          // Add frameworks if they exist
+          if (parseResult.frameworks && Array.isArray(parseResult.frameworks)) {
+            parseResult.frameworks.forEach(fw => {
+              if (fw.files) {
+                fw.files.forEach(file => {
+                  fileEntries.push({
+                    path: file.path,
+                    installSize: file.size,
+                    uncompressedSize: file.size,
+                    type: detectContentType(file.path),
+                    metadata: { framework: fw.name },
+                  });
+                });
+              }
+            });
+          }
+        }
+
+        const breakdownRoot = buildBreakdownTree(fileEntries);
+        const isValid = validateTreeSize(breakdownRoot, parseResult.totalSize);
+
+        if (!isValid) {
+          console.warn('Tree size validation failed');
+        }
+
+        // Determine metadata based on platform and format
+        let analysisData;
+
+        if (parseResult.format === 'aab') {
+          // AAB format
+          analysisData = {
+            fileId: `sample-${parseResult.metadata.packageName}-${Date.now()}`,
+            timestamp: new Date(),
+            platform: 'Android',
+            parseResult,
+            metadata: {
+              platform: 'Android',
+              bundleId: parseResult.metadata.packageName,
+              version: parseResult.metadata.versionName,
+            },
+            appName: parseResult.metadata.packageName,
+            bundleId: parseResult.metadata.packageName,
+            version: parseResult.metadata.versionName,
+            versionCode: parseResult.metadata.versionCode,
+            totalInstallSize: parseResult.installSize,
+            totalDownloadSize: parseResult.downloadSize,
+            breakdownRoot,
+            allFiles: fileEntries,
+            frameworks: [],
+            assets: parseResult.assets || [],
+            localizations: [],
+            executables: [],
+            nativeLibraries: parseResult.nativeLibs || [],
+            dexFiles: parseResult.dexFiles || [],
+            modules: parseResult.modules || [],
+            architectures: parseResult.architectures || [],
+          };
+        } else if (parseResult.format === 'ipa') {
+          // IPA format
+          analysisData = {
+            fileId: `sample-${parseResult.metadata.bundleId}-${Date.now()}`,
+            timestamp: new Date(),
+            platform: 'iOS',
+            parseResult,
+            metadata: {
+              platform: 'iOS',
+              bundleId: parseResult.metadata.bundleId,
+              version: parseResult.metadata.version,
+            },
+            appName: parseResult.metadata.displayName || parseResult.metadata.bundleId,
+            bundleId: parseResult.metadata.bundleId,
+            version: parseResult.metadata.version,
+            totalInstallSize: parseResult.installSize,
+            totalDownloadSize: parseResult.downloadSize,
+            breakdownRoot,
+            allFiles: fileEntries,
+            frameworks: (parseResult.frameworks || []).map((fw) => fw.name || fw.path),
+            assets: parseResult.assets || [],
+            localizations: Array.isArray(parseResult.localizations) ? parseResult.localizations : [],
+            executables: parseResult.mainExecutable ? [parseResult.mainExecutable] : [],
+            nativeLibraries: [],
+            dexFiles: [],
+            modules: [],
+            architectures: parseResult.architectures || [],
+          };
+        } else if (parseResult.format === 'apk') {
+          // APK format
+          analysisData = {
+            fileId: `sample-${parseResult.metadata.packageName}-${Date.now()}`,
+            timestamp: new Date(),
+            platform: 'Android',
+            parseResult,
+            metadata: {
+              platform: 'Android',
+              bundleId: parseResult.metadata.packageName,
+              version: parseResult.metadata.versionName,
+            },
+            appName: parseResult.metadata.packageName,
+            bundleId: parseResult.metadata.packageName,
+            version: parseResult.metadata.versionName,
+            versionCode: parseResult.metadata.versionCode,
+            totalInstallSize: parseResult.installSize,
+            totalDownloadSize: parseResult.downloadSize,
+            breakdownRoot,
+            allFiles: fileEntries,
+            frameworks: [],
+            assets: parseResult.assets || [],
+            localizations: [],
+            executables: [],
+            nativeLibraries: parseResult.nativeLibs || [],
+            dexFiles: parseResult.dexFiles || [],
+            modules: [],
+            architectures: parseResult.architectures || [],
+          };
+        }
+
+        appStore.setLoading(true, 90, 'Finalizing analysis...');
+
+        // Store analysis
+        analysisStore.setAnalysisResult(analysisData);
+
+        // Switch to breakdown view (same as regular file upload)
+        uiStore.setActiveView('breakdown');
+
+        appStore.setLoading(false);
+      } catch (error) {
+        console.error('Error processing sample file:', error);
+        appStore.setError(`Failed to process sample file: ${error.message}`);
+        appStore.setLoading(false);
+      }
     };
 
     // Handle validation errors
@@ -602,6 +852,7 @@ export default {
       tabs,
       formatSize,
       handleFileSelect,
+      handleSampleFileLoaded,
       handleValidationError,
       handleSampleLoadError,
       handleNewAnalysis,
