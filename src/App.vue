@@ -144,7 +144,7 @@
 
       <!-- Main Content -->
       <main :class="[
-        'relative flex-1 w-full',
+        'relative flex-1 w-full pb-20',
         uiStore.activeView === 'upload'
           ? 'flex flex-col items-center justify-center px-4 py-12'
           : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'
@@ -236,7 +236,7 @@
       </main>
 
       <!-- Footer -->
-      <footer class="relative border-t border-[hsl(35,20%,85%)] bg-gradient-to-b from-white/60 to-[hsl(35,35%,94%)]/60 backdrop-blur-sm">
+      <footer class="fixed bottom-0 left-0 right-0 z-40 border-t border-[hsl(35,20%,85%)] bg-gradient-to-b from-white/60 to-[hsl(35,35%,94%)]/60 backdrop-blur-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
