@@ -1,0 +1,565 @@
+{
+  "format": "ipa",
+  "metadata": {
+    "bundleId": "helperproducts.Procreate-Brushes",
+    "version": "2.10.6",
+    "displayName": "Tools",
+    "minimumOSVersion": "10.0",
+    "supportedPlatforms": [
+      "iPhoneOS"
+    ],
+    "deviceFamily": [
+      1,
+      2
+    ],
+    "architectures": [
+      "arm64"
+    ]
+  },
+  "frameworks": [],
+  "assets": [
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-2.png",
+      "name": "Tools-Splash-2.png",
+      "type": "image",
+      "size": 25979,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-2.png",
+      "name": "Tools-Girl-2.png",
+      "type": "image",
+      "size": 24784,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-1@3x.png",
+      "name": "Tools-Girl-1@3x.png",
+      "type": "image",
+      "size": 179615,
+      "scale": 3,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/AmaticSC-Regular.ttf",
+      "name": "AmaticSC-Regular.ttf",
+      "type": "font",
+      "size": 142696,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Regular-AppIcon@1x.png",
+      "name": "Regular-AppIcon@1x.png",
+      "type": "image",
+      "size": 17808,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-1@3x~ipad.png",
+      "name": "Tools-Girl-1@3x~ipad.png",
+      "type": "image",
+      "size": 61092,
+      "scale": 3,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-3.png",
+      "name": "Tools-Splash-3.png",
+      "type": "image",
+      "size": 8458,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-1.png",
+      "name": "Tools-Splash-1.png",
+      "type": "image",
+      "size": 6937,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-1.png",
+      "name": "Tools-Girl-1.png",
+      "type": "image",
+      "size": 26807,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/icon.png",
+      "name": "icon.png",
+      "type": "image",
+      "size": 51713,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-White-Big@3x~ipad.png",
+      "name": "Tools-White-Big@3x~ipad.png",
+      "type": "image",
+      "size": 70057,
+      "scale": 3,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-1@3x~ipad.png",
+      "name": "Tools-Splash-1@3x~ipad.png",
+      "type": "image",
+      "size": 12541,
+      "scale": 3,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Fairy-2@3x.png",
+      "name": "Tools-Fairy-2@3x.png",
+      "type": "image",
+      "size": 423606,
+      "scale": 3,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Regular-AppIcon@3x~ipad.png",
+      "name": "Regular-AppIcon@3x~ipad.png",
+      "type": "image",
+      "size": 30957,
+      "scale": 3,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-2@2x~ipad.png",
+      "name": "Tools-Splash-2@2x~ipad.png",
+      "type": "image",
+      "size": 54262,
+      "scale": 2,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Fairy-2@2x.png",
+      "name": "Tools-Fairy-2@2x.png",
+      "type": "image",
+      "size": 39448,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/AlexBrush-Regular.ttf",
+      "name": "AlexBrush-Regular.ttf",
+      "type": "font",
+      "size": 115420,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Caveat-Bold.ttf",
+      "name": "Caveat-Bold.ttf",
+      "type": "font",
+      "size": 257364,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/bookdark2.mp4",
+      "name": "bookdark2.mp4",
+      "type": "video",
+      "size": 1242157,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-2@2x~ipad.png",
+      "name": "Tools-Girl-2@2x~ipad.png",
+      "type": "image",
+      "size": 48329,
+      "scale": 2,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/onb_vid.mp4",
+      "name": "onb_vid.mp4",
+      "type": "video",
+      "size": 2478171,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-1@2x.png",
+      "name": "Tools-Girl-1@2x.png",
+      "type": "image",
+      "size": 33723,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/AppIcon60x60@2x.png",
+      "name": "AppIcon60x60@2x.png",
+      "type": "image",
+      "size": 17070,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-1@2x~ipad.png",
+      "name": "Tools-Girl-1@2x~ipad.png",
+      "type": "image",
+      "size": 50901,
+      "scale": 2,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-1@3x.png",
+      "name": "Tools-Splash-1@3x.png",
+      "type": "image",
+      "size": 33514,
+      "scale": 3,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-White-Big@2x~ipad.png",
+      "name": "Tools-White-Big@2x~ipad.png",
+      "type": "image",
+      "size": 58298,
+      "scale": 2,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-3@2x.png",
+      "name": "Tools-Splash-3@2x.png",
+      "type": "image",
+      "size": 10318,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-1@2x~ipad.png",
+      "name": "Tools-Splash-1@2x~ipad.png",
+      "type": "image",
+      "size": 10741,
+      "scale": 2,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Regular-AppIcon@2x~ipad.png",
+      "name": "Regular-AppIcon@2x~ipad.png",
+      "type": "image",
+      "size": 25840,
+      "scale": 2,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-2@3x~ipad.png",
+      "name": "Tools-Splash-2@3x~ipad.png",
+      "type": "image",
+      "size": 65629,
+      "scale": 3,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/AlfaSlabOne-Regular.ttf",
+      "name": "AlfaSlabOne-Regular.ttf",
+      "type": "font",
+      "size": 92956,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Firebase_FirebaseInAppMessaging_iOS.bundle/close-with-transparency@2x.png",
+      "name": "close-with-transparency@2x.png",
+      "type": "image",
+      "size": 837,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Firebase_FirebaseInAppMessaging_iOS.bundle/close-with-transparency.png",
+      "name": "close-with-transparency.png",
+      "type": "image",
+      "size": 379,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-3@3x.png",
+      "name": "Tools-Splash-3@3x.png",
+      "type": "image",
+      "size": 56134,
+      "scale": 3,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-White-Big@1x.png",
+      "name": "Tools-White-Big@1x.png",
+      "type": "image",
+      "size": 142174,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-1@2x.png",
+      "name": "Tools-Splash-1@2x.png",
+      "type": "image",
+      "size": 7495,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-2@3x~ipad.png",
+      "name": "Tools-Girl-2@3x~ipad.png",
+      "type": "image",
+      "size": 57238,
+      "scale": 3,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/AnnieUseYourTelescope-Regular.ttf",
+      "name": "AnnieUseYourTelescope-Regular.ttf",
+      "type": "font",
+      "size": 45472,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Bangers-Regular.ttf",
+      "name": "Bangers-Regular.ttf",
+      "type": "font",
+      "size": 92468,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/icon@2x.png",
+      "name": "icon@2x.png",
+      "type": "image",
+      "size": 51713,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Fairy-2@3x~ipad.png",
+      "name": "Tools-Fairy-2@3x~ipad.png",
+      "type": "image",
+      "size": 71980,
+      "scale": 3,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-2@2x.png",
+      "name": "Tools-Girl-2@2x.png",
+      "type": "image",
+      "size": 31722,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-White-Big@2x.png",
+      "name": "Tools-White-Big@2x.png",
+      "type": "image",
+      "size": 36583,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-3@2x~ipad.png",
+      "name": "Tools-Splash-3@2x~ipad.png",
+      "type": "image",
+      "size": 15565,
+      "scale": 2,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/AppIcon76x76@2x~ipad.png",
+      "name": "AppIcon76x76@2x~ipad.png",
+      "type": "image",
+      "size": 26336,
+      "scale": 2,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-White-Big@3x.png",
+      "name": "Tools-White-Big@3x.png",
+      "type": "image",
+      "size": 992873,
+      "scale": 3,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Girl-2@3x.png",
+      "name": "Tools-Girl-2@3x.png",
+      "type": "image",
+      "size": 167455,
+      "scale": 3,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/icon@3x.png",
+      "name": "icon@3x.png",
+      "type": "image",
+      "size": 51713,
+      "scale": 3,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-2@2x.png",
+      "name": "Tools-Splash-2@2x.png",
+      "type": "image",
+      "size": 34695,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Regular-AppIcon@3x.png",
+      "name": "Regular-AppIcon@3x.png",
+      "type": "image",
+      "size": 144735,
+      "scale": 3,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/bookwhite2.mp4",
+      "name": "bookwhite2.mp4",
+      "type": "video",
+      "size": 1254197,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Fairy-2@2x~ipad.png",
+      "name": "Tools-Fairy-2@2x~ipad.png",
+      "type": "image",
+      "size": 60671,
+      "scale": 2,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Comp 1.mp4",
+      "name": "Comp 1.mp4",
+      "type": "video",
+      "size": 8977603,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Fairy-2@1x.png",
+      "name": "Tools-Fairy-2@1x.png",
+      "type": "image",
+      "size": 59790,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-3@3x~ipad.png",
+      "name": "Tools-Splash-3@3x~ipad.png",
+      "type": "image",
+      "size": 18481,
+      "scale": 3,
+      "inCatalog": false,
+      "idiom": "pad"
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Regular-AppIcon@2x.png",
+      "name": "Regular-AppIcon@2x.png",
+      "type": "image",
+      "size": 16636,
+      "scale": 2,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Tools-Splash-2@3x.png",
+      "name": "Tools-Splash-2@3x.png",
+      "type": "image",
+      "size": 204700,
+      "scale": 3,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/Procreate Brushes.app/Nanum Brush Script Regular.ttf",
+      "name": "Nanum Brush Script Regular.ttf",
+      "type": "font",
+      "size": 3736044,
+      "scale": 1,
+      "inCatalog": false
+    }
+  ],
+  "localizations": [
+    "de",
+    "he",
+    "ar",
+    "el",
+    "zh-Hans",
+    "ja",
+    "en",
+    "uk",
+    "nb",
+    "es",
+    "da",
+    "et",
+    "it",
+    "sk",
+    "ms",
+    "sv",
+    "cs",
+    "ko",
+    "zh-Hant",
+    "hu",
+    "tr",
+    "pl",
+    "pt-BR",
+    "vi",
+    "ru",
+    "fr",
+    "fi",
+    "id",
+    "nl",
+    "th",
+    "pt-PT",
+    "ro",
+    "hr",
+    "hi",
+    "ca"
+  ],
+  "architectures": [
+    "arm64"
+  ],
+  "totalSize": 73600437,
+  "downloadSize": 48678261,
+  "installSize": 73600437,
+  "mainExecutable": {
+    "magic": 3489328638,
+    "cputype": 16777228,
+    "cpusubtype": 0,
+    "filetype": 2,
+    "ncmds": 113,
+    "sizeofcmds": 12312,
+    "flags": 10584197,
+    "architecture": "arm64",
+    "hasDebugSymbols": true,
+    "fileSize": 29769472
+  },
+  "assetCatalog": {
+    "entries": [],
+    "totalSize": 19416,
+    "imageCount": 0,
+    "colorCount": 0,
+    "dataCount": 0
+  }
+}

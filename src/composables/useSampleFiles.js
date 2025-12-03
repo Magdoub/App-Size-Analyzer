@@ -1,6 +1,6 @@
 /**
  * Composable for discovering and loading sample files
- * Provides file metadata, loading state, and file loading functionality
+ * Provides file metadata, loading state, and pre-analyzed JSON loading
  *
  * @module useSampleFiles
  */
@@ -10,7 +10,8 @@ import { formatBytes } from '../utils/formatters';
 
 /**
  * @typedef {Object} SampleFileMetadata
- * @property {string} url - Vite-resolved URL path
+ * @property {string} url - Vite-resolved URL path (points to binary for metadata)
+ * @property {string} jsonUrl - URL to prebuilt JSON analysis
  * @property {string} name - Original file name with extension
  * @property {string} displayName - Human-readable name for display
  * @property {'iOS'|'Android'} platform - Platform label
@@ -36,22 +37,42 @@ function cleanFileName(fileName) {
 }
 
 /**
- * Extract basic metadata from file path and URL
- * @param {string} filePath - File path from import.meta.glob
- * @param {string} url - Resolved URL
+ * Extract basic metadata from file path and JSON URL
+ * @param {string} jsonPath - JSON file path from import.meta.glob
+ * @param {string} jsonUrl - Resolved JSON URL
+ * @param {string} binaryUrl - Resolved binary URL (for metadata)
  * @returns {SampleFileMetadata} Basic file metadata
  */
-function extractBasicMetadata(filePath, url) {
-  const fileName = filePath.split('/').pop();
-  const extension = fileName.split('.').pop().toLowerCase();
+function extractBasicMetadata(jsonPath, jsonUrl, binaryUrl) {
+  // Extract original file name from JSON path (e.g., "facebook-539-0-0-54-69-apkpure.json" → "facebook")
+  const jsonFileName = jsonPath.split('/').pop();
+
+  // Map JSON file names to original binary names (infer from slug)
+  // The JSON files were created from the binaries, so we need to map back
+  const jsonToOriginal = {
+    'a-night-battle-hd-1-2.json': { name: 'A Night Battle HD 1.2.ipa', ext: 'ipa' },
+    'facebook-539-0-0-54-69-apkpure.json': { name: 'Facebook_539.0.0.54.69_APKPure.apk', ext: 'apk' },
+    'instagram-lite-486-0-0-13-109-apkpure.json': { name: 'Instagram Lite_486.0.0.13.109_APKPure.apk', ext: 'apk' },
+    'tools-for-procreate-ipaomtk-com.json': { name: 'Tools-for-Procreate-IPAOMTK.COM.ipa', ext: 'ipa' },
+    'com-grasshopper-dialer-6-8-0-2958-minapi29-arm64-v8a-armeabi-armeabi-v7a-x86-x86-64-nodpi-apkmirror-com.json': { name: 'com.grasshopper.dialer_6.8.0-2958_minAPI29(arm64-v8a,armeabi,armeabi-v7a,x86,x86_64)(nodpi)_apkmirror.com.apk', ext: 'apk' },
+    'sample-app-careem-release.json': { name: 'sample-app-careem-release.aab', ext: 'aab' }
+  };
+
+  const original = jsonToOriginal[jsonFileName];
+  if (!original) {
+    console.warn(`Unknown JSON file: ${jsonFileName}`);
+    return null;
+  }
+
+  const fileName = original.name;
+  const extension = original.ext;
   const platform = extension === 'ipa' ? 'iOS' : 'Android';
   const displayName = cleanFileName(fileName);
-
-  // Format label for display (IPA, APK, AAB)
   const formatLabel = extension.toUpperCase();
 
   return {
-    url,
+    url: binaryUrl, // Binary URL for metadata (HEAD requests for size)
+    jsonUrl,        // JSON URL for analysis data
     name: fileName,
     displayName,
     platform,
@@ -79,41 +100,59 @@ async function fetchFileSize(url) {
 }
 
 /**
- * Load sample file from URL and convert to File object
- * @param {string} url - File URL from import.meta.glob
- * @param {string} fileName - Original file name
+ * Load prebuilt JSON analysis from URL
+ * @param {string} jsonUrl - JSON file URL
+ * @param {string} fileName - Original file name (for error messages)
  * @param {AbortSignal} [signal] - Optional abort signal for cancellation
- * @returns {Promise<File>} File object compatible with existing upload handlers
+ * @returns {Promise<object>} ParseResult object
  */
-async function loadSampleFileAsFile(url, fileName, signal = null) {
-  // 1. Fetch file as blob (handles large files efficiently)
-  // Retry once on failure (handles cold-start issues)
-  let response;
+async function loadPrebuiltJSON(jsonUrl, fileName, signal = null) {
   try {
-    response = await fetch(url, { signal });
-  } catch (err) {
-    if (err.name !== 'AbortError') {
-      // Retry once
-      response = await fetch(url, { signal });
-    } else {
-      throw err;
+    const response = await fetch(jsonUrl, { signal });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch JSON for ${fileName}: HTTP ${response.status}`);
     }
+
+    const jsonString = await response.text();
+    return JSON.parse(jsonString, jsonReviver);
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw err; // Re-throw abort errors
+    }
+    console.error(`Error loading prebuilt JSON for ${fileName}:`, err);
+    throw new Error(`Failed to load analysis for ${fileName}`);
+  }
+}
+
+/**
+ * JSON reviver to restore special types (Uint8Array, Map, Set)
+ * @param {string} key
+ * @param {*} value
+ * @returns {*}
+ */
+function jsonReviver(key, value) {
+  // Restore Uint8Array from base64 string
+  if (value && typeof value === 'object' && value.__type === 'Uint8Array') {
+    const binaryString = atob(value.data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
   }
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${fileName}: HTTP ${response.status}`);
+  // Restore Map from entries
+  if (value && typeof value === 'object' && value.__type === 'Map') {
+    return new Map(value.entries);
   }
 
-  // 2. Convert response to blob
-  const blob = await response.blob();
+  // Restore Set from values
+  if (value && typeof value === 'object' && value.__type === 'Set') {
+    return new Set(value.values);
+  }
 
-  // 3. Create File object (same API as drag-and-drop upload)
-  const file = new File([blob], fileName, {
-    type: blob.type || 'application/octet-stream',
-    lastModified: Date.now(),
-  });
-
-  return file;
+  return value;
 }
 
 /**
@@ -128,19 +167,52 @@ export function useSampleFiles() {
   const error = ref(null);
   const activeAbortController = ref(null);
 
-  // T003: Discover sample files using Vite's import.meta.glob (build-time)
-  const sampleFileUrls = import.meta.glob('/sample-files/*.{ipa,apk,aab}', {
+  // Discover prebuilt JSON analysis files
+  const jsonFileUrls = import.meta.glob('/prebuilt-analyses/*.json', {
     query: '?url',
     import: 'default',
     eager: true,
   });
 
-  // Initialize sample files with basic metadata
-  sampleFiles.value = Object.entries(sampleFileUrls).map(([filePath, url]) =>
-    extractBasicMetadata(filePath, url)
-  );
+  // Discover original binary files (for metadata display only)
+  const binaryFileUrls = import.meta.glob('/sample-files/*.{ipa,apk,aab}', {
+    query: '?url',
+    import: 'default',
+    eager: true,
+  });
 
-  // T006: Fetch file sizes asynchronously on mount (progressive enhancement)
+  // Initialize sample files with metadata
+  sampleFiles.value = Object.entries(jsonFileUrls)
+    .map(([jsonPath, jsonUrl]) => {
+      const jsonFileName = jsonPath.split('/').pop();
+
+      // Find corresponding binary file path
+      const jsonToOriginal = {
+        'a-night-battle-hd-1-2.json': 'A Night Battle HD 1.2.ipa',
+        'facebook-539-0-0-54-69-apkpure.json': 'Facebook_539.0.0.54.69_APKPure.apk',
+        'instagram-lite-486-0-0-13-109-apkpure.json': 'Instagram Lite_486.0.0.13.109_APKPure.apk',
+        'tools-for-procreate-ipaomtk-com.json': 'Tools-for-Procreate-IPAOMTK.COM.ipa',
+        'com-grasshopper-dialer-6-8-0-2958-minapi29-arm64-v8a-armeabi-armeabi-v7a-x86-x86-64-nodpi-apkmirror-com.json': 'com.grasshopper.dialer_6.8.0-2958_minAPI29(arm64-v8a,armeabi,armeabi-v7a,x86,x86_64)(nodpi)_apkmirror.com.apk',
+        'sample-app-careem-release.json': 'sample-app-careem-release.aab'
+      };
+
+      const originalFileName = jsonToOriginal[jsonFileName];
+      if (!originalFileName) {
+        console.warn(`No binary mapping for JSON file: ${jsonFileName}`);
+        return null;
+      }
+
+      // Find binary URL by matching file name
+      const binaryPath = Object.keys(binaryFileUrls).find(path =>
+        path.endsWith(originalFileName)
+      );
+      const binaryUrl = binaryPath ? binaryFileUrls[binaryPath] : null;
+
+      return extractBasicMetadata(jsonPath, jsonUrl, binaryUrl || '');
+    })
+    .filter(meta => meta !== null); // Remove any unknown files
+
+  // Fetch binary file sizes asynchronously on mount (for display only)
   onMounted(async () => {
     const sizePromises = sampleFiles.value.map(async (file) => {
       const size = await fetchFileSize(file.url);
@@ -152,12 +224,12 @@ export function useSampleFiles() {
   });
 
   /**
-   * T007: Load a sample file and emit file-selected event
-   * @param {string} url - File URL
-   * @param {string} fileName - File name
-   * @returns {Promise<File>} Loaded File object
+   * Load prebuilt JSON analysis for a sample file
+   * @param {string} jsonUrl - JSON file URL
+   * @param {string} fileName - Original file name (for display)
+   * @returns {Promise<object>} ParseResult object
    */
-  const loadSampleFile = async (url, fileName) => {
+  const loadSampleFile = async (jsonUrl, fileName) => {
     // Cancel any in-progress load
     if (activeAbortController.value) {
       activeAbortController.value.abort();
@@ -172,11 +244,11 @@ export function useSampleFiles() {
     error.value = null;
 
     try {
-      const file = await loadSampleFileAsFile(url, fileName, controller.signal);
+      const parseResult = await loadPrebuiltJSON(jsonUrl, fileName, controller.signal);
 
       // Check if aborted before returning (race condition guard)
       if (!controller.signal.aborted) {
-        return file;
+        return parseResult;
       }
     } catch (err) {
       if (err.name === 'AbortError') {

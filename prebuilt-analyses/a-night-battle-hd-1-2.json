@@ -1,0 +1,493 @@
+{
+  "format": "ipa",
+  "metadata": {
+    "bundleId": "com.mycompany.nightbattlehd",
+    "version": "1.2",
+    "displayName": "NightBattleHD",
+    "minimumOSVersion": "3.2",
+    "supportedPlatforms": [
+      "iPhoneOS"
+    ],
+    "deviceFamily": [
+      2
+    ]
+  },
+  "frameworks": [],
+  "assets": [
+    {
+      "path": "Payload/NightBattleHD.app/Default.png",
+      "name": "Default.png",
+      "type": "image",
+      "size": 200576,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/battleImage.png",
+      "name": "battleImage.png",
+      "type": "image",
+      "size": 92111,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/bonus.png",
+      "name": "bonus.png",
+      "type": "image",
+      "size": 3680,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/btn_gameover.png",
+      "name": "btn_gameover.png",
+      "type": "image",
+      "size": 12191,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/btn_topscore.png",
+      "name": "btn_topscore.png",
+      "type": "image",
+      "size": 6404,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/endingbg.png",
+      "name": "endingbg.png",
+      "type": "image",
+      "size": 497417,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/extrapower.png",
+      "name": "extrapower.png",
+      "type": "image",
+      "size": 7541,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/fire.png",
+      "name": "fire.png",
+      "type": "image",
+      "size": 22678,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/fireside_down.png",
+      "name": "fireside_down.png",
+      "type": "image",
+      "size": 8623,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/fireside_up.png",
+      "name": "fireside_up.png",
+      "type": "image",
+      "size": 9475,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/fireup_down.png",
+      "name": "fireup_down.png",
+      "type": "image",
+      "size": 8778,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/fireup_up.png",
+      "name": "fireup_up.png",
+      "type": "image",
+      "size": 9451,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/fly2.mp3",
+      "name": "fly2.mp3",
+      "type": "audio",
+      "size": 53498,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/fps_images.png",
+      "name": "fps_images.png",
+      "type": "image",
+      "size": 7188,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/fullversion.png",
+      "name": "fullversion.png",
+      "type": "image",
+      "size": 24262,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/gamebg1.png",
+      "name": "gamebg1.png",
+      "type": "image",
+      "size": 69619,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/gamebg2.png",
+      "name": "gamebg2.png",
+      "type": "image",
+      "size": 65878,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/gamebg3.png",
+      "name": "gamebg3.png",
+      "type": "image",
+      "size": 165967,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/gamebg4.png",
+      "name": "gamebg4.png",
+      "type": "image",
+      "size": 169812,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/greenmissile.png",
+      "name": "greenmissile.png",
+      "type": "image",
+      "size": 1322,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/icon.png",
+      "name": "icon.png",
+      "type": "image",
+      "size": 13389,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/jetplane.png",
+      "name": "jetplane.png",
+      "type": "image",
+      "size": 6424,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/laser.png",
+      "name": "laser.png",
+      "type": "image",
+      "size": 813,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/menubg.png",
+      "name": "menubg.png",
+      "type": "image",
+      "size": 542313,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/missile1.png",
+      "name": "missile1.png",
+      "type": "image",
+      "size": 1175,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/moon.png",
+      "name": "moon.png",
+      "type": "image",
+      "size": 3534,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/pause_down.png",
+      "name": "pause_down.png",
+      "type": "image",
+      "size": 3450,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/pause_up.png",
+      "name": "pause_up.png",
+      "type": "image",
+      "size": 3360,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/plane1night.png",
+      "name": "plane1night.png",
+      "type": "image",
+      "size": 8028,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/plane2night.png",
+      "name": "plane2night.png",
+      "type": "image",
+      "size": 8748,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/plane3night.png",
+      "name": "plane3night.png",
+      "type": "image",
+      "size": 6556,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/plane4night.png",
+      "name": "plane4night.png",
+      "type": "image",
+      "size": 9099,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/plane5night.png",
+      "name": "plane5night.png",
+      "type": "image",
+      "size": 9224,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/play_down.png",
+      "name": "play_down.png",
+      "type": "image",
+      "size": 11205,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/play_up.png",
+      "name": "play_up.png",
+      "type": "image",
+      "size": 11232,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/redmissile.png",
+      "name": "redmissile.png",
+      "type": "image",
+      "size": 1406,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/replay_down.png",
+      "name": "replay_down.png",
+      "type": "image",
+      "size": 17881,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/replay_up.png",
+      "name": "replay_up.png",
+      "type": "image",
+      "size": 17912,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/setting_down.png",
+      "name": "setting_down.png",
+      "type": "image",
+      "size": 20846,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/setting_up.png",
+      "name": "setting_up.png",
+      "type": "image",
+      "size": 20912,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/ship.mp3",
+      "name": "ship.mp3",
+      "type": "audio",
+      "size": 206503,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/ship.png",
+      "name": "ship.png",
+      "type": "image",
+      "size": 13005,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/sidemissile.png",
+      "name": "sidemissile.png",
+      "type": "image",
+      "size": 562,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/status.png",
+      "name": "status.png",
+      "type": "image",
+      "size": 33731,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/sub.png",
+      "name": "sub.png",
+      "type": "image",
+      "size": 5760,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/submarinedrum.mp3",
+      "name": "submarinedrum.mp3",
+      "type": "audio",
+      "size": 55588,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/submit_down.png",
+      "name": "submit_down.png",
+      "type": "image",
+      "size": 32047,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/submit_up.png",
+      "name": "submit_up.png",
+      "type": "image",
+      "size": 32234,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/superpower.png",
+      "name": "superpower.png",
+      "type": "image",
+      "size": 7802,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/ufo1.png",
+      "name": "ufo1.png",
+      "type": "image",
+      "size": 2627,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/ufo2.png",
+      "name": "ufo2.png",
+      "type": "image",
+      "size": 2647,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/ufo3.png",
+      "name": "ufo3.png",
+      "type": "image",
+      "size": 2695,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/ufo4.png",
+      "name": "ufo4.png",
+      "type": "image",
+      "size": 2652,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/ufo5.png",
+      "name": "ufo5.png",
+      "type": "image",
+      "size": 2681,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/waterbg.png",
+      "name": "waterbg.png",
+      "type": "image",
+      "size": 101759,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/waterbg2.png",
+      "name": "waterbg2.png",
+      "type": "image",
+      "size": 106609,
+      "scale": 1,
+      "inCatalog": false
+    },
+    {
+      "path": "Payload/NightBattleHD.app/yellowlaser.png",
+      "name": "yellowlaser.png",
+      "type": "image",
+      "size": 7160,
+      "scale": 1,
+      "inCatalog": false
+    }
+  ],
+  "localizations": [],
+  "architectures": [
+    "armv7"
+  ],
+  "totalSize": 6993468,
+  "downloadSize": 5355238,
+  "installSize": 6993468,
+  "mainExecutable": {
+    "magic": 3472551422,
+    "cputype": 12,
+    "cpusubtype": 6,
+    "filetype": 2,
+    "ncmds": 25,
+    "sizeofcmds": 3004,
+    "flags": 133,
+    "architecture": "armv7",
+    "hasDebugSymbols": true,
+    "fileSize": 1226672
+  }
+}

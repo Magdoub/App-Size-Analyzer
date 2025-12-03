@@ -1,0 +1,369 @@
+{
+  "format": "apk",
+  "metadata": {
+    "packageName": "com.instagram.lite",
+    "versionName": "486.0.0.13.109",
+    "versionCode": 826958375,
+    "minSdkVersion": 26,
+    "targetSdkVersion": 35,
+    "permissions": [
+      "com.facebook.lite.provider.ACCESS",
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.ACCESS_WIFI_STATE",
+      "android.permission.BATTERY_STATS",
+      "android.permission.BROADCAST_STICKY",
+      "android.permission.CALL_PHONE",
+      "android.permission.CAMERA",
+      "android.permission.CHANGE_NETWORK_STATE",
+      "android.permission.CHANGE_WIFI_STATE",
+      "android.permission.GET_TASKS",
+      "android.permission.INTERNET",
+      "android.permission.READ_CALENDAR",
+      "android.permission.READ_CONTACTS",
+      "android.permission.GET_ACCOUNTS",
+      "android.permission.AUTHENTICATE_ACCOUNTS",
+      "android.permission.MANAGE_ACCOUNTS",
+      "android.permission.READ_PHONE_STATE",
+      "android.permission.READ_PHONE_NUMBERS",
+      "android.permission.READ_PROFILE",
+      "android.permission.RECEIVE_BOOT_COMPLETED",
+      "android.permission.RECORD_AUDIO",
+      "android.permission.SYSTEM_ALERT_WINDOW",
+      "android.permission.VIBRATE",
+      "android.permission.WAKE_LOCK",
+      "android.permission.WRITE_CALENDAR",
+      "android.permission.WRITE_CONTACTS",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+      "com.android.launcher.permission.INSTALL_SHORTCUT",
+      "com.android.launcher.permission.UNINSTALL_SHORTCUT",
+      "com.facebook.katana.provider.ACCESS",
+      "com.facebook.orca.provider.ACCESS",
+      "com.facebook.mlite.provider.ACCESS",
+      "com.facebook.wakizashi.provider.ACCESS",
+      "com.sec.android.provider.badge.permission.WRITE",
+      "com.sec.android.provider.badge.permission.READ",
+      "com.htc.launcher.permission.READ_SETTINGS",
+      "com.htc.launcher.permission.UPDATE_SHORTCUT",
+      "com.sonyericsson.home.permission.BROADCAST_BADGE",
+      "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE",
+      "com.huawei.android.launcher.permission.CHANGE_BADGE",
+      "com.huawei.android.launcher.permission.READ_SETTINGS",
+      "com.huawei.android.launcher.permission.WRITE_SETTINGS",
+      "com.oppo.launcher.permission.READ_SETTINGS",
+      "com.oppo.launcher.permission.WRITE_SETTINGS",
+      "android.permission.REORDER_TASKS",
+      "android.permission.USE_FULL_SCREEN_INTENT",
+      "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE",
+      "android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION",
+      "android.permission.CREDENTIAL_MANAGER_SET_ALLOWED_PROVIDERS",
+      "android.permission.BLUETOOTH",
+      "android.permission.POST_NOTIFICATIONS",
+      "android.permission.FOREGROUND_SERVICE_MICROPHONE",
+      "android.permission.FOREGROUND_SERVICE",
+      "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+      "android.permission.RUN_USER_INITIATED_JOBS",
+      "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
+      "com.google.android.c2dm.permission.RECEIVE",
+      "com.instagram.lite.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+    ],
+    "activities": [],
+    "services": [],
+    "usesFeatures": []
+  },
+  "dexFiles": [
+    {
+      "header": {
+        "magic": "dex",
+        "version": 35,
+        "checksum": 698271008,
+        "fileSize": 669576,
+        "headerSize": 112,
+        "stringIdsSize": 7822,
+        "typeIdsSize": 1224,
+        "protoIdsSize": 1208,
+        "fieldIdsSize": 2734,
+        "methodIdsSize": 4183,
+        "classDefsSize": 787
+      },
+      "methodCount": 4183,
+      "classCount": 787,
+      "stringCount": 7822,
+      "fieldCount": 2734,
+      "fileSize": 669576,
+      "classes": []
+    }
+  ],
+  "nativeLibs": [
+    {
+      "name": "libbreakpad_cpp_helper.so",
+      "path": "lib/arm64-v8a/libbreakpad_cpp_helper.so",
+      "size": 7504,
+      "architecture": "arm64-v8a",
+      "isSystem": false
+    },
+    {
+      "name": "libsuperpack-jni.so",
+      "path": "lib/arm64-v8a/libsuperpack-jni.so",
+      "size": 196792,
+      "architecture": "arm64-v8a",
+      "isSystem": false
+    }
+  ],
+  "resources": [],
+  "assets": [
+    {
+      "path": "assets/app_modules.json",
+      "size": 6096
+    },
+    {
+      "path": "assets/app_modules/contents/avif.json",
+      "size": 392
+    },
+    {
+      "path": "assets/app_modules/contents/baseline_profiles_12_plus.json",
+      "size": 2
+    },
+    {
+      "path": "assets/app_modules/contents/baseline_profiles_9_11.json",
+      "size": 2
+    },
+    {
+      "path": "assets/app_modules/contents/boost.json",
+      "size": 396
+    },
+    {
+      "path": "assets/app_modules/contents/fizz.json",
+      "size": 392
+    },
+    {
+      "path": "assets/app_modules/contents/inappbrowser.json",
+      "size": 422
+    },
+    {
+      "path": "assets/app_modules/contents/libunwindstack.json",
+      "size": 432
+    },
+    {
+      "path": "assets/app_modules/contents/mediastreaming.json",
+      "size": 432
+    },
+    {
+      "path": "assets/app_modules/contents/mnshttp.json",
+      "size": 404
+    },
+    {
+      "path": "assets/app_modules/contents/msys.json",
+      "size": 392
+    },
+    {
+      "path": "assets/app_modules/contents/msysinfra.json",
+      "size": 412
+    },
+    {
+      "path": "assets/app_modules/contents/multisignalanrdetector.json",
+      "size": 464
+    },
+    {
+      "path": "assets/app_modules/contents/profilo.json",
+      "size": 404
+    },
+    {
+      "path": "assets/app_modules/contents/rtc.json",
+      "size": 2503
+    },
+    {
+      "path": "assets/app_modules/contents/s_avif_rtc.json",
+      "size": 2
+    },
+    {
+      "path": "assets/app_modules/contents/s_boost_inappbrowser_msys.json",
+      "size": 421
+    },
+    {
+      "path": "assets/app_modules/contents/s_boost_msys.json",
+      "size": 563
+    },
+    {
+      "path": "assets/app_modules/contents/s_boost_msysinfra.json",
+      "size": 598
+    },
+    {
+      "path": "assets/app_modules/contents/s_boost_multisignalanrdetector.json",
+      "size": 245
+    },
+    {
+      "path": "assets/app_modules/contents/s_boost_profilo.json",
+      "size": 215
+    },
+    {
+      "path": "assets/app_modules/contents/s_fizz_mediastreaming.json",
+      "size": 2
+    },
+    {
+      "path": "assets/app_modules/contents/s_fizz_msys.json",
+      "size": 207
+    },
+    {
+      "path": "assets/app_modules/contents/s_fizz_msysinfra.json",
+      "size": 217
+    },
+    {
+      "path": "assets/app_modules/contents/s_inappbrowser_msys.json",
+      "size": 391
+    },
+    {
+      "path": "assets/app_modules/contents/s_libunwindstack_profilo.json",
+      "size": 233
+    },
+    {
+      "path": "assets/app_modules/contents/s_mediastreaming_msys_rtc.json",
+      "size": 235
+    },
+    {
+      "path": "assets/app_modules/contents/s_mediastreaming_msysinfra.json",
+      "size": 237
+    },
+    {
+      "path": "assets/app_modules/contents/s_mediastreaming_rtc.json",
+      "size": 225
+    },
+    {
+      "path": "assets/app_modules/contents/s_mnshttp_msys.json",
+      "size": 213
+    },
+    {
+      "path": "assets/app_modules/contents/s_msys_rtc.json",
+      "size": 549
+    },
+    {
+      "path": "assets/app_modules/contents/s_multisignalanrdetector_profilo.json",
+      "size": 249
+    },
+    {
+      "path": "assets/app_modules/contents/shared_fizz_ms_profilo.json",
+      "size": 464
+    },
+    {
+      "path": "assets/app_modules/contents/uiqr.json",
+      "size": 201
+    },
+    {
+      "path": "assets/com/facebook/logginginfra/falco/ae5b43542463ab59731fa0f8af55ae2e.meta",
+      "size": 4372
+    },
+    {
+      "path": "assets/com/facebook/logginginfra/falco/f97f16f70fbcddb5725ef18a5aee3f6c.meta",
+      "size": 1833
+    },
+    {
+      "path": "assets/com/facebook/zero/cmon/d41d8cd98f00b204e9800998ecf8427e.meta",
+      "size": 5
+    },
+    {
+      "path": "assets/com/facebook/zero/headers/d41d8cd98f00b204e9800998ecf8427e.meta",
+      "size": 5
+    },
+    {
+      "path": "assets/com/facebook/zero/token/d41d8cd98f00b204e9800998ecf8427e.meta",
+      "size": 5
+    },
+    {
+      "path": "assets/dexopt/baseline.prof",
+      "size": 25
+    },
+    {
+      "path": "assets/dexopt/baseline.profm",
+      "size": 26
+    },
+    {
+      "path": "assets/fbt/default/strings.bin",
+      "size": 168
+    },
+    {
+      "path": "assets/fonts/AvenyT_Regular.ttf",
+      "size": 41652
+    },
+    {
+      "path": "assets/iglite-client_client_persist_ids.json",
+      "size": 6910
+    },
+    {
+      "path": "assets/json/bloks_cds_base_screen_template.json",
+      "size": 8954
+    },
+    {
+      "path": "assets/json/bloks_screen_template.json",
+      "size": 10735
+    },
+    {
+      "path": "assets/json/embedded_cbloks_async_template.json",
+      "size": 4919
+    },
+    {
+      "path": "assets/lib/libs.spk.xz",
+      "size": 151908
+    },
+    {
+      "path": "assets/lib/metadata.txt",
+      "size": 300
+    },
+    {
+      "path": "assets/mc_lite_configs_and_params_list.bin",
+      "size": 3985
+    },
+    {
+      "path": "assets/mc_query_hash.bin",
+      "size": 32
+    },
+    {
+      "path": "assets/native_deps.txt",
+      "size": 145
+    },
+    {
+      "path": "assets/secondary-program-dex-jars/dex_manifest.txt",
+      "size": 90
+    },
+    {
+      "path": "assets/secondary-program-dex-jars/metadata.txt",
+      "size": 124
+    },
+    {
+      "path": "assets/secondary-program-dex-jars/store-0.dex.spo",
+      "size": 2328478
+    }
+  ],
+  "architectures": [
+    "arm64-v8a"
+  ],
+  "totalMethodCount": 4183,
+  "totalSize": 3255765,
+  "downloadSize": 3308950,
+  "installSize": 3255765,
+  "resourceTable": {
+    "packageName": "unknown",
+    "entries": [],
+    "totalEntries": 0,
+    "resourcesByType": {
+      "__type": "Map",
+      "entries": []
+    },
+    "resourcesByConfig": {
+      "__type": "Map",
+      "entries": [
+        [
+          "default",
+          118
+        ]
+      ]
+    },
+    "locales": [
+      {
+        "locale": "default",
+        "stringCount": 118
+      }
+    ]
+  }
+}

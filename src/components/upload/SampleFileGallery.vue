@@ -54,7 +54,7 @@
           class="loading-overlay"
         >
           <div class="loading-spinner" />
-          <span class="loading-text">Uploading...</span>
+          <span class="loading-text">Loading...</span>
         </div>
       </button>
     </div>
@@ -112,11 +112,12 @@ export default {
       }
 
       try {
-        const loadedFile = await loadSampleFile(file.url, file.name);
+        // Load prebuilt JSON analysis instead of binary file
+        const parseResult = await loadSampleFile(file.jsonUrl, file.name);
 
         // Emit file-selected event if load was successful and not aborted
-        if (loadedFile) {
-          emit('file-selected', loadedFile);
+        if (parseResult) {
+          emit('file-selected', parseResult);
         }
       } catch (err) {
         // Emit loading-error event
