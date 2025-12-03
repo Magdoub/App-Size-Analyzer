@@ -188,20 +188,25 @@
             </p>
           </div>
 
-          <div class="w-full max-w-2xl animate-grow" style="animation-delay: 0.1s">
-            <UploadZone
-              :on-file-select="handleFileSelect"
-              @file-selected="handleFileSelect"
-              @validation-error="handleValidationError"
-              :accepted-formats="['.ipa', '.apk', '.aab', '.xapk']"
-              :max-size="2 * 1024 * 1024 * 1024"
-            />
+          <!-- Layout 4 Component with tabbed interface -->
+          <div class="w-full animate-grow" style="animation-delay: 0.1s">
+            <Layout4 @url-submit="handleUrlSubmit">
+              <template #upload>
+                <UploadZone
+                  :on-file-select="handleFileSelect"
+                  @file-selected="handleFileSelect"
+                  @validation-error="handleValidationError"
+                  :accepted-formats="['.ipa', '.apk', '.aab', '.xapk']"
+                  :max-size="2 * 1024 * 1024 * 1024"
+                />
 
-            <FileValidator
-              v-if="validationErrors.length > 0"
-              :errors="validationErrors"
-              @dismiss="validationErrors = []"
-            />
+                <FileValidator
+                  v-if="validationErrors.length > 0"
+                  :errors="validationErrors"
+                  @dismiss="validationErrors = []"
+                />
+              </template>
+            </Layout4>
           </div>
 
           <!-- Sample File Gallery -->
@@ -277,6 +282,7 @@ import BreakdownView from './components/breakdown/BreakdownView.vue';
 import SummaryView from './components/summary/SummaryView.vue';
 import XRayView from './components/xray/XRayView.vue';
 import InsightsView from './components/insights/InsightsView.vue';
+import Layout4 from '../mockups/Layout4.vue';
 
 export default {
   name: 'App',
@@ -291,6 +297,7 @@ export default {
     SummaryView,
     XRayView,
     InsightsView,
+    Layout4,
   },
 
   setup() {
@@ -842,6 +849,12 @@ export default {
       }
     };
 
+    // Handle URL submit (placeholder - URL download not yet implemented)
+    const handleUrlSubmit = (url) => {
+      console.log('URL submitted:', url);
+      appStore.setError('URL download feature coming soon! Please use file upload for now.');
+    };
+
     return {
       appStore,
       analysisStore,
@@ -857,6 +870,7 @@ export default {
       handleSampleLoadError,
       handleNewAnalysis,
       handleNavClick,
+      handleUrlSubmit,
     };
   },
 };
