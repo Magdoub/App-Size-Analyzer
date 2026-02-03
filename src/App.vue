@@ -239,15 +239,9 @@
       <footer class="fixed bottom-0 left-0 right-0 z-40 border-t border-[hsl(35,20%,85%)] bg-gradient-to-b from-white/60 to-[hsl(35,35%,94%)]/60 backdrop-blur-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1">
               <span class="text-sm font-semibold text-[hsl(25,20%,18%)]">App Size Analyzer by</span>
-              <a href="https://luciq.ai/?ref=appsizeanalyzer.com" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
-                <img
-                  src="https://cdn.prod.website-files.com/6898c7bad2e3e342ea1c43bd/68a09b6734e6f04641e9adae_luciq-logo.svg"
-                  alt="Luciq"
-                  class="h-5"
-                />
-              </a>
+              <a href="https://magdoub.com/" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-[hsl(25,20%,18%)] hover:opacity-80 transition-opacity no-underline">Magdoub</a>
             </div>
             <p class="text-xs text-[hsl(25,15%,45%)]">
               &copy; 2025 App Size Analyzer.
