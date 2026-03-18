@@ -1,5 +1,7 @@
 # App Size Analyzer
 
+**[Try it out here: appsizeanalyzer.com](https://appsizeanalyzer.com/)**
+
 A client-side binary analysis platform for iOS and Android app size optimization.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
