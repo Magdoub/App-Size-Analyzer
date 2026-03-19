@@ -160,17 +160,17 @@ export function highlightJSON(jsonString) {
   let result = jsonString;
 
   // Highlight numbers (whole numbers and decimals)
-  result = result.replace(/:\s*(-?\d+(?:\.\d+)?)\b/g, (match, number) => {
+  result = result.replace(/:\s*(-?\d+(?:\.\d+)?)\b/g, (_match, number) => {
     return `: <span class="json-number">${number}</span>`;
   });
 
   // Highlight booleans and null
-  result = result.replace(/:\s*\b(true|false|null)\b/g, (match, keyword) => {
+  result = result.replace(/:\s*\b(true|false|null)\b/g, (_match, keyword) => {
     return `: <span class="json-keyword">${keyword}</span>`;
   });
 
   // Highlight string values
-  result = result.replace(/:\s*"([^"]*)"/g, (match, value) => {
+  result = result.replace(/:\s*"([^"]*)"/g, (_match, value) => {
     return `: <span class="json-string">"${value}"</span>`;
   });
 
@@ -191,7 +191,7 @@ export function highlightJSON(jsonString) {
  */
 export async function copyToClipboard(text) {
   // Try modern Clipboard API first
-  if (navigator.clipboard && navigator.clipboard.writeText) {
+  if (navigator.clipboard?.writeText) {
     try {
       await navigator.clipboard.writeText(text);
       return {
@@ -230,7 +230,7 @@ export async function copyToClipboard(text) {
         error: 'Copy command failed. Please manually select and copy the JSON.',
       };
     }
-  } catch (err) {
+  } catch (_err) {
     return {
       success: false,
       method: null,

@@ -234,14 +234,14 @@ function extractMetadataFromRawBytes(data) {
     },
   };
 
-  if (packageMatch && packageMatch[1]) {
+  if (packageMatch?.[1]) {
     result.element.attribute.push({
       name: 'package',
       value: packageMatch[1],
     });
   }
 
-  if (versionNameMatch && versionNameMatch[1]) {
+  if (versionNameMatch?.[1]) {
     result.element.attribute.push({
       name: 'versionName',
       value: versionNameMatch[1],

@@ -192,12 +192,12 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
-import { formatBytes } from '../../utils/formatters';
-import ImageComparisonPreview from './ImageComparisonPreview.vue';
-import AIPromptModal from './AIPromptModal.vue';
-import { useCompressionWorker } from '../../composables/useCompressionWorker';
+import { computed, ref } from 'vue';
 import { useChatGPTPrompt } from '../../composables/useChatGPTPrompt';
+import { useCompressionWorker } from '../../composables/useCompressionWorker';
+import { formatBytes } from '../../utils/formatters';
+import AIPromptModal from './AIPromptModal.vue';
+import ImageComparisonPreview from './ImageComparisonPreview.vue';
 
 export default {
   name: 'InsightCard',
@@ -388,10 +388,10 @@ export default {
         // Close step content before next step
         .replace(/<\/li>\s*<div class="rec-step">/g, '</li></ul></div><div class="rec-step">')
         // Wrap consecutive bullets in ul
-        .replace(/(<li class="rec-bullet">)/g, (match, p1, offset, str) => {
+        .replace(/(<li class="rec-bullet">)/g, (_match, p1, offset, str) => {
           const before = str.substring(0, offset);
           if (!before.endsWith('<ul class="rec-bullets">') && !before.endsWith('</li>')) {
-            return '<ul class="rec-bullets">' + p1;
+            return `<ul class="rec-bullets">${p1}`;
           }
           return p1;
         });
@@ -405,7 +405,7 @@ export default {
 
       // Wrap plain text sections
       if (!html.includes('<div class="rec-step">')) {
-        html = '<p class="rec-text">' + html.replace(/\n\n/g, '</p><p class="rec-text">') + '</p>';
+        html = `<p class="rec-text">${html.replace(/\n\n/g, '</p><p class="rec-text">')}</p>`;
       }
 
       return html;

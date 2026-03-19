@@ -51,7 +51,7 @@ export class InsightEngine {
    * @returns {void}
    */
   registerRules(rules) {
-    rules.forEach((rule) => this.registerRule(rule));
+    rules.forEach((rule) => { this.registerRule(rule); });
   }
 
   /**

@@ -5,9 +5,9 @@
  */
 
 import { extractZIP } from '../common/zip-parser.js';
-import { parseBinaryPlist, extractInfoPlistMetadata } from './plist-parser.js';
+import { detectIdiomFromPath, detectScaleFromFilename, parseAssetCatalog } from './asset-catalog-parser.js';
 import { parseMachOHeader } from './macho-parser.js';
-import { parseAssetCatalog, detectScaleFromFilename, detectIdiomFromPath } from './asset-catalog-parser.js';
+import { extractInfoPlistMetadata, parseBinaryPlist } from './plist-parser.js';
 
 /**
  * @typedef {import('../common/zip-parser.js').ZIPEntry} ZIPEntry
@@ -143,7 +143,7 @@ function parseFrameworks(entries, appBundlePath) {
 
   for (const entry of frameworkEntries) {
     const match = entry.name.match(/Frameworks\/([^/]+)\.framework\//);
-    if (match && match[1]) {
+    if (match?.[1]) {
       const name = match[1];
       const existing = frameworksByName.get(name) || [];
       if (existing) {
@@ -303,17 +303,17 @@ export function analyzeIOSIcons(entries, appBundlePath, plistData) {
     const bundleIcons = plistData.CFBundleIcons;
 
     // Primary icon
-    if (bundleIcons.CFBundlePrimaryIcon && bundleIcons.CFBundlePrimaryIcon.CFBundleIconFiles) {
+    if (bundleIcons.CFBundlePrimaryIcon?.CFBundleIconFiles) {
       const iconFiles = bundleIcons.CFBundlePrimaryIcon.CFBundleIconFiles;
       if (Array.isArray(iconFiles)) {
-        iconFiles.forEach(name => primaryIconNames.add(name));
+        iconFiles.forEach(name => { primaryIconNames.add(name); });
       }
     }
 
     // Alternate icons
     if (bundleIcons.CFBundleAlternateIcons) {
       const alternateIcons = bundleIcons.CFBundleAlternateIcons;
-      for (const [iconSetName, iconSetData] of Object.entries(alternateIcons)) {
+      for (const [_iconSetName, iconSetData] of Object.entries(alternateIcons)) {
         if (iconSetData.CFBundleIconFiles && Array.isArray(iconSetData.CFBundleIconFiles)) {
           iconSetData.CFBundleIconFiles.forEach(name => {
             alternateIconNames.add(name);
@@ -325,7 +325,7 @@ export function analyzeIOSIcons(entries, appBundlePath, plistData) {
 
   // Also check legacy CFBundleIconFiles (iOS 3-4 compatibility)
   if (plistData.CFBundleIconFiles && Array.isArray(plistData.CFBundleIconFiles)) {
-    plistData.CFBundleIconFiles.forEach(name => primaryIconNames.add(name));
+    plistData.CFBundleIconFiles.forEach(name => { primaryIconNames.add(name); });
   }
 
   // Find icon files in the bundle

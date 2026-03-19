@@ -124,13 +124,13 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed, onMounted, ref, watch } from 'vue';
+import { getDefaultInsightEngine } from '../../lib/analysis';
 import { useAnalysisStore } from '../../stores/analysisStore';
+import { formatBytes } from '../../utils/formatters';
 import InsightCard from './InsightCard.vue';
 import InsightFilters from './InsightFilters.vue';
-import { getDefaultInsightEngine } from '../../lib/analysis';
-import { formatBytes } from '../../utils/formatters';
 
 export default {
   name: 'InsightsView',
@@ -174,7 +174,7 @@ export default {
       const animate = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
+        const eased = 1 - (1 - progress) ** 3;
 
         progressPercent.value = Math.round(eased * 100);
         filesScanned.value = Math.round(eased * totalFiles);

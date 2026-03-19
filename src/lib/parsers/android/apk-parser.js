@@ -5,9 +5,9 @@
  */
 
 import { extractZIP } from '../common/zip-parser.js';
-import { parseBinaryXML, extractManifestMetadata } from './binary-xml-parser.js';
-import { parseDEXFile, calculateTotalMethodCount } from './dex-parser.js';
 import { parseResourceTable } from './arsc-parser.js';
+import { extractManifestMetadata, parseBinaryXML } from './binary-xml-parser.js';
+import { calculateTotalMethodCount, parseDEXFile } from './dex-parser.js';
 
 /**
  * @typedef {import('./types.js').APKParseResult} APKParseResult

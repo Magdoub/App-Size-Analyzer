@@ -7,8 +7,8 @@
  * @module composables/useParserWorker
  */
 
-import { ref, shallowRef, onUnmounted, computed } from 'vue';
 import { wrap } from 'comlink';
+import { computed, onUnmounted, ref, } from 'vue';
 
 /**
  * Composable for parser Web Worker communication
@@ -113,7 +113,7 @@ export function useParserWorker() {
   const parseFile = async (file) => {
     // Detect platform from file extension
     const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-    const fileName = file.name.toLowerCase();
+    const _fileName = file.name.toLowerCase();
 
     if (ext === '.ipa') {
       return parseIOS(file);

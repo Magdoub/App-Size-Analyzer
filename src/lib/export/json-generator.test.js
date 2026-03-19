@@ -4,16 +4,16 @@
  * Unit tests for JSON generation and export functions
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  serializeBreakdownTree,
   buildExportMetadata,
-  validateExportData,
+  copyToClipboard,
+  downloadJSONFile,
+  generateExportFilename,
   generateExportJSON,
   highlightJSON,
-  copyToClipboard,
-  generateExportFilename,
-  downloadJSONFile,
+  serializeBreakdownTree,
+  validateExportData,
 } from './json-generator';
 
 describe('serializeBreakdownTree', () => {

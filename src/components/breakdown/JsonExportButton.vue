@@ -28,8 +28,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import { useAnalysisStore } from '../../stores/analysisStore';
 import { useUiStore } from '../../stores/uiStore';
 

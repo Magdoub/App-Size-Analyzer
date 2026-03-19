@@ -5,7 +5,7 @@
  * Covers basic parsing, metadata extraction, architecture detection, and content categorization.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 describe('Framework Parser', () => {
   describe('Basic Functionality (T023)', () => {
@@ -119,14 +119,14 @@ describe('Framework Parser', () => {
 
   describe('Content Categorization (T026)', () => {
     it('should categorize binary files', async () => {
-      const { categorizeFrameworkContent } = await import('../../lib/parsers/ios/framework-parser');
+      const { categorizeFrameworkContent: _categorizeFrameworkContent } = await import('../../lib/parsers/ios/framework-parser');
 
       const paths = [
         'MyFramework.framework/MyFramework',
         'MyFramework.framework/Versions/A/MyFramework',
       ];
 
-      for (const path of paths) {
+      for (const _path of paths) {
         // Main binary should be categorized as binary
         // (depends on implementation - might need context)
       }

@@ -13,7 +13,7 @@
  * @param {*} value
  * @returns {*}
  */
-function jsonReviver(key, value) {
+function jsonReviver(_key, value) {
   // Restore Uint8Array from base64 string
   if (value && typeof value === 'object' && value.__type === 'Uint8Array') {
     const binaryString = atob(value.data);

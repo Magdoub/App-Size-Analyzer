@@ -28,15 +28,15 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue';
-import { use } from 'echarts/core';
 import { TreemapChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
 import { TooltipComponent } from 'echarts/components';
-import VChart from 'vue-echarts';
+import { use } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
 import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import VChart from 'vue-echarts';
+import { getHoverHighlightColor, getNodeColor } from '../../lib/visualization/color-scheme';
 import { useUiStore } from '../../stores/uiStore';
-import { getNodeColor, getHoverHighlightColor } from '../../lib/visualization/color-scheme';
 import { formatBytes } from '../../utils/formatters';
 
 // Register ECharts components
@@ -279,7 +279,7 @@ export default {
      * @param {Object} params - ECharts mouseover event params
      */
     const handleMouseOver = (params) => {
-      if (params.data && params.data.path) {
+      if (params.data?.path) {
         uiStore.setHoveredNode(params.data.path);
       }
     };

@@ -94,15 +94,15 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed, onMounted, ref, watch } from 'vue';
+import { calculateSizePercentiles } from '../../lib/visualization/color-scheme';
+import { filterByCategories, generateSubtreeData, searchTree } from '../../lib/visualization/treemap-generator';
 import { useAnalysisStore } from '../../stores/analysisStore';
 import { useUiStore } from '../../stores/uiStore';
-import Treemap from './Treemap.vue';
-import CategoryFilter from './CategoryFilter.vue';
 import Breadcrumb from '../shared/Breadcrumb.vue';
-import { generateSubtreeData, filterByCategories, searchTree } from '../../lib/visualization/treemap-generator';
-import { calculateSizePercentiles } from '../../lib/visualization/color-scheme';
+import CategoryFilter from './CategoryFilter.vue';
+import Treemap from './Treemap.vue';
 
 export default {
   name: 'XRayView',

@@ -5,8 +5,8 @@
  * Provides a reactive interface for image compression operations.
  */
 
-import { ref, onUnmounted } from 'vue';
 import { wrap } from 'comlink';
+import { onUnmounted, ref } from 'vue';
 
 /**
  * Composable for image compression worker management

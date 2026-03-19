@@ -7,9 +7,9 @@
  * @module lib/parsers/android/aab-parser
  */
 
+import { detectArchitecture, } from '../common/types';
 import { extractZIP } from '../common/zip-parser';
-import { detectContentType, detectArchitecture } from '../common/types';
-import { parseManifestProto, extractManifestMetadata } from './proto/resources-proto';
+import { extractManifestMetadata, parseManifestProto } from './proto/resources-proto';
 
 /**
  * @typedef {import('./types').AABParseResult} AABParseResult
@@ -236,7 +236,7 @@ function detectModules(entries) {
 
   for (const moduleName of moduleNames) {
     const moduleEntries = entries.filter((e) =>
-      e.name.startsWith(moduleName + '/')
+      e.name.startsWith(`${moduleName}/`)
     );
 
     // Calculate module contents
@@ -266,7 +266,7 @@ function detectModules(entries) {
         case AAB_CATEGORIES.ASSETS:
           contents.assetsSize += entry.size;
           break;
-        case AAB_CATEGORIES.NATIVE:
+        case AAB_CATEGORIES.NATIVE: {
           contents.nativeSize += entry.size;
           // Detect architecture
           const arch = detectArchitecture(entry.name);
@@ -274,6 +274,7 @@ function detectModules(entries) {
             contents.architectures.add(arch);
           }
           break;
+        }
       }
     }
 
@@ -385,7 +386,7 @@ function buildBreakdown(files) {
   // Calculate percentages and convert to array
   const categories = [];
 
-  for (const [id, category] of categoryMap) {
+  for (const [_id, category] of categoryMap) {
     if (category.count > 0) {
       categories.push({
         ...category,

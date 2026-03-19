@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { computed, ref, watch, onUnmounted } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 
 export default {
   name: 'LoadingSpinner',

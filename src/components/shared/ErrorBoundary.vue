@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { ref, onErrorCaptured } from 'vue';
+import { onErrorCaptured, ref } from 'vue';
 
 export default {
   name: 'ErrorBoundary',
@@ -66,10 +66,10 @@ export default {
 
   emits: ['error', 'retry'],
 
-  setup(props, { emit }) {
+  setup(_props, { emit }) {
     const error = ref(null);
 
-    onErrorCaptured((err, instance, info) => {
+    onErrorCaptured((err, _instance, info) => {
       error.value = err;
       emit('error', { error: err, info });
       console.error('ErrorBoundary caught an error:', err, info);

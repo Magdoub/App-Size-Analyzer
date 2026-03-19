@@ -32,7 +32,7 @@ export function supportsWebP() {
   try {
     const webpDataURL = canvas.toDataURL('image/webp');
     return webpDataURL.indexOf('data:image/webp') === 0;
-  } catch (err) {
+  } catch (_err) {
     return false;
   }
 }

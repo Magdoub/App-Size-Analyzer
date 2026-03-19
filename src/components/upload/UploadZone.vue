@@ -162,7 +162,7 @@ export default {
       }
 
       // Check file extension
-      const extension = '.' + file.name.toLowerCase().split('.').pop();
+      const extension = `.${file.name.toLowerCase().split('.').pop()}`;
       if (!props.acceptedFormats.includes(extension)) {
         errors.push(
           `Unsupported file format: ${extension}. Expected: ${props.acceptedFormats.join(', ')}`

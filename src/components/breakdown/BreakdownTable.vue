@@ -169,8 +169,8 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useVirtualizer } from '@tanstack/vue-virtual';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useUiStore } from '../../stores/uiStore';
 import { formatBytes, formatPercentage } from '../../utils/formatters';
 
