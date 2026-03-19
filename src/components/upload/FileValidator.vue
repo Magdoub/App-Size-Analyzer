@@ -61,7 +61,7 @@ export default {
 
   emits: ['dismiss'],
 
-  setup(props, { emit }) {
+  setup(_props, { emit }) {
     const handleDismiss = () => {
       emit('dismiss');
     };

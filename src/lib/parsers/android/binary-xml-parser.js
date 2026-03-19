@@ -9,11 +9,11 @@
 const CHUNK_AXML_FILE = 0x00080003;
 const CHUNK_STRING_POOL = 0x001c0001;
 const CHUNK_RESOURCE_IDS = 0x00080180;
-const CHUNK_START_NAMESPACE = 0x00100100;
-const CHUNK_END_NAMESPACE = 0x00100101;
+const _CHUNK_START_NAMESPACE = 0x00100100;
+const _CHUNK_END_NAMESPACE = 0x00100101;
 const CHUNK_START_TAG = 0x00100102;
 const CHUNK_END_TAG = 0x00100103;
-const CHUNK_TEXT = 0x00100104;
+const _CHUNK_TEXT = 0x00100104;
 
 // Android resource IDs for common attributes
 const ATTR_PACKAGE = 'package';
@@ -77,7 +77,7 @@ export async function parseBinaryXML(data) {
       permissions: [],
     };
 
-    let currentElement = '';
+    let _currentElement = '';
 
     while (offset < data.length && offset < fileSize) {
       if (offset + 8 > data.length) break;
@@ -98,12 +98,12 @@ export async function parseBinaryXML(data) {
 
         case CHUNK_START_TAG:
           parseStartTag(view, offset, strings, resourceIds, result, (name) => {
-            currentElement = name;
+            _currentElement = name;
           });
           break;
 
         case CHUNK_END_TAG:
-          currentElement = '';
+          _currentElement = '';
           break;
       }
 
@@ -123,7 +123,7 @@ export async function parseBinaryXML(data) {
  */
 function parseStringPool(view, offset, strings) {
   const stringCount = view.getUint32(offset + 8, true);
-  const styleCount = view.getUint32(offset + 12, true);
+  const _styleCount = view.getUint32(offset + 12, true);
   const flags = view.getUint32(offset + 16, true);
   const stringsStart = view.getUint32(offset + 20, true);
 
@@ -231,8 +231,8 @@ function parseStartTag(view, offset, strings, resourceIds, result, setElement) {
   // 16-19: namespace URI, 20-23: name, 24-25: attr start, 26-27: attr size
   // 28-29: attr count, 30-31: id index, 32-33: class index, 34-35: style index
   const nameIdx = view.getInt32(offset + 20, true);
-  const attrStart = view.getUint16(offset + 24, true);
-  const attrSize = view.getUint16(offset + 26, true);
+  const _attrStart = view.getUint16(offset + 24, true);
+  const _attrSize = view.getUint16(offset + 26, true);
   const attrCount = view.getUint16(offset + 28, true);
 
   const elementName = nameIdx >= 0 && nameIdx < strings.length ? strings[nameIdx] : '';
@@ -248,7 +248,7 @@ function parseStartTag(view, offset, strings, resourceIds, result, setElement) {
 
     const attrNameIdx = view.getInt32(attrBase + 4, true);
     const attrValueIdx = view.getInt32(attrBase + 8, true);
-    const attrType = view.getUint8(attrBase + 15);
+    const _attrType = view.getUint8(attrBase + 15);
     const attrData = view.getInt32(attrBase + 16, true);
 
     const attrName = attrNameIdx >= 0 && attrNameIdx < strings.length ? strings[attrNameIdx] : '';
@@ -308,13 +308,13 @@ function parseStartTag(view, offset, strings, resourceIds, result, setElement) {
  */
 export function extractManifestMetadata(manifestData) {
   const metadata = {
-    packageName: String(manifestData['package'] || 'unknown'),
-    versionName: String(manifestData['versionName'] || '0.0.0'),
-    versionCode: Number(manifestData['versionCode'] || 0),
-    minSdkVersion: Number(manifestData['minSdkVersion'] || 0),
-    targetSdkVersion: Number(manifestData['targetSdkVersion'] || 0),
-    permissions: Array.isArray(manifestData['permissions'])
-      ? manifestData['permissions'].map(String)
+    packageName: String(manifestData.package || 'unknown'),
+    versionName: String(manifestData.versionName || '0.0.0'),
+    versionCode: Number(manifestData.versionCode || 0),
+    minSdkVersion: Number(manifestData.minSdkVersion || 0),
+    targetSdkVersion: Number(manifestData.targetSdkVersion || 0),
+    permissions: Array.isArray(manifestData.permissions)
+      ? manifestData.permissions.map(String)
       : [],
     activities: [],
     services: [],
@@ -322,8 +322,8 @@ export function extractManifestMetadata(manifestData) {
   };
 
   // Only add applicationLabel if it exists
-  if (manifestData['applicationLabel']) {
-    metadata.applicationLabel = String(manifestData['applicationLabel']);
+  if (manifestData.applicationLabel) {
+    metadata.applicationLabel = String(manifestData.applicationLabel);
   }
 
   return metadata;

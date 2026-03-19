@@ -68,7 +68,7 @@ export function parseResourceTable(data) {
   }
 
   // Parse the package count
-  const packageCount = view.getUint32(8, true);
+  const _packageCount = view.getUint32(8, true);
 
   let offset = headerSize;
 
@@ -84,7 +84,7 @@ export function parseResourceTable(data) {
   // Parse package chunks
   while (offset < chunkSize && offset < data.length - 8) {
     const chunkType = view.getUint16(offset, true);
-    const chunkHeaderSize = view.getUint16(offset + 2, true);
+    const _chunkHeaderSize = view.getUint16(offset + 2, true);
     const currentChunkSize = view.getUint32(offset + 4, true);
 
     if (currentChunkSize === 0 || offset + currentChunkSize > data.length) {
@@ -144,7 +144,7 @@ function parsePackageChunk(view, offset, chunkSize, localeSet, resourcesByConfig
   let pos = offset + headerSize;
   const endPos = offset + chunkSize;
 
-  let typeChunkCount = 0;
+  let _typeChunkCount = 0;
 
   // Skip through all sub-chunks in the package
   while (pos < endPos && pos < view.byteLength - 8) {
@@ -156,7 +156,7 @@ function parsePackageChunk(view, offset, chunkSize, localeSet, resourcesByConfig
     }
 
     if (chunkType === RES_TABLE_TYPE_TYPE) {
-      typeChunkCount++;
+      _typeChunkCount++;
       // This is a type chunk - extract locale from config
       const locale = extractLocaleFromTypeChunk(view, pos);
       if (locale) {
@@ -194,7 +194,7 @@ function extractLocaleFromTypeChunk(view, offset) {
   // - uint32 entriesStart
   // - ResTable_config config (variable size, but locale is at fixed offset)
 
-  const headerSize = view.getUint16(offset + 2, true);
+  const _headerSize = view.getUint16(offset + 2, true);
 
   // ResTable_config starts after the fixed header fields (20 bytes from chunk start)
   const configOffset = offset + 20;
@@ -250,10 +250,10 @@ function extractLocaleFromTypeChunk(view, offset) {
   if (country1 !== 0 || country2 !== 0) {
     if (country1 >= 0x41 && country1 <= 0x5A) {
       // Standard 2-letter ISO 3166-1 region
-      locale += '-r' + String.fromCharCode(country1, country2);
+      locale += `-r${String.fromCharCode(country1, country2)}`;
     } else if (country1 >= 0x30 && country1 <= 0x39) {
       // Numeric region code (UN M.49)
-      locale += '-' + String.fromCharCode(country1, country2);
+      locale += `-${String.fromCharCode(country1, country2)}`;
     }
   }
 

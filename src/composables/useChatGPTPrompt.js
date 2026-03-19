@@ -4,8 +4,8 @@
  * Vue composable for generating and opening ChatGPT debugging prompts
  */
 
+import { generateIndividualPrompt } from '../lib/prompts/chatgpt-prompts.js';
 import { useAnalysisStore } from '../stores/analysisStore.js';
-import { generateIndividualPrompt, generateChatGPTUrl } from '../lib/prompts/chatgpt-prompts.js';
 
 /**
  * Composable for ChatGPT debugging integration
@@ -20,7 +20,7 @@ export function useChatGPTPrompt() {
    * @param {Object} [affectedFile] - Specific file if debugging a single file
    * @returns {Object|null} Object with prompt and metadata, or null if error
    */
-  function getInsightPrompt(insight, affectedFile = null) {
+  function getInsightPrompt(insight, _affectedFile = null) {
     const metadata = analysisStore.metadata;
     const format = analysisStore.format || 'unknown';
 
@@ -83,7 +83,7 @@ export function useChatGPTPrompt() {
    * @param {Object} insight - The insight object
    * @param {Object} [affectedFile] - Specific file if debugging a single file
    */
-  function debugInsightWithChatGPT(insight, affectedFile = null) {
+  function debugInsightWithChatGPT(insight, _affectedFile = null) {
     const metadata = analysisStore.metadata;
     const format = analysisStore.format || 'unknown';
 
@@ -151,7 +151,7 @@ export function useChatGPTPrompt() {
       console.error('Failed to copy prompt to clipboard:', err);
       // Fallback: Open ChatGPT anyway
       window.open('https://chatgpt.com/', '_blank', 'noopener,noreferrer');
-      alert('Please copy this prompt and paste it in ChatGPT:\n\n' + promptData.prompt.substring(0, 500) + '...');
+      alert(`Please copy this prompt and paste it in ChatGPT:\n\n${promptData.prompt.substring(0, 500)}...`);
     });
   }
 
@@ -200,7 +200,7 @@ export function useChatGPTPrompt() {
         console.error('Failed to copy prompt to clipboard:', err);
         // Fallback: Open ChatGPT anyway
         window.open('https://chatgpt.com/', '_blank', 'noopener,noreferrer');
-        alert('Please copy this prompt and paste it in ChatGPT:\n\n' + promptData.prompt.substring(0, 500) + '...');
+        alert(`Please copy this prompt and paste it in ChatGPT:\n\n${promptData.prompt.substring(0, 500)}...`);
       });
     });
   }

@@ -5,11 +5,11 @@
  */
 
 import {
-  findDuplicatesByHash,
   calculateDuplicateSavings,
+  calculatePercentage,
+  findDuplicatesByHash,
   findFilesByExtension,
   findFilesByPattern,
-  calculatePercentage,
 } from './insight-engine.js';
 
 /**
@@ -446,10 +446,10 @@ android {
 
 \`\`\`bash
 # Strip all symbols from native library
-\$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip lib/arm64-v8a/libmylib.so
+$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip lib/arm64-v8a/libmylib.so
 
 # Strip only debug symbols (keep dynamic symbols for crash reports)
-\$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-debug lib/arm64-v8a/libmylib.so
+$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-debug lib/arm64-v8a/libmylib.so
 \`\`\`
 
 ### Method 3: Build Script Automation
@@ -785,10 +785,10 @@ export const unusedLocalizationRule = {
     localizationFiles.forEach((path) => {
       if (context.platform === 'iOS') {
         const match = path.match(/([a-z]{2}(?:-[A-Z]{2})?)\.lproj/);
-        if (match && match[1]) languages.add(match[1]);
+        if (match?.[1]) languages.add(match[1]);
       } else {
         const match = path.match(/values-([a-z]{2}(?:-[A-Z]{2})?)\//);
-        if (match && match[1]) languages.add(match[1]);
+        if (match?.[1]) languages.add(match[1]);
       }
     });
 
@@ -882,7 +882,7 @@ export const multipleArchitecturesRule = {
     const abiToFiles = new Map();
     abiFiles.forEach((file) => {
       const match = file.path.match(abiPattern);
-      if (match && match[1]) {
+      if (match?.[1]) {
         const abi = match[1];
         if (!abiToFiles.has(abi)) {
           abiToFiles.set(abi, []);
@@ -1710,7 +1710,7 @@ Verify the icon looks good in:
 Total savings: **~${(totalPotentialSavings / 1024).toFixed(0)}KB** (${percentOfTotal.toFixed(1)}% of app size)
 
 Per icon:
-${optimizableIcons.map((icon, index) => `- ${icon.fileName}: ${(icon.estimatedSavings / 1024).toFixed(0)}KB saved`).join('\n')}
+${optimizableIcons.map((icon, _index) => `- ${icon.fileName}: ${(icon.estimatedSavings / 1024).toFixed(0)}KB saved`).join('\n')}
 
 ## References
 
@@ -2018,7 +2018,7 @@ export const iOSUnnecessaryFilesRule = {
     ];
 
     const affectedItems = [];
-    let totalSize = 0;
+    let _totalSize = 0;
 
     for (const { pattern, category, reason } of unnecessaryPatterns) {
       const matchingFiles = context.allFiles.filter(file => {
@@ -2034,7 +2034,7 @@ export const iOSUnnecessaryFilesRule = {
           reason,
           metadata: { category, pattern: pattern.toString() }
         });
-        totalSize += file.installSize;
+        _totalSize += file.installSize;
       }
     }
 
@@ -2159,7 +2159,7 @@ export const unusedFontsRule = {
 
     // For iOS: Check if fonts are in Info.plist UIAppFonts
     if (context.platform === 'iOS' && context.infoPlist) {
-      const uiAppFonts = context.infoPlist['UIAppFonts'] || [];
+      const uiAppFonts = context.infoPlist.UIAppFonts || [];
       const declaredFonts = new Set(uiAppFonts.map(f => f.toLowerCase()));
 
       for (const file of fontFiles) {
@@ -2338,7 +2338,7 @@ export const videoOptimizationRule = {
 
     // Find video files
     const videoExtensions = ['.mov', '.mp4', '.m4v', '.avi', '.webm'];
-    const animationExtensions = ['.gif', '.json']; // .json for Lottie
+    const _animationExtensions = ['.gif', '.json']; // .json for Lottie
 
     const videoFiles = context.allFiles.filter(file => {
       const ext = file.path.toLowerCase().substring(file.path.lastIndexOf('.'));
@@ -2359,7 +2359,7 @@ export const videoOptimizationRule = {
     }
 
     const affectedItems = [];
-    let totalSize = 0;
+    let _totalSize = 0;
     let potentialSavings = 0;
 
     // Process video files
@@ -2375,7 +2375,7 @@ export const videoOptimizationRule = {
           reason: 'MOV file - convert to H.264/H.265 MP4 for ~40% savings',
           metadata: { type: 'video', format: 'mov', estimatedSavings: savings }
         });
-        totalSize += file.installSize;
+        _totalSize += file.installSize;
         potentialSavings += savings;
       } else if (file.installSize > 5 * 1024 * 1024) { // Large videos >5MB
         const savings = Math.floor(file.installSize * 0.3);
@@ -2385,7 +2385,7 @@ export const videoOptimizationRule = {
           reason: `Large video (${(file.installSize / 1024 / 1024).toFixed(1)}MB) - verify compression settings`,
           metadata: { type: 'video', format: ext.substring(1), estimatedSavings: savings }
         });
-        totalSize += file.installSize;
+        _totalSize += file.installSize;
         potentialSavings += savings;
       }
     }
@@ -2400,7 +2400,7 @@ export const videoOptimizationRule = {
         reason: 'GIF animation - convert to video (MP4/WebM) for ~90% savings',
         metadata: { type: 'gif', estimatedSavings: savings }
       });
-      totalSize += file.installSize;
+      _totalSize += file.installSize;
       potentialSavings += savings;
     }
 
@@ -2414,7 +2414,7 @@ export const videoOptimizationRule = {
           reason: 'Large Lottie animation - consider minifying JSON or using dotLottie format',
           metadata: { type: 'lottie', estimatedSavings: savings }
         });
-        totalSize += file.installSize;
+        _totalSize += file.installSize;
         potentialSavings += savings;
       }
     }

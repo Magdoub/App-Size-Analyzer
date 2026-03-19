@@ -229,7 +229,7 @@ export function generateSectionPrompt(params) {
   } = params;
 
   const persona = getPersona(platform, format);
-  const askSection = getAskSection(platform, format);
+  const _askSection = getAskSection(platform, format);
 
   // Format sizes
   const totalSizeFormatted = formatBytes(totalSize);

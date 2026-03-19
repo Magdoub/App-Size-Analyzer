@@ -55,9 +55,9 @@ export async function parseBinaryPlist(data) {
  * @returns {InfoPlistMetadata} Extracted metadata
  */
 export function extractInfoPlistMetadata(plist) {
-  const bundleId = String(plist['CFBundleIdentifier'] || 'unknown');
-  const version = String(plist['CFBundleShortVersionString'] || plist['CFBundleVersion'] || '0.0.0');
-  const displayName = String(plist['CFBundleDisplayName'] || plist['CFBundleName'] || 'Unknown App');
+  const bundleId = String(plist.CFBundleIdentifier || 'unknown');
+  const version = String(plist.CFBundleShortVersionString || plist.CFBundleVersion || '0.0.0');
+  const displayName = String(plist.CFBundleDisplayName || plist.CFBundleName || 'Unknown App');
 
   const metadata = {
     bundleId,
@@ -66,20 +66,20 @@ export function extractInfoPlistMetadata(plist) {
   };
 
   // Add optional properties only if they exist
-  if (plist['MinimumOSVersion']) {
-    metadata.minimumOSVersion = String(plist['MinimumOSVersion']);
+  if (plist.MinimumOSVersion) {
+    metadata.minimumOSVersion = String(plist.MinimumOSVersion);
   }
 
-  if (Array.isArray(plist['CFBundleSupportedPlatforms'])) {
-    metadata.supportedPlatforms = plist['CFBundleSupportedPlatforms'].map(String);
+  if (Array.isArray(plist.CFBundleSupportedPlatforms)) {
+    metadata.supportedPlatforms = plist.CFBundleSupportedPlatforms.map(String);
   }
 
-  if (Array.isArray(plist['UIDeviceFamily'])) {
-    metadata.deviceFamily = plist['UIDeviceFamily'];
+  if (Array.isArray(plist.UIDeviceFamily)) {
+    metadata.deviceFamily = plist.UIDeviceFamily;
   }
 
-  if (Array.isArray(plist['UIRequiredDeviceCapabilities'])) {
-    metadata.architectures = plist['UIRequiredDeviceCapabilities'].map(String);
+  if (Array.isArray(plist.UIRequiredDeviceCapabilities)) {
+    metadata.architectures = plist.UIRequiredDeviceCapabilities.map(String);
   }
 
   return metadata;
@@ -207,7 +207,7 @@ export function countCommentBytes(data) {
     }
 
     return commentBytes;
-  } catch (error) {
+  } catch (_error) {
     // If we can't parse, return 0
     return 0;
   }

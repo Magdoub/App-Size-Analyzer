@@ -45,11 +45,11 @@
 </template>
 
 <script>
-import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useUiStore } from '../../stores/uiStore';
-import { useAnalysisStore } from '../../stores/analysisStore';
+import { computed } from 'vue';
 import { getTypeLegend } from '../../lib/visualization/color-scheme';
+import { useAnalysisStore } from '../../stores/analysisStore';
+import { useUiStore } from '../../stores/uiStore';
 import { formatBytes } from '../../utils/formatters';
 
 export default {

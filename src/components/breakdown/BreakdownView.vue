@@ -48,14 +48,14 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 import { useAnalysisStore } from '../../stores/analysisStore';
-import BreakdownTabs from './BreakdownTabs.vue';
+import { formatBytes } from '../../utils/formatters';
 import BreakdownTable from './BreakdownTable.vue';
+import BreakdownTabs from './BreakdownTabs.vue';
 import JsonExportButton from './JsonExportButton.vue';
 import JsonExportModal from './JsonExportModal.vue';
-import { formatBytes } from '../../utils/formatters';
 
 export default {
   name: 'BreakdownView',

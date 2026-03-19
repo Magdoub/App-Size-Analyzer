@@ -6,11 +6,11 @@
  */
 
 import { expose } from 'comlink';
-import { parseIPA } from '../lib/parsers/ios/ipa-parser';
 import { parseAPK } from '../lib/parsers/android/apk-parser';
 import { parseXAPK } from '../lib/parsers/android/xapk-parser';
-import { extractZIP } from '../lib/parsers/common/zip-parser';
 import { detectContentType } from '../lib/parsers/common/types';
+import { extractZIP } from '../lib/parsers/common/zip-parser';
+import { parseIPA } from '../lib/parsers/ios/ipa-parser';
 
 // Lazy load AAB and Framework parsers to avoid loading protobuf.js until needed
 let parseAAB = null;

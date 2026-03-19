@@ -71,16 +71,15 @@
 <script setup>
 import { computed } from 'vue';
 import { useAnalysisStore } from '../../stores/analysisStore';
-import { formatBytes, formatNumber } from '../../utils/formatters';
 import { analyzeLocalizations } from '../../utils/calculations';
-
-// Import chart components
-import FileTypeDistributionChart from './FileTypeDistributionChart.vue';
-import FileCountDistributionChart from './FileCountDistributionChart.vue';
-import TopFilesChart from './TopFilesChart.vue';
-import LocalizationImpactChart from './LocalizationImpactChart.vue';
+import { formatBytes, formatNumber } from '../../utils/formatters';
 import ArchitectureBreakdownChart from './ArchitectureBreakdownChart.vue';
 import AssetTypeDistributionChart from './AssetTypeDistributionChart.vue';
+import FileCountDistributionChart from './FileCountDistributionChart.vue';
+// Import chart components
+import FileTypeDistributionChart from './FileTypeDistributionChart.vue';
+import LocalizationImpactChart from './LocalizationImpactChart.vue';
+import TopFilesChart from './TopFilesChart.vue';
 
 const analysisStore = useAnalysisStore();
 

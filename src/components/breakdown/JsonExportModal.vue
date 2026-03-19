@@ -109,17 +109,17 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useAnalysisStore } from '../../stores/analysisStore';
-import { useUiStore } from '../../stores/uiStore';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import {
-  generateExportJSON,
   copyToClipboard,
   downloadJSONFile,
   generateExportFilename,
+  generateExportJSON,
   highlightJSON,
 } from '../../lib/export/json-generator';
+import { useAnalysisStore } from '../../stores/analysisStore';
+import { useUiStore } from '../../stores/uiStore';
 
 const analysisStore = useAnalysisStore();
 const uiStore = useUiStore();

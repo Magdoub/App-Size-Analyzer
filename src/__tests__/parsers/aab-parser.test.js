@@ -5,7 +5,7 @@
  * Covers basic parsing, metadata extraction, and content categorization.
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, } from 'vitest';
 
 // Tests will import parser once implemented
 // import { parseAAB, isValidAAB, categorizeAABContent } from '../../lib/parsers/android/aab-parser';
@@ -48,7 +48,7 @@ describe('AAB Parser', () => {
       const { isValidAAB } = await import('../../lib/parsers/android/aab-parser');
 
       // Create non-AAB file
-      const invalidFile = new Blob(['not a zip'], { type: 'text/plain' });
+      const _invalidFile = new Blob(['not a zip'], { type: 'text/plain' });
       const entries = [];
 
       const isValid = isValidAAB(entries);

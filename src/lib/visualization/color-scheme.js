@@ -5,7 +5,7 @@
  * with WCAG AA accessibility compliance
  */
 
-import { readableColor, parseToRgba } from 'color2k';
+import { parseToRgba, readableColor } from 'color2k';
 
 /**
  * @typedef {import('../../types/analysis.js').ContentType} ContentType
@@ -158,7 +158,6 @@ export function getNodeColor(
       return getColorBySize(size, totalSize);
     case 'compression':
       return getColorByCompression(size, compressedSize);
-    case 'type':
     default:
       return getColorByType(type);
   }
@@ -176,7 +175,7 @@ export function getLabelColor(backgroundColor, _minContrastRatio = 4.5) {
     // Use color2k's readableColor which ensures good contrast
     // It returns white or black based on the background
     return readableColor(backgroundColor);
-  } catch (error) {
+  } catch (_error) {
     // Fallback to simple brightness check if color parsing fails
     const hex = backgroundColor.replace('#', '');
     const r = parseInt(hex.substring(0, 2) || '00', 16);
@@ -205,10 +204,10 @@ export function calculateContrastRatio(foreground, background) {
     try {
       const [r, g, b] = parseToRgba(color);
       const rgb = [r / 255, g / 255, b / 255].map((val) => {
-        return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+        return val <= 0.03928 ? val / 12.92 : ((val + 0.055) / 1.055) ** 2.4;
       });
       return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
-    } catch (error) {
+    } catch (_error) {
       return 0;
     }
   };
@@ -250,7 +249,7 @@ export function getHoverHighlightColor(baseColor) {
   try {
     // Lighten by 10% for hover effect
     return lightenColor(baseColor, 0.1);
-  } catch (error) {
+  } catch (_error) {
     return baseColor;
   }
 }
@@ -389,7 +388,7 @@ export function calculateSizePercentiles(root) {
  * @param {import('../../types/analysis.js').ColorGradientConfig} [config] - Optional gradient configuration
  * @returns {string} HSL color string
  */
-export function getColorBySizeGradient(size, totalSize, percentiles, config = {}) {
+export function getColorBySizeGradient(size, _totalSize, percentiles, _config = {}) {
   // Edge case: no percentiles or empty
   if (!percentiles || percentiles.length === 0) {
     return `hsl(210, 80%, 55%)`; // Mid-tone blue

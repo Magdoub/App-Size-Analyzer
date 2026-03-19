@@ -71,7 +71,7 @@ function transformNode(node, currentDepth, maxDepth, minSize, includeTypes, excl
   const filteredChildren = node.children.filter((child) => {
     if (child.size < minSize) return false;
     if (includeTypes && !includeTypes.includes(child.type)) return false;
-    if (excludeTypes && excludeTypes.includes(child.type)) return false;
+    if (excludeTypes?.includes(child.type)) return false;
     return true;
   });
 

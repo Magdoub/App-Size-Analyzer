@@ -255,23 +255,22 @@
 
 <script>
 import { ref, watch } from 'vue';
-import { useAppStore } from './stores/appStore';
-import { useAnalysisStore } from './stores/analysisStore';
-import { useUiStore } from './stores/uiStore';
-import { useParserWorker } from './composables/useParserWorker';
-import { buildBreakdownTree, validateTreeSize } from './lib/analysis/breakdown-generator';
-import { getDefaultInsightEngine } from './lib/analysis';
-
+import BreakdownView from './components/breakdown/BreakdownView.vue';
+import InsightsView from './components/insights/InsightsView.vue';
 // Import real components
 import ErrorBoundary from './components/shared/ErrorBoundary.vue';
 import LoadingSpinner from './components/shared/LoadingSpinner.vue';
-import UploadZone from './components/upload/UploadZone.vue';
+import SummaryView from './components/summary/SummaryView.vue';
 import FileValidator from './components/upload/FileValidator.vue';
 import SampleFileGallery from './components/upload/SampleFileGallery.vue';
-import BreakdownView from './components/breakdown/BreakdownView.vue';
-import SummaryView from './components/summary/SummaryView.vue';
+import UploadZone from './components/upload/UploadZone.vue';
 import XRayView from './components/xray/XRayView.vue';
-import InsightsView from './components/insights/InsightsView.vue';
+import { useParserWorker } from './composables/useParserWorker';
+import { getDefaultInsightEngine } from './lib/analysis';
+import { buildBreakdownTree, validateTreeSize } from './lib/analysis/breakdown-generator';
+import { useAnalysisStore } from './stores/analysisStore';
+import { useAppStore } from './stores/appStore';
+import { useUiStore } from './stores/uiStore';
 
 export default {
   name: 'App',
@@ -317,7 +316,7 @@ export default {
       const k = 1024;
       const sizes = ['B', 'KB', 'MB', 'GB'];
       const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
     };
 
     // Watch parser progress and update app store
@@ -370,7 +369,7 @@ export default {
       appStore.setError(null);
 
       // Determine platform from file extension
-      const extension = '.' + file.name.toLowerCase().split('.').pop();
+      const extension = `.${file.name.toLowerCase().split('.').pop()}`;
       let platform;
       if (extension === '.ipa') {
         platform = 'iOS';
@@ -395,11 +394,11 @@ export default {
         appStore.setError(null);
 
         // Determine platform from parseResult.format
-        let platform;
+        let _platform;
         if (parseResult.format === 'ipa') {
-          platform = 'iOS';
+          _platform = 'iOS';
         } else if (['apk', 'aab', 'xapk'].includes(parseResult.format)) {
-          platform = 'Android';
+          _platform = 'Android';
         } else {
           appStore.setError(`Unsupported format: ${parseResult.format}`);
           return;

@@ -8,9 +8,8 @@
  */
 
 import { extractZIP } from '../common/zip-parser';
-import { detectContentType } from '../common/types';
+import { parseMachOHeader } from './macho-parser';
 import { parseBinaryPlist } from './plist-parser';
-import { parseMachOHeader, parseFatHeader } from './macho-parser';
 
 /**
  * @typedef {import('./types').FrameworkParseResult} FrameworkParseResult
@@ -250,13 +249,13 @@ async function extractFrameworkMetadata(entries, rootPath, isVersioned) {
     const plist = await parseBinaryPlist(plistEntry.data);
 
     return {
-      bundleIdentifier: String(plist['CFBundleIdentifier'] || 'unknown'),
-      bundleName: String(plist['CFBundleName'] || defaultMetadata.bundleName),
-      bundleExecutable: String(plist['CFBundleExecutable'] || defaultMetadata.bundleExecutable),
-      version: String(plist['CFBundleShortVersionString'] || plist['CFBundleVersion'] || '0.0.0'),
-      buildVersion: String(plist['CFBundleVersion'] || '1'),
-      minimumOSVersion: plist['MinimumOSVersion'] ? String(plist['MinimumOSVersion']) : null,
-      platformName: plist['DTPlatformName'] ? String(plist['DTPlatformName']) : null,
+      bundleIdentifier: String(plist.CFBundleIdentifier || 'unknown'),
+      bundleName: String(plist.CFBundleName || defaultMetadata.bundleName),
+      bundleExecutable: String(plist.CFBundleExecutable || defaultMetadata.bundleExecutable),
+      version: String(plist.CFBundleShortVersionString || plist.CFBundleVersion || '0.0.0'),
+      buildVersion: String(plist.CFBundleVersion || '1'),
+      minimumOSVersion: plist.MinimumOSVersion ? String(plist.MinimumOSVersion) : null,
+      platformName: plist.DTPlatformName ? String(plist.DTPlatformName) : null,
       isVersioned,
     };
   } catch (error) {
@@ -403,7 +402,7 @@ function getArchitectureName(cputype, cpusubtype) {
  * @param {string} [executableName] - Main executable name
  * @returns {string} Category ID
  */
-export function categorizeFrameworkContent(path, rootPath = '', executableName = '') {
+export function categorizeFrameworkContent(path, _rootPath = '', executableName = '') {
   const pathLower = path.toLowerCase();
 
   // Main binary or dylibs
@@ -506,7 +505,7 @@ function buildBreakdown(files) {
   // Calculate percentages and convert to array
   const categories = [];
 
-  for (const [id, category] of categoryMap) {
+  for (const [_id, category] of categoryMap) {
     if (category.count > 0) {
       categories.push({
         ...category,

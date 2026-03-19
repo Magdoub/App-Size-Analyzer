@@ -124,7 +124,7 @@ export function findOutliers(items, threshold = 3) {
  * @param {string} platform - 'iOS' or 'Android' (affects category mapping)
  * @returns {string} Display category name
  */
-export function mapToDisplayCategory(contentType, platform) {
+export function mapToDisplayCategory(contentType, _platform) {
   const mapping = {
     framework: 'Frameworks',
     bundle: 'Frameworks',
@@ -269,11 +269,11 @@ export function aggregateFilesByType(breakdownRoot, platform, totalInstallSize) 
     const otherCompressedSize = smallCategories.reduce((sum, cat) => sum + (cat.compressedSize || 0), 0);
     const otherCount = smallCategories.reduce((sum, cat) => sum + cat.count, 0);
     const otherContentTypes = new Set();
-    smallCategories.forEach(cat => cat.contentTypes.forEach(type => otherContentTypes.add(type)));
+    smallCategories.forEach(cat => { cat.contentTypes.forEach(type => { otherContentTypes.add(type); }); });
 
     // Add existing "Other" category data if it exists
     if (existingOther && Array.isArray(existingOther.contentTypes)) {
-      existingOther.contentTypes.forEach(type => otherContentTypes.add(type));
+      existingOther.contentTypes.forEach(type => { otherContentTypes.add(type); });
     }
 
     const otherCategory = {
@@ -669,7 +669,7 @@ export function analyzeArchitectures(breakdownRoot, totalInstallSize) {
   function traverse(node) {
     const arch = extractArch(node.path || '');
 
-    if (arch && node.path && node.path.includes('.so')) {
+    if (arch && node.path?.includes('.so')) {
       if (!archMap.has(arch)) {
         archMap.set(arch, {
           architecture: arch,

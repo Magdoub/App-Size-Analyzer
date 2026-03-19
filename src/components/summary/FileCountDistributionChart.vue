@@ -13,18 +13,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { BarChart } from 'echarts/charts';
+import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { BarChart } from 'echarts/charts';
-import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
+import { computed } from 'vue';
 import VChart from 'vue-echarts';
+import { useResponsiveChart } from '../../composables/useResponsiveChart';
 import { useAnalysisStore } from '../../stores/analysisStore';
 import { useAppStore } from '../../stores/appStore';
 import { aggregateFilesByType } from '../../utils/calculations';
-import { transformCategoriesToBarChart, buildVerticalBarChartOptions } from '../../utils/chart-options';
+import { buildVerticalBarChartOptions, transformCategoriesToBarChart } from '../../utils/chart-options';
 import { formatNumber } from '../../utils/formatters';
-import { useResponsiveChart } from '../../composables/useResponsiveChart';
 
 use([CanvasRenderer, BarChart, TitleComponent, TooltipComponent, GridComponent]);
 

@@ -177,7 +177,7 @@ export function createPreviewManager() {
      * Cleanup all tracked previews
      */
     cleanup() {
-      cleanupFunctions.forEach(fn => fn());
+      cleanupFunctions.forEach(fn => { fn(); });
       cleanupFunctions.length = 0; // Clear array
     }
   };

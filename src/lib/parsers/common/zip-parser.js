@@ -5,7 +5,7 @@
  * for large files (multi-GB binaries).
  */
 
-import { unzip, Unzip } from 'fflate';
+import { Unzip, unzip } from 'fflate';
 
 /**
  * @typedef {Object} ZIPEntry

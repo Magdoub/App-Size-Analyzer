@@ -7,7 +7,6 @@
  * @module chart-options
  */
 
-import { formatBytes, formatNumber } from './formatters.js';
 
 /**
  * Build tooltip configuration
@@ -117,7 +116,7 @@ export function buildVerticalBarChartOptions(data, title, valueFormatter, option
         formatter: (v) => valueFormatter(v, 0)
       }
     },
-    series: data.series.map((s, idx) => ({
+    series: data.series.map((s, _idx) => ({
       name: s.name,
       type: 'bar',
       data: s.data.map((value, i) => ({
@@ -192,7 +191,7 @@ export function buildHorizontalBarChartOptions(data, title, valueFormatter, opti
       axisLabel: {
         formatter: (value) => {
           // Truncate long file names
-          return value.length > 30 ? value.substring(0, 27) + '...' : value;
+          return value.length > 30 ? `${value.substring(0, 27)}...` : value;
         }
       }
     },
