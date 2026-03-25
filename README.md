@@ -23,8 +23,9 @@
 
 > **Use it right now at [appsizeanalyzer.com](https://appsizeanalyzer.com/)** — no install, no signup, no upload to any server. Just open the site and drop in a file.
 
-<!-- TODO: Add a hero screenshot or GIF showing the app in action -->
-<!-- ![App Size Analyzer Screenshot](media/hero-screenshot.png) -->
+<p align="center">
+  <video src="media/demo.mp4" width="100%" autoplay loop muted playsinline></video>
+</p>
 
 ## About
 
