@@ -1,283 +1,121 @@
-# App Size Analyzer
+<p align="center">
+  <img src="public/android-chrome-512x512.png" alt="App Size Analyzer" width="120">
+</p>
 
-**[Try it out here: appsizeanalyzer.com](https://appsizeanalyzer.com/)**
+<h1 align="center">App Size Analyzer</h1>
 
-A client-side binary analysis platform for iOS and Android app size optimization.
+<p align="center">
+  Find out what's making your app so big.
+</p>
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)
-![React](https://img.shields.io/badge/React-18.3-blue?logo=react)
-![Privacy](https://img.shields.io/badge/privacy-100%25%20client--side-green)
+<p align="center">
+  <a href="https://appsizeanalyzer.com/">appsizeanalyzer.com</a>
+</p>
 
-## Overview
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/Vue-3.5-42b883?logo=vuedotjs" alt="Vue 3.5">
+  <img src="https://img.shields.io/badge/privacy-100%25%20client--side-green" alt="Privacy">
+  <img src="https://img.shields.io/badge/platforms-iOS%20%2B%20Android-orange" alt="Platforms">
+</p>
 
-App Size Analyzer helps developers understand and optimize mobile app binary sizes by providing detailed breakdowns, visual treemaps, and actionable insights. All analysis happens entirely in your browser—your binaries never leave your machine, ensuring complete privacy. No backend, no data transmission, no compromises.
+---
 
-## Quick Start
+> **Use it right now at [appsizeanalyzer.com](https://appsizeanalyzer.com/)** — no install, no signup, no upload to any server. Just open the site and drop in a file.
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd sizeanalyzer
-   ```
+<!-- TODO: Add a hero screenshot or GIF showing the app in action -->
+<!-- ![App Size Analyzer Screenshot](media/hero-screenshot.png) -->
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+## About
 
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
+App Size Analyzer breaks down iOS and Android app files so you can see exactly where the size is coming from. It runs entirely in your browser. Your files never get uploaded anywhere.
 
-4. **Open the app** at http://localhost:5173
+Drop in an `.ipa`, `.apk`, `.aab`, or `.xapk` file and you'll get:
 
-5. **Try a sample file** (one-click quickstart):
-   - Click any sample file card on the homepage
-   - No upload required - instant analysis starts
-   - Available sample files:
-     - **A Night Battle HD** (5.1 MB iOS) - Quick test
-     - **Tools for Procreate** (47 MB iOS) - Medium size
-     - **Grasshopper Dialer** (79 MB Android) - Large app
+- A file-by-file size breakdown you can sort and drill into
+- A visual map of your app's contents, color-coded by category
+- Automatic recommendations for reducing size (duplicate files, oversized images, debug leftovers, unused resources, and others)
 
-   Or **drag and drop your own file** to analyze (`.ipa`, `.apk`, `.xapk`)
+Don't have a file handy? There are sample apps on the homepage you can analyze with one click.
 
-6. **Explore the analysis**:
-   - **Breakdown** tab: File hierarchy, size breakdown, drill-down
-   - **X-Ray** tab: Interactive treemap visualization
-   - **Insights** tab: Optimization recommendations
-
-## Features
-
-### 🚀 One-Click Quickstart with Sample Files
-Try the analyzer instantly without uploading your own files. Click any sample file card on the homepage to load and analyze pre-included iOS and Android apps (ranging from 5-80MB). Perfect for first-time users to see the tool in action within seconds.
-
-### 📊 Breakdown View
-Hierarchical file system tree with sortable columns (name, size, percentage). Drill down through directories and file structures to identify large files and optimization opportunities. Analyze both compressed and uncompressed sizes.
-
-### 🔍 X-Ray Treemap
-Interactive treemap visualization of your app's contents, color-coded by file category (executables, frameworks, assets, resources). Drill down into nested directories and quickly identify space-consuming components.
-
-### 💡 Insights & Recommendations
-Automated analysis engine with severity-based insights (critical, warning, info). Smart detection of uncompressed assets, duplicate files, large frameworks, DEX overhead, localization bloat, and more. Filter by severity, category, or keyword to prioritize optimizations.
-
-## How It Works
-
-**100% Client-Side** - Your data never leaves your machine:
-
-1. **File Selection**: Choose from sample files or upload your own `.ipa`, `.apk`, or `.xapk` files
-2. **Validation**: Client-side file type and size validation (up to 2GB)
-3. **Web Worker Parsing**: Binary parsing runs off the main thread for smooth UI
-   - ZIP extraction using `fflate` library
-   - iOS: Parses Mach-O executables, Info.plist, asset catalogs
-   - Android: Parses DEX files, AndroidManifest.xml, ARSC resources
-4. **Analysis Engine**: Generates breakdown trees, treemap data, and insights
-5. **Visualization**: React-based UI with interactive charts and tables
-
-**Privacy & Performance**:
-- **Zero network requests**: All analysis happens in your browser
-- **Your data stays local**: Files never leave your machine
-- **Fast parsing**: Web Workers prevent UI blocking
-- **Efficient memory**: Streaming ZIP extraction for large files
-
-## Tech Stack
-
-- **Frontend**: React 18.3.1, TypeScript 5.9 (strict mode)
-- **Build**: Vite 5.4 with ES2020 target
-- **State**: Zustand 5.0.8 (lightweight state management)
-- **Visualization**: @nivo/treemap, @tanstack/react-table, @tanstack/react-virtual
-- **Parsing**: fflate (ZIP), app-info-parser, custom Mach-O & DEX parsers
-- **Workers**: Comlink for typed Web Worker communication
-- **Styling**: Tailwind CSS 3.4.18
-
-## Installation & Development
-
-### Prerequisites
-
-- **Node.js**: 16+ recommended
-- **npm**: Comes with Node.js
-
-### Running the Application
-
-**Development Mode**:
-```bash
-npm run dev
-```
-The app will be available at **http://localhost:5173**
-
-**Production Build**:
-```bash
-npm run build
-```
-Output will be in the `dist/` directory.
-
-**Preview Production Build**:
-```bash
-npm run preview
-```
-
-### Other Commands
-
-```bash
-# Testing
-npm test                 # Run tests
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Generate coverage report
-
-# Code Quality
-npm run lint             # Lint code
-npm run lint:fix         # Auto-fix linting issues
-npm run format           # Format code
-npm run type-check       # Type check without emitting
-```
-
-## Usage
-
-### 1. Launch the Application
-
-Run `npm run dev` and open http://localhost:5173 in your browser.
-
-### 2. Analyze a Binary
-
-**Option A: Try a sample file** (instant quickstart):
-- Click any sample file card displayed on the homepage
-- Sample files are pre-loaded and ready for one-click analysis
-- No manual upload needed - perfect for first-time users
-
-**Option B: Upload your own file**:
-- Drag and drop an `.ipa`, `.apk`, or `.xapk` file
-- Or click the upload zone to browse your files
-- See [sample-files/README.md](sample-files/README.md) for test file details
-
-### 3. Explore the Analysis
-
-Once parsing completes, navigate between views:
-- **Breakdown**: Explore the file hierarchy and identify large files
-- **X-Ray**: Visualize the app structure with an interactive treemap
-- **Insights**: Review automated recommendations for size optimization
-
-### 4. Analyze Results
-
-- Sort by size to find the largest files
-- Drill down into directories in both Breakdown and X-Ray views
-- Filter insights by severity to prioritize critical optimizations
-- Use breadcrumb navigation to move back up the hierarchy
-
-## Supported File Formats
+## Supported formats
 
 | Format | Platform | Notes |
 |--------|----------|-------|
-| `.ipa` | iOS | Standard iOS app packages |
-| `.apk` | Android | Android application packages |
-| `.xapk` | Android | XAPK containers (splits extraction) |
-| `.aab` | Android | Android App Bundles with module breakdown |
-| `.zip` | iOS | Zipped .framework bundles with architecture analysis |
+| `.ipa` | iOS | App packages |
+| `.apk` | Android | App packages |
+| `.aab` | Android | App Bundles with per-module breakdown |
+| `.xapk` | Android | Split APK containers |
+| `.zip` | iOS | Zipped `.framework` directories |
 
-### Android App Bundle (AAB) Support
+## Getting started
 
-AAB files are fully supported with:
-- Module detection (base + dynamic feature modules)
-- Per-module size breakdown (DEX, resources, assets, native libraries)
-- Protobuf manifest parsing for package name, version, SDK versions
-- Architecture detection from native libraries
+The fastest way is the hosted version at **[appsizeanalyzer.com](https://appsizeanalyzer.com/)**. Nothing to install.
 
-### iOS Framework Bundle Support
+If you want to run it locally:
 
-Framework bundles can be analyzed by zipping the `.framework` directory:
-1. Locate your `MyFramework.framework` directory
-2. Create a ZIP: `zip -r MyFramework.framework.zip MyFramework.framework`
-3. Drop the ZIP file into the analyzer
+```bash
+git clone https://github.com/Magdoub/App-Size-Analyzer.git
+cd App-Size-Analyzer
+npm install
+npm run dev
+```
 
-Features include:
-- Info.plist metadata extraction (bundle ID, version, platform)
-- Mach-O binary parsing for architecture detection (arm64, x86_64, etc.)
-- Universal binary slice breakdown with per-architecture sizes
-- Content categorization (binary, headers, modules, resources)
-- Support for both iOS flat and macOS versioned framework structures
+Then open http://localhost:5173.
 
-## Documentation
+## How it works
 
-- [Contributing Guide](docs/CONTRIBUTING.md) - SpecKit workflow, code standards, PR checklist
-- [Codebase Exploration](docs/CODEBASE_EXPLORATION.md) - Technical deep dive into architecture
-- [Feature Specs](specs/) - Completed and active features, implementation plans
-- [Sample Files](sample-files/README.md) - Test file metadata, usage guide
+You pick a file (or a sample), the app parses it in the background, and you get three views:
 
-## Project Structure
+1. **Breakdown** - a sortable file tree showing sizes, percentages, and how much each file compresses
+2. **X-Ray** - a treemap that gives you a visual sense of where the space goes
+3. **Insights** - 18 rules that scan for common size problems (big PNGs that should be WebP, duplicate files, debug symbols left in release builds, that kind of thing)
+
+Everything runs locally. There is no server.
+
+## Tech stack
+
+| | |
+|-------|-------|
+| Framework | Vue 3.5, Pinia, Vite 5 |
+| Charts | ECharts, TanStack Virtual |
+| Parsing | fflate, app-info-parser, protobufjs, custom binary parsers |
+| Concurrency | Web Workers via Comlink |
+| Styling | Tailwind CSS |
+
+## Project structure
 
 ```
 src/
-├── components/          # React UI components
-│   ├── breakdown/       # File breakdown table & tabs
-│   ├── insights/        # Insights cards & filters
-│   ├── upload/          # File upload & validation
-│   ├── xray/            # Treemap visualization
-│   └── shared/          # Reusable components
+├── components/          # UI (breakdown, insights, upload, xray, shared)
+├── composables/         # Vue composables
 ├── lib/
-│   ├── analysis/        # Breakdown generator & insight engine
-│   ├── parsers/         # Binary parsers (iOS/Android)
-│   │   ├── ios/         # IPA, Framework, Mach-O, plist, asset catalogs
-│   │   └── android/     # APK, AAB, XAPK, DEX, ARSC, binary XML, protobuf
-│   └── visualization/   # Treemap generation & color schemes
-├── store/               # Zustand state management
-├── types/               # TypeScript type definitions
-├── utils/               # Formatters & calculations
-└── workers/             # Web Worker for off-thread parsing
+│   ├── analysis/        # Size breakdown + insight rules
+│   ├── parsers/         # iOS and Android binary parsers
+│   └── visualization/   # Treemap data + colors
+├── stores/              # Pinia stores
+├── utils/               # Formatters, helpers
+└── workers/             # Background parsing
 ```
 
-## Browser Compatibility
+## Development
 
-This app requires modern browser features:
-- **Web Workers**: For background parsing
-- **File API**: For reading uploaded files
-- **ES2020+**: Modern JavaScript features
+```bash
+npm run dev              # Dev server
+npm run build            # Production build
+npm test                 # Tests
+npm run lint:fix         # Lint
+npm run format           # Format
+```
 
-Tested on:
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+## Browser support
 
-## Performance Notes
+Chrome 90+, Firefox 88+, Safari 14+, Edge 90+.
 
-- **Large files**: Files over 100MB may take 1-2 minutes to parse
-- **Timeout**: Dynamic timeout based on file size (30s base + 5s per MB)
-- **Memory**: Large apps (500MB+) may require sufficient RAM
-- **Recommended**: Use Chrome or Edge for best performance
+## Contributing
 
-## Troubleshooting
-
-### Analysis Timeout
-
-**Error**: "Analysis timeout: File took too long to process"
-
-**Solution**:
-- Try a smaller file first to verify the app works
-- Larger files (100MB+) need more time - timeout increases automatically
-- Check browser console for detailed errors
-
-### Invalid File
-
-**Error**: "Invalid APK/IPA file: Missing manifest/plist"
-
-**Solution**:
-- Ensure the file is not corrupted
-- Verify it's a valid `.ipa` or `.apk` file (not renamed ZIP)
-- Try re-downloading the file
-
-### Out of Memory
-
-**Error**: Browser tab crashes or freezes
-
-**Solution**:
-- Close other tabs to free up RAM
-- Try a smaller file
-- Use a desktop browser (more memory available)
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for how we work.
 
 ## License
 
 MIT
-
-## Acknowledgments
-
-Built with TypeScript, React, and Vite. Powered by client-side binary parsing with zero backend dependencies.
