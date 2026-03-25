@@ -23,7 +23,7 @@
 
 > **Use it right now at [appsizeanalyzer.com](https://appsizeanalyzer.com/)** — no install, no signup, no upload to any server. Just open the site and drop in a file.
 
-<!-- Demo video will be embedded here -->
+https://github.com/user-attachments/assets/60789df8-c547-4394-ad5e-d69d2e8c862b
 
 ## About
 
