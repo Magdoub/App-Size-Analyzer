@@ -23,9 +23,7 @@
 
 > **Use it right now at [appsizeanalyzer.com](https://appsizeanalyzer.com/)** — no install, no signup, no upload to any server. Just open the site and drop in a file.
 
-<p align="center">
-  <video src="media/demo.mp4" width="100%" autoplay loop muted playsinline></video>
-</p>
+<!-- Demo video will be embedded here -->
 
 ## About
 
